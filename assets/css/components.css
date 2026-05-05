@@ -210,7 +210,20 @@
   font-weight: var(--fw-medium);
   letter-spacing: -0.015em;
   font-variation-settings: "opsz" 36;
+  line-height: 1.05;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.site-nav__brand-sub {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: var(--fw-regular);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
   line-height: 1;
+  font-variation-settings: normal;
 }
 .site-nav__brand:hover { color: var(--gold-deep); }
 .site-nav__brand:hover img { opacity: 0.85; }
