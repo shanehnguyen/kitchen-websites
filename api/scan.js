@@ -436,7 +436,7 @@ export default async function handler(req, res) {
     res.setHeader('Retry-After', String(rate.retryAfter || RATE_LIMIT_WINDOW_S));
     return res.status(429).json({
       code: 'rate_limited',
-      error: "You've used all 3 free scans for today. Schedule a 30-minute call instead — I'll walk your site live.",
+      error: "You've used all 3 free scans for today. Schedule a 15-minute call instead — I'll walk your site live.",
       retryAfterSeconds: rate.retryAfter,
       limit: RATE_LIMIT_MAX,
     });

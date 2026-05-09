@@ -121,7 +121,7 @@ Metrics placeholder clearly labeled: "Metrics launching with v1.1" (do NOT inven
 
 **Section 7 — How I work**
 Four steps with short descriptions, pulled from PROPOSAL.md:
-1. Teardown call — 30 min, I audit your current site and pricing flow
+1. Teardown call — 15 min, I audit your current site and pricing flow
 2. Mockup & scope — 48 hours, you see your contractor portal before you sign anything
 3. Build — 3–5 weeks, your site goes live first, contractor portal in phase two
 4. Handoff — you run it, I'm on call for 30 days
