@@ -1,0 +1,9 @@
+# Kitchen Websites — robots policy
+User-agent: *
+Allow: /
+# Single-goal, ad-traffic pages — keep them out of the index.
+Disallow: /score
+Disallow: /book
+Disallow: /api/
+
+Sitemap: https://kitchenwebsites.com/sitemap.xml

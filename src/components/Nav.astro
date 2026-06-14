@@ -1,0 +1,25 @@
+---
+/* Global nav. Spec §2:
+   Logo · SEO · Websites · About · [button] Free strategy session
+   One hero-level CTA rule: the nav button → /book. */
+interface Props { overlay?: boolean; }
+const { overlay = false } = Astro.props;
+const path = Astro.url.pathname;
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
+---
+<header class:list={['nav', { 'nav--overlay': overlay }]}>
+  <div class="nav__inner">
+    <a class="nav__logo" href="/">
+      <span class="nav__logo-name">Kitchen <span>Websites</span></span>
+      <span class="nav__logo-by">by FlipFix Digital</span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav__links">
+        <li><a href="/seo" aria-current={isActive('/seo') ? 'page' : undefined}>SEO</a></li>
+        <li><a href="/websites" aria-current={isActive('/websites') ? 'page' : undefined}>Websites</a></li>
+        <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn--primary nav__cta" href="/book">Free strategy session</a>
+  </div>
+</header>

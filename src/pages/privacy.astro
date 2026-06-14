@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site.config';
+---
+<BaseLayout title="Privacy" description="How Kitchen Websites handles the information you share." noindex={true}>
+  <section class="section legal">
+    <div class="container container--prose">
+      <h1>Privacy</h1>
+      <p class="legal__date mono">Last updated June 2026</p>
+      <!-- LEGAL REVIEW REQUIRED before launch. Plain-language draft only. -->
+      <p>
+        {site.brand} collects only what you give us: the answers and contact details you enter in the
+        calculator, and our booking and contact forms. We use them to follow up about the work and improve
+        the tools.
+      </p>
+      <h2>What we collect</h2>
+      <ul>
+        <li>Your name, email, business name, and the answers you give when you book a session or use our tools.</li>
+        <li>Standard analytics (page views, events) via Meta Pixel and, optionally, Google Analytics.</li>
+      </ul>
+      <h2>What we don’t do</h2>
+      <p>We don’t sell your information. We don’t run a 14-email nurture machine. You can unsubscribe anytime.</p>
+      <h2>Contact</h2>
+      <p>Questions about your data: <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal h1 { font-family: var(--font-display); }
+  .legal__date { color: var(--ink-50); font-size: var(--fs-caption); margin-block: var(--space-2) var(--space-6); }
+  .legal h2 { font-family: var(--font-display); text-transform: none; font-size: var(--fs-h3); margin-top: var(--space-8); }
+  .legal p, .legal li { color: var(--ink-70); margin-top: var(--space-3); line-height: 1.6; }
+  .legal ul { padding-left: var(--space-6); }
+</style>

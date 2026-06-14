@@ -1,0 +1,39 @@
+---
+/* CapacityCounter — count from site.config.capacity (single source of truth;
+   value must be TRUE). With `lead`, renders constraint-first: the limit + the
+   reason, then the open count. Without it, the plain "N of M" form. */
+interface Props {
+  open: number;
+  total: number;
+  label: string;
+  lead?: string;
+}
+const { open, total, label, lead } = Astro.props;
+const soldOut = open <= 0;
+---
+<p class="capacity" role="status">
+  <span class="capacity__dot" data-full={soldOut}></span>
+  {lead
+    ? <span>{lead} {soldOut ? <strong class="mono">Full this month, waitlist open.</strong> : <span><strong class="mono">{open} open</strong> this month.</span>}</span>
+    : (soldOut
+        ? <span><strong class="mono">Full.</strong> {label} are taken this month. Waitlist open.</span>
+        : <span><strong class="mono">{open} of {total}</strong> {label} open this month.</span>)}
+</p>
+
+<style>
+  .capacity {
+    display: inline-flex; align-items: center; gap: var(--space-3);
+    font-family: var(--font-body); font-size: var(--fs-body-sm);
+    color: var(--ink-70);
+    border: var(--rule-width) solid var(--rule);
+    padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm);
+    background: var(--porcelain-soft);
+  }
+  .capacity strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .capacity__dot {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--brass);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 25%, transparent);
+    flex-shrink: 0;
+  }
+  .capacity__dot[data-full="true"] { background: var(--alarm); box-shadow: 0 0 0 3px color-mix(in srgb, var(--alarm) 25%, transparent); }
+</style>

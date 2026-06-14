@@ -1,0 +1,59 @@
+---
+/* ProofSlot — grid that renders portfolio cards NOW, testimonial cards LATER,
+   under the same markup contract so proof upgrades without redesign (spec §6).
+   Honesty rule (§8): empty slots stay honest. No invented reviews, no fake
+   testimonials. Ships partially filled with real portfolio screenshots. */
+type PortfolioItem = { kind: 'portfolio'; img: string; name: string; meta: string };
+type TestimonialItem = { kind: 'testimonial'; quote: string; name: string; meta: string };
+type ProofItem = PortfolioItem | TestimonialItem;
+
+interface Props { items: ProofItem[]; }
+const { items } = Astro.props;
+---
+<div class="proof">
+  {items.map((item) =>
+    item.kind === 'portfolio' ? (
+      <figure class="proof-card proof-card--portfolio">
+        <div class="proof-card__shot">
+          <img src={item.img} alt={`${item.name}, a kitchen & bath website built by Kitchen Websites`} loading="lazy" decoding="async" width="640" height="400" />
+        </div>
+        <figcaption class="proof-card__cap">
+          <span class="proof-card__name">{item.name}</span>
+          <span class="proof-card__meta">{item.meta}</span>
+        </figcaption>
+      </figure>
+    ) : (
+      <figure class="proof-card proof-card--testimonial">
+        <blockquote class="proof-card__quote">{item.quote}</blockquote>
+        <figcaption class="proof-card__cap">
+          <span class="proof-card__name">{item.name}</span>
+          <span class="proof-card__meta">{item.meta}</span>
+        </figcaption>
+      </figure>
+    )
+  )}
+</div>
+
+<style>
+  /* Enlarged, framed portfolio — insider proof should land. Two-up on
+     tablet, three-up on wide; cards get a real frame + lift on hover. */
+  .proof { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+  @media (min-width: 40em) { .proof { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64em) { .proof { grid-template-columns: repeat(3, 1fr); } }
+  .proof-card {
+    display: flex; flex-direction: column;
+    background: var(--bg-raised); border: var(--rule-width) solid var(--line);
+    border-radius: var(--radius-sm); overflow: hidden;
+    box-shadow: 0 1px 0 var(--rule-soft);
+    transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  }
+  .proof-card--portfolio:hover { transform: translateY(-3px); box-shadow: 0 14px 30px -16px rgba(26, 24, 20, 0.45); }
+  .proof-card__shot { aspect-ratio: 16 / 11; overflow: hidden; background: var(--porcelain-deep); border-bottom: var(--rule-width) solid var(--line); }
+  .proof-card__shot img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .proof-card__cap { padding: var(--space-5); display: flex; flex-direction: column; gap: 3px; }
+  .proof-card__name { font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; font-size: 1.15rem; letter-spacing: -0.01em; }
+  .proof-card__meta { font-size: var(--fs-caption); color: var(--accent-deep); font-weight: var(--fw-body-semi); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .proof-card--testimonial { padding: var(--space-6); background: var(--bg-raised); }
+  .proof-card__quote { font-family: var(--font-serif); font-size: var(--fs-lede); line-height: 1.5; color: var(--ink); margin-bottom: var(--space-4); }
+  .proof-card__quote::before { content: "\201C"; color: var(--accent); }
+</style>

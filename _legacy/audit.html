@@ -1,0 +1,3831 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F4EEE0">
+
+  <title>Free Cabinet Homepage Audit | FlipFix Digital</title>
+  <meta name="description" content="Free homepage scorecard for cabinet dealers. The average dealer site scores 4.7 out of 10. Find out where yours lands — 30 seconds, no signup.">
+
+  <link rel="canonical" href="https://flipfixdigital.com/audit">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+
+  <meta property="og:site_name" content="FlipFix Digital">
+  <meta property="og:title" content="Free Cabinet Homepage Audit | FlipFix Digital">
+  <meta property="og:description" content="The average cabinet dealer homepage scores 4.7 out of 10. The top 5% score above 9. Find out where yours lands.">
+  <meta property="og:url" content="https://flipfixdigital.com/audit">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://flipfixdigital.com/assets/images/og-cover.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free Cabinet Homepage Audit | FlipFix Digital">
+  <meta name="twitter:description" content="The average cabinet dealer homepage scores 4.7 out of 10. The top 5% score above 9. Find out where yours lands.">
+  <meta name="twitter:image" content="https://flipfixdigital.com/assets/images/og-cover.svg">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..600,30..100;1,9..144,400..500,30..100&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+
+  <style>
+    /* =====================================================================
+       audit.html — instrument-panel report layout.
+       Single cream base; differentiation via elevated cards, not bg flips.
+       ===================================================================== */
+
+    :root {
+      --bg: #F4EEE0;
+      --paper: #FFFCF4;
+      --paper-2: #FAF5E8;
+      --ink: #0E0D0B;
+      --muted: #7A7468;
+      --line: #DCD3BB;
+      --line-soft: rgba(14, 13, 11, 0.08);
+      --gold: #A78B4F;
+      --gold-deep: #876E36;
+      --gold-soft: #C6AE77;
+      --pass: #4F7A3A;
+      --partial: #B47919;
+      --fail: #9B3823;
+      --shadow-card: 0 1px 0 rgba(14,13,11,0.03), 0 8px 24px -12px rgba(14,13,11,0.12);
+      --shadow-card-hover: 0 2px 0 rgba(14,13,11,0.04), 0 16px 36px -14px rgba(14,13,11,0.18);
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    body[data-page="audit"] {
+      background-color: var(--bg);
+    }
+
+    /* Hide global pre-footer CTA on /audit */
+    body[data-page="audit"] .site-footer__cta { display: none; }
+
+    /* ---------- Audit page scope ---------- */
+    .audit-page main { color: var(--ink); }
+    .audit-page .mono { font-family: var(--font-mono); font-feature-settings: "tnum" 1; }
+
+    /* ---------- Input / loading (kept minimal, centered) ---------- */
+    .audit-hero { padding-block: var(--section-y); padding-inline: var(--gutter); }
+    .audit-hero__inner { max-width: 46rem; margin-inline: auto; text-align: center; }
+    .audit-hero h1 {
+      margin-top: var(--space-4);
+      max-width: 22ch;
+      margin-inline: auto;
+      font-variation-settings: "opsz" 96, "SOFT" 30;
+    }
+    .audit-hero .lede { margin: var(--space-5) auto 0; max-width: 52ch; color: var(--muted); }
+    /* Mono-numeral emphasis inside the hero headline (the verdict number).
+       Slightly heavier weight + gold-deep + tabular numerals so it reads
+       as a fact, not a flourish. */
+    .audit-hero h1 .score-emph {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--gold-deep);
+      font-size: 1.04em;
+      letter-spacing: -0.01em;
+      font-feature-settings: "tnum" 1;
+      font-style: normal;
+    }
+    .audit-hero .lede .score-emph-sm {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--gold-deep);
+      font-feature-settings: "tnum" 1;
+    }
+    /* Cohort citation block — sits below the form on the pre-scan page and
+       inside the post-scan methodology section. Treats named competitors as
+       sourcing footnotes, not callouts. */
+    .cohort-cite {
+      margin: var(--space-8) auto 0;
+      max-width: 60ch;
+      padding: var(--space-4) var(--space-5);
+      background: transparent;
+      border: 1px dotted var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
+      line-height: 1.65;
+      color: var(--muted);
+      text-align: left;
+    }
+    .cohort-cite__lead {
+      color: var(--ink);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.65rem;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .cohort-cite__name {
+      color: var(--ink);
+      font-weight: 500;
+      text-decoration: underline dotted var(--gold);
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+    }
+    .cohort-cite__score {
+      color: var(--muted);
+      font-feature-settings: "tnum" 1;
+    }
+    .audit-hero__author { margin: var(--space-5) auto 0; max-width: 56ch; font-size: var(--fs-body-sm); color: var(--muted); line-height: 1.55; }
+    .audit-hero__author strong { color: var(--ink); font-weight: var(--fw-semibold); }
+    .audit-form { margin-top: var(--space-8); display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
+    .audit-form__field { flex: 1 1 22rem; min-width: 0; }
+    .audit-form__field label {
+      display: block; font-family: var(--font-body); font-size: var(--fs-caption);
+      letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--ink);
+      font-weight: var(--fw-semibold); margin-bottom: var(--space-2); text-align: left;
+    }
+    .audit-form input[type="url"] {
+      width: 100%; font-family: var(--font-body); font-size: var(--fs-body); line-height: 1.4;
+      color: var(--ink); background: var(--paper); border: 1px solid var(--line);
+      border-radius: var(--radius-sm); padding: var(--space-4);
+      transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+    }
+    .audit-form input[type="url"]:hover { border-color: var(--ink); }
+    .audit-form input[type="url"]:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(167, 139, 79, 0.25); }
+    .audit-form input[aria-invalid="true"] { border-color: var(--fail); box-shadow: 0 0 0 3px rgba(155, 56, 35, 0.15); }
+    .audit-form button { align-self: flex-end; flex: 0 0 auto; }
+    @media (max-width: 40em) { .audit-form { flex-direction: column; } .audit-form button { align-self: stretch; width: 100%; } }
+    .audit-error { margin-top: var(--space-4); color: var(--fail); font-size: var(--fs-body-sm); min-height: 1.4em; }
+    .audit-error a { color: var(--fail); text-decoration-color: var(--fail); }
+
+    /* ---------- Captcha + honeypot ---------- */
+    .audit-captcha {
+      margin-top: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      justify-content: center;
+      font-family: var(--font-body);
+      font-size: var(--fs-caption);
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .audit-captcha__label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.7rem;
+      color: var(--gold-deep);
+      font-weight: var(--fw-semibold);
+    }
+    .audit-captcha__q {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--ink);
+      letter-spacing: 0;
+      padding: 2px 8px;
+      background: var(--paper);
+      border: 1px dotted var(--line);
+      border-radius: 2px;
+    }
+    .audit-captcha__input {
+      width: 4.5rem;
+      padding: var(--space-2) var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      transition: border-color var(--duration-fast) var(--ease-out),
+                  box-shadow var(--duration-fast) var(--ease-out);
+    }
+    .audit-captcha__input:focus {
+      outline: none;
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(167, 139, 79, 0.25);
+    }
+    .audit-captcha__input[aria-invalid="true"] {
+      border-color: var(--fail);
+      box-shadow: 0 0 0 3px rgba(155, 56, 35, 0.15);
+    }
+    .audit-captcha__refresh {
+      background: transparent;
+      border: 0;
+      padding: 4px;
+      cursor: pointer;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      transition: color var(--duration-fast) var(--ease-out);
+    }
+    .audit-captcha__refresh:hover { color: var(--ink); }
+    .audit-captcha__refresh svg { width: 14px; height: 14px; }
+
+    /* Quota strip — shows remaining scans for the day. */
+    .audit-quota {
+      margin-top: var(--space-4);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .audit-quota__num { color: var(--gold-deep); font-weight: 500; }
+    .audit-quota--exhausted { color: var(--fail); }
+    .audit-quota--exhausted .audit-quota__num { color: var(--fail); }
+
+    /* Honeypot — visible to bots only. Visually hidden + off-screen, but
+       still in the DOM so headless scrapers will fill it. */
+    .honeypot-field {
+      position: absolute !important;
+      left: -10000px !important;
+      top: auto !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      tab-index: -1 !important;
+    }
+
+    .audit-loading { padding-block: var(--section-y-lg); padding-inline: var(--gutter); text-align: center; }
+    .audit-loading__inner { max-width: 36rem; margin-inline: auto; }
+    .audit-spinner {
+      width: 48px; height: 48px; margin: 0 auto var(--space-6);
+      border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
+      animation: auditSpin 0.9s linear infinite;
+    }
+    @keyframes auditSpin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .audit-spinner { animation-duration: 3s; } }
+    .audit-loading__status { font-family: var(--font-display); font-size: 1.25rem; line-height: 1.4; color: var(--ink); font-variation-settings: "opsz" 36; margin: 0; min-height: 2.8em; }
+    .audit-loading__caption { margin-top: var(--space-3); color: var(--muted); font-size: var(--fs-caption); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+
+    /* ---------- Results wrapper ---------- */
+    .audit-results { padding-inline: 0; }
+    .audit-results__wrap {
+      max-width: var(--container-standard);
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+    }
+    .audit-block { margin-block: var(--space-12); }
+
+    /* ---------- Register marks ---------- */
+    .has-marks { position: relative; }
+    .has-marks::before,
+    .has-marks::after {
+      content: "";
+      position: absolute;
+      width: 12px; height: 12px;
+      pointer-events: none;
+    }
+    .has-marks::before {
+      top: -1px; left: -1px;
+      border-top: 1px solid var(--gold);
+      border-left: 1px solid var(--gold);
+    }
+    .has-marks::after {
+      bottom: -1px; right: -1px;
+      border-bottom: 1px solid var(--gold);
+      border-right: 1px solid var(--gold);
+    }
+
+    /* ---------- Report meta strip ---------- */
+    .report-strip {
+      margin-top: var(--space-6);
+      display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .report-strip__group { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); align-items: center; flex: 1 1 auto; min-width: 0; }
+    .report-strip__item { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
+    .report-strip__item--url { color: var(--ink); font-weight: 500; min-width: 0; }
+    .report-strip__item--url span { overflow: hidden; text-overflow: ellipsis; max-width: 28ch; display: inline-block; vertical-align: middle; }
+    .report-strip__dot { width: 4px; height: 4px; background: var(--gold); border-radius: 50%; display: inline-block; }
+    .report-strip__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+    .report-strip__btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--ink);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out);
+    }
+    .report-strip__btn:hover { background: var(--bg); border-color: var(--ink); }
+    .report-strip__btn svg { width: 11px; height: 11px; }
+
+    /* ---------- Hero verdict (single elevated dark card) ---------- */
+    .verdict-card {
+      margin-top: var(--space-6);
+      background: #0E0D0B;
+      color: #F4EEE0;
+      border-radius: var(--radius-sm);
+      padding: clamp(1.5rem, 3vw, 2.5rem);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: clamp(1.5rem, 4vw, 3rem);
+      align-items: center;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .verdict-card::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(167, 139, 79, 0.15);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    @media (max-width: 44em) {
+      .verdict-card { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+    }
+    .gauge { width: clamp(180px, 22vw, 240px); height: clamp(180px, 22vw, 240px); position: relative; flex-shrink: 0; }
+    .gauge svg { width: 100%; height: 100%; transform: rotate(135deg); }
+    .gauge__track { fill: none; stroke: rgba(244, 238, 224, 0.08); stroke-width: 10; stroke-linecap: round; }
+    .gauge__fill { fill: none; stroke: var(--gold); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.5s var(--ease-out); }
+    .gauge__center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; gap: 4px;
+    }
+    .gauge__number {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 6vw, 4.25rem);
+      line-height: 0.95;
+      color: var(--gold);
+      font-variation-settings: "opsz" 144, "SOFT" 30;
+      letter-spacing: -0.04em;
+    }
+    .gauge__denom {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(244, 238, 224, 0.5);
+    }
+    .verdict-card__body { min-width: 0; }
+    .verdict-card__row { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-4); }
+    .tier-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px;
+      background: rgba(167, 139, 79, 0.12);
+      border: 1px solid rgba(167, 139, 79, 0.4);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .tier-badge__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+    .verdict-card__url {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: rgba(244, 238, 224, 0.7);
+      word-break: break-all;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .verdict-card__meta {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: rgba(244, 238, 224, 0.55);
+      letter-spacing: 0.06em;
+      margin-bottom: var(--space-4);
+    }
+    .verdict-card__meta span + span::before { content: "·"; margin: 0 0.6em; color: rgba(244, 238, 224, 0.35); }
+    .verdict-card__headline {
+      font-family: var(--font-display);
+      font-size: clamp(1.375rem, 2vw + 0.75rem, 2rem);
+      line-height: 1.2;
+      font-variation-settings: "opsz" 72, "SOFT" 30;
+      color: #F4EEE0;
+      margin: 0 0 var(--space-5);
+      max-width: 32ch;
+    }
+    @media (max-width: 44em) { .verdict-card__headline { max-width: 24ch; margin-inline: auto; } }
+    .verdict-card__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+    .verdict-card__actions .btn { flex-shrink: 0; }
+    .verdict-card .btn-primary { background: var(--gold); color: #0E0D0B; border-color: var(--gold); }
+    .verdict-card .btn-primary:hover { background: #F4EEE0; border-color: #F4EEE0; }
+    .verdict-card .btn-ghost { color: #F4EEE0; text-decoration-color: var(--gold); }
+    .verdict-card .btn-ghost:hover { color: var(--gold); }
+
+    /* ---------- Locked gate (email-to-unlock) ---------- */
+    .audit-locked-gate {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: var(--space-6);
+      margin-top: var(--space-5);
+      box-shadow: var(--shadow-card);
+      display: none;
+    }
+    @media (max-width: 50em) { .audit-locked-gate { padding: var(--space-5); } }
+    .audit-results.is-locked .audit-locked-gate { display: block; }
+    .audit-results.is-locked .audit-locked-gate ~ * { display: none; }
+
+    .audit-locked-gate__head {
+      margin: 0 0 var(--space-5);
+      text-align: center;
+    }
+    .audit-locked-gate__head .eyebrow {
+      margin: 0 0 var(--space-2);
+      color: var(--gold);
+    }
+    .audit-locked-gate__head h3 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      line-height: 1.2;
+      margin: 0 0 var(--space-2);
+      color: var(--ink);
+    }
+    .audit-locked-gate__head p {
+      margin: 0 auto;
+      max-width: 32rem;
+      font-size: 0.9375rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .fix-teaser-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin: 0 0 var(--space-5);
+    }
+    @media (max-width: 60em) { .fix-teaser-grid { grid-template-columns: 1fr; } }
+
+    .fix-teaser-card {
+      background: var(--canvas);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: var(--space-4);
+      padding-right: calc(var(--space-4) + 1.5rem);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+    .fix-teaser-card:hover,
+    .fix-teaser-card:focus-visible {
+      border-color: var(--line-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+      outline: none;
+    }
+    .fix-teaser-card__lock {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 1rem;
+      height: 1rem;
+      color: var(--ink);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .fix-teaser-card__num {
+      font-size: 0.6875rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: var(--fw-semibold);
+    }
+    .fix-teaser-card__title {
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      line-height: 1.25;
+      margin: 0;
+      color: var(--ink);
+    }
+    .fix-teaser-card__lost {
+      font-size: 0.8125rem;
+      color: var(--fail);
+      font-weight: var(--fw-semibold);
+      margin: 0;
+    }
+    .fix-teaser-card__body {
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0.25rem 0 0;
+      filter: blur(6px);
+      -webkit-user-select: none;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .audit-locked-gate__form {
+      max-width: 32rem;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    .audit-locked-gate__label {
+      margin: 0;
+      font-size: 0.6875rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: var(--fw-semibold);
+      color: var(--ink);
+    }
+    .audit-locked-gate__row {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: nowrap;
+      align-items: stretch;
+    }
+    .audit-locked-gate__row input[type="email"] {
+      flex: 1 1 0;
+      min-width: 0;
+      font: inherit;
+      font-size: 1.0625rem;
+      padding: 0.95rem 1.15rem;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      color: var(--ink);
+      transition: box-shadow 160ms ease;
+    }
+    .audit-locked-gate__row input[type="email"]::placeholder { color: var(--muted); }
+    .audit-locked-gate__row input[type="email"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(167, 139, 79, 0.3);
+    }
+    .audit-locked-gate__row input[aria-invalid="true"] {
+      border-color: var(--fail);
+      box-shadow: 0 0 0 3px rgba(155, 56, 35, 0.15);
+    }
+    .audit-locked-gate__row input[type="email"].is-pulsing {
+      animation: flipfix-input-pulse 600ms ease-out;
+    }
+    @keyframes flipfix-input-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(167, 139, 79, 0.6); border-color: var(--gold); }
+      60%  { box-shadow: 0 0 0 12px rgba(167, 139, 79, 0); border-color: var(--gold); }
+      100% { box-shadow: 0 0 0 0 rgba(167, 139, 79, 0); border-color: var(--ink); }
+    }
+    .audit-locked-gate__row button {
+      flex: 0 0 auto;
+      background: var(--gold);
+      color: #0E0D0B;
+      border: 2px solid var(--gold);
+      padding: 0.95rem 1.25rem;
+      font-size: 0.9375rem;
+      font-weight: var(--fw-semibold);
+      white-space: nowrap;
+    }
+    .audit-locked-gate__row button:hover,
+    .audit-locked-gate__row button:focus-visible {
+      background: #B89A5C;
+      border-color: #B89A5C;
+      color: #0E0D0B;
+    }
+
+    .audit-locked-gate__msg {
+      font-size: 0.8125rem;
+      margin: 0;
+      min-height: 1.2em;
+      text-align: center;
+    }
+    .audit-locked-gate__msg--err { color: var(--fail); }
+    .audit-locked-gate__msg--ok  { color: var(--pass); }
+
+    .audit-locked-gate__fineprint {
+      margin: 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ---------- KPI row ---------- */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+    }
+    @media (max-width: 64em) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 36em) { .kpi-grid { grid-template-columns: 1fr; } }
+    .kpi-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: var(--space-5);
+      display: flex; flex-direction: column; gap: var(--space-3);
+      box-shadow: var(--shadow-card);
+      transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+      opacity: 0; transform: translateY(6px);
+    }
+    .kpi-card.is-visible { opacity: 1; transform: none; transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
+    .kpi-card__label {
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: var(--fw-semibold);
+    }
+    .kpi-card__value {
+      font-family: var(--font-display);
+      font-size: clamp(1.875rem, 3vw, 2.5rem);
+      line-height: 1;
+      color: var(--ink);
+      font-variation-settings: "opsz" 96, "SOFT" 30;
+      letter-spacing: -0.02em;
+      display: flex; align-items: baseline; gap: 4px;
+    }
+    .kpi-card__value-num { font-family: var(--font-mono); font-size: inherit; font-weight: 500; letter-spacing: -0.02em; }
+    .kpi-card__value-unit { font-family: var(--font-mono); font-size: 0.7em; color: var(--muted); font-weight: 400; letter-spacing: 0; }
+    .kpi-card__viz { height: 32px; display: flex; align-items: flex-end; gap: 3px; }
+    .kpi-card__viz-bar { flex: 1; background: var(--line); border-radius: 1px; transition: height 800ms var(--ease-out), background 300ms; }
+    .kpi-card__viz-bar--active { background: var(--gold); }
+    .kpi-card__viz-ring { width: 32px; height: 32px; }
+    .kpi-card__viz-ring circle { fill: none; stroke-width: 3; }
+    .kpi-card__viz-ring .bg { stroke: var(--line); }
+    .kpi-card__viz-ring .fg { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 1s var(--ease-out); }
+    .kpi-card__caption { font-size: 0.75rem; color: var(--muted); line-height: 1.4; margin: 0; }
+
+    /* ---------- Section heads ---------- */
+    .audit-section { margin-block: var(--space-16); }
+    .audit-section__head {
+      margin-bottom: var(--space-8);
+      display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-5); flex-wrap: wrap;
+    }
+    .audit-section__head h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.375rem, 1.5vw + 0.75rem, 1.875rem);
+      line-height: 1.2;
+      font-weight: var(--fw-regular);
+      font-variation-settings: "opsz" 48, "SOFT" 30;
+      color: var(--ink);
+      margin: 0;
+    }
+    .audit-section__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: var(--space-3);
+    }
+    .audit-section__eyebrow::before {
+      content: "";
+      width: 18px; height: 1px; background: var(--gold);
+    }
+    .audit-section__note { font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono); }
+
+    /* ---------- Benchmark chart ---------- */
+    .benchmark-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: clamp(1.25rem, 3vw, 2rem);
+      box-shadow: var(--shadow-card);
+    }
+    .benchmark-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+    .benchmark-row {
+      display: grid;
+      grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 4rem;
+      gap: var(--space-4);
+      align-items: center;
+    }
+    @media (max-width: 44em) {
+      .benchmark-row { grid-template-columns: 1fr auto; gap: var(--space-2) var(--space-3); }
+      .benchmark-row__bar-wrap { grid-column: 1 / -1; }
+    }
+    .benchmark-row__label {
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: var(--fw-semibold);
+      color: var(--ink);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .benchmark-row__you-tag {
+      display: inline-block;
+      padding: 1px 6px;
+      background: var(--gold);
+      color: #0E0D0B;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 2px;
+    }
+    .benchmark-row--you .benchmark-row__label { color: var(--gold-deep); }
+    .benchmark-row__bar-wrap {
+      height: 14px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+    .benchmark-row__bar {
+      height: 100%;
+      background: var(--muted);
+      opacity: 0.35;
+      transition: width 1s var(--ease-out);
+    }
+    .benchmark-row--you .benchmark-row__bar { background: var(--gold); opacity: 1; }
+    .benchmark-row__value {
+      font-family: var(--font-mono);
+      font-size: 0.9375rem;
+      color: var(--ink);
+      font-weight: 500;
+      text-align: right;
+    }
+    .benchmark-row--you .benchmark-row__value { color: var(--gold-deep); }
+    .benchmark-footnote {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px dotted var(--line);
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      display: flex; gap: var(--space-4); justify-content: space-between; flex-wrap: wrap;
+    }
+    .benchmark-footnote a { color: var(--gold-deep); text-decoration-color: var(--gold); }
+
+    /* ---------- Diagnosis (working / costing) ---------- */
+    .diag-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+      align-items: start;
+    }
+    @media (max-width: 48em) { .diag-grid { grid-template-columns: 1fr; } }
+    .diag-col {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: clamp(1.25rem, 2.5vw, 1.75rem);
+      box-shadow: var(--shadow-card);
+    }
+    .diag-col h3 {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      line-height: 1.3;
+      font-variation-settings: "opsz" 24;
+      margin: 0 0 var(--space-2);
+      color: var(--ink);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .diag-col__meta {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: var(--space-5);
+    }
+    .diag-col__empty {
+      font-size: 0.875rem;
+      color: var(--muted);
+      padding: var(--space-5);
+      border: 1px dashed var(--line);
+      border-radius: 2px;
+      text-align: center;
+    }
+    .diag-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; }
+    .diag-item {
+      padding: var(--space-4) 0;
+      border-top: 1px dotted var(--line);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2) var(--space-3);
+      align-items: start;
+    }
+    .diag-item:first-child { border-top: 0; padding-top: 0; }
+    .diag-item__title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      line-height: 1.35;
+      font-variation-settings: "opsz" 24;
+      margin: 0;
+      color: var(--ink);
+      grid-column: 1;
+    }
+    .diag-item__desc { grid-column: 1 / -1; margin: 0; font-size: 0.875rem; color: var(--muted); line-height: 1.5; }
+    .diag-item__meta { grid-column: 1 / -1; display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: 2px; }
+    .severity {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 8px;
+      border-radius: 2px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .severity::before {
+      content: "";
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+    }
+    .severity--high { color: var(--fail); background: rgba(155, 56, 35, 0.1); border: 1px solid rgba(155, 56, 35, 0.3); }
+    .severity--med { color: var(--partial); background: rgba(180, 121, 25, 0.1); border: 1px solid rgba(180, 121, 25, 0.3); }
+    .severity--low { color: var(--gold-deep); background: rgba(167, 139, 79, 0.1); border: 1px solid rgba(167, 139, 79, 0.3); }
+    .severity--pass { color: var(--pass); background: rgba(79, 122, 58, 0.1); border: 1px solid rgba(79, 122, 58, 0.3); }
+    .rev-impact {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--gold-deep);
+      white-space: nowrap;
+    }
+    .rev-impact--pos { color: var(--pass); }
+
+    /* ---------- 10 Checks (expanded) ---------- */
+    .checks-panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .checks-panel__list { list-style: none; padding: 0; margin: 0; }
+    .check-row {
+      padding: var(--space-5) var(--space-6);
+      border-top: 1px dotted var(--line);
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto;
+      gap: var(--space-2) var(--space-4);
+      align-items: baseline;
+    }
+    .check-row:first-child { border-top: 0; }
+    @media (max-width: 48em) {
+      .check-row { grid-template-columns: auto 1fr auto; padding: var(--space-5); }
+      .check-row__num { grid-row: 1; grid-column: 1; }
+      .check-row__status { grid-row: 1; grid-column: 3; justify-self: end; }
+      .check-row__name { grid-row: 1; grid-column: 2; }
+      .check-row__ratio { grid-row: 2; grid-column: 1 / -1; }
+      .check-row__desc { grid-column: 1 / -1; }
+    }
+    .check-row__num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .status-icon {
+      width: 18px; height: 18px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .status-icon svg { width: 10px; height: 10px; }
+    .status-icon--pass { background: rgba(79, 122, 58, 0.15); color: var(--pass); border: 1px solid rgba(79, 122, 58, 0.4); }
+    .status-icon--partial { background: rgba(180, 121, 25, 0.15); color: var(--partial); border: 1px solid rgba(180, 121, 25, 0.4); }
+    .status-icon--fail { background: rgba(155, 56, 35, 0.12); color: var(--fail); border: 1px solid rgba(155, 56, 35, 0.4); }
+    .check-row__name {
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      line-height: 1.3;
+      font-variation-settings: "opsz" 24;
+      color: var(--ink);
+      margin: 0;
+    }
+    .check-row__ratio {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .check-row__ratio strong { color: var(--ink); font-weight: 500; }
+    .check-row__status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .check-row__status--pass { color: var(--pass); }
+    .check-row__status--partial { color: var(--partial); }
+    .check-row__status--fail { color: var(--fail); }
+    .check-row__desc {
+      grid-column: 3 / -1;
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 72ch;
+    }
+    .check-row__detail { grid-column: 3 / -1; }
+    @media (max-width: 48em) { .check-row__detail { grid-column: 1 / -1; } }
+    .check-row__detail-toggle {
+      margin-top: var(--space-3);
+      padding: 0;
+      background: transparent;
+      border: 0;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .check-row__detail-toggle:hover { color: var(--ink); }
+    .check-row__detail-toggle::after {
+      content: "+";
+      font-size: 0.9em;
+      width: 12px;
+      text-align: center;
+    }
+    .check-row__detail[data-open="true"] .check-row__detail-toggle::after { content: "−"; }
+    .check-row__detail-body {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 360ms var(--ease-out), opacity 240ms var(--ease-out);
+      opacity: 0;
+    }
+    .check-row__detail[data-open="true"] .check-row__detail-body {
+      max-height: 40rem;
+      opacity: 1;
+    }
+    .check-row__detail-body > * {
+      margin: var(--space-3) 0 0;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      color: var(--muted);
+      max-width: 72ch;
+    }
+    .check-row__evidence strong,
+    .check-row__lookfor strong {
+      color: var(--ink);
+      font-weight: var(--fw-semibold);
+    }
+
+    /* ---------- Roadmap ---------- */
+    .roadmap-table {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .roadmap-table__header {
+      display: grid;
+      grid-template-columns: 3.5rem 1fr 6rem 7rem 5rem 7rem;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .roadmap-row {
+      display: grid;
+      grid-template-columns: 3.5rem 1fr 6rem 7rem 5rem 7rem;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      border-top: 1px dotted var(--line);
+      align-items: baseline;
+    }
+    .roadmap-row:first-child { border-top: 0; }
+    @media (max-width: 60em) {
+      .roadmap-table__header { display: none; }
+      .roadmap-row {
+        grid-template-columns: auto 1fr;
+        gap: var(--space-2) var(--space-3);
+      }
+      .roadmap-row__action { grid-column: 1 / -1; }
+      .roadmap-row__score,
+      .roadmap-row__rev,
+      .roadmap-row__effort,
+      .roadmap-row__tag { grid-column: span 1; }
+    }
+    .roadmap-row__num {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--gold-deep);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .roadmap-row__action { font-family: var(--font-body); font-size: 0.9375rem; color: var(--ink); line-height: 1.45; }
+    .roadmap-row__action-title { display: block; font-weight: var(--fw-semibold); margin-bottom: 2px; }
+    .roadmap-row__action-body { color: var(--muted); font-size: 0.85rem; }
+    .roadmap-row__score { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink); }
+    .roadmap-row__score-prefix { color: var(--muted); }
+    .roadmap-row__rev { font-family: var(--font-mono); font-size: 0.8rem; color: var(--gold-deep); white-space: nowrap; }
+    .roadmap-row__effort { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+    .roadmap-row__tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+      justify-self: start;
+    }
+    .roadmap-row__tag--diy { color: var(--pass); background: rgba(79, 122, 58, 0.1); border: 1px solid rgba(79, 122, 58, 0.3); }
+    .roadmap-row__tag--pro { color: var(--gold-deep); background: rgba(167, 139, 79, 0.1); border: 1px solid rgba(167, 139, 79, 0.4); }
+    .roadmap-priority {
+      display: inline-block;
+      padding: 1px 5px;
+      margin-left: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 2px;
+    }
+    .roadmap-priority--p1 { background: rgba(155, 56, 35, 0.12); color: var(--fail); border: 1px solid rgba(155, 56, 35, 0.3); }
+    .roadmap-priority--p2 { background: rgba(180, 121, 25, 0.12); color: var(--partial); border: 1px solid rgba(180, 121, 25, 0.3); }
+    .roadmap-priority--p3 { background: rgba(167, 139, 79, 0.12); color: var(--gold-deep); border: 1px solid rgba(167, 139, 79, 0.3); }
+    .roadmap-empty { padding: var(--space-8) var(--space-5); text-align: center; font-size: 0.9rem; color: var(--muted); }
+    .roadmap-total {
+      padding: var(--space-4) var(--space-5);
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+      display: flex; gap: var(--space-5); flex-wrap: wrap; justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--ink);
+    }
+    .roadmap-total strong { color: var(--gold-deep); }
+
+    /* ---------- Score history strip ---------- */
+    .history-strip {
+      margin-top: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      background: var(--paper);
+      border: 1px dotted var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+      line-height: 1.5;
+    }
+    .history-strip__icon {
+      width: 14px; height: 14px; flex-shrink: 0; color: var(--gold-deep);
+    }
+    .history-strip__delta {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--ink);
+    }
+    .history-strip__delta strong { font-weight: 500; }
+    .history-strip__delta--up { color: var(--pass); }
+    .history-strip__delta--down { color: var(--fail); }
+    .history-strip__changes { color: var(--muted); }
+    .history-strip__changes em { font-style: normal; color: var(--ink); }
+    .history-spark {
+      width: 80px; height: 24px;
+      flex-shrink: 0;
+    }
+
+    /* ---------- Roadmap: high-tier primary card ---------- */
+    .roadmap-primary {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: clamp(1.5rem, 3vw, 2.25rem);
+      box-shadow: var(--shadow-card);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+    @media (min-width: 56em) { .roadmap-primary { grid-template-columns: 1.4fr 1fr; align-items: stretch; } }
+    .roadmap-primary__body { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+    .roadmap-primary__pri {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .roadmap-primary__pri::before { content: ""; width: 18px; height: 1px; background: var(--gold); }
+    .roadmap-primary__title {
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 1.6vw + 0.75rem, 1.75rem);
+      line-height: 1.2;
+      font-variation-settings: "opsz" 48, "SOFT" 30;
+      color: var(--ink);
+      margin: 0;
+    }
+    .roadmap-primary__why {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0;
+      max-width: 56ch;
+    }
+    .roadmap-primary__cta { margin-top: var(--space-3); display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .roadmap-primary__stats {
+      background: var(--bg);
+      border-left: 1px solid var(--line);
+      padding: var(--space-5);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      align-content: center;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    @media (max-width: 56em) {
+      .roadmap-primary__stats { border-left: 0; border-top: 1px solid var(--line); border-radius: 0 0 var(--radius-sm) var(--radius-sm); margin: 0 calc(-1 * clamp(1.5rem, 3vw, 2.25rem)) calc(-1 * clamp(1.5rem, 3vw, 2.25rem)); }
+    }
+    .roadmap-primary__stat { display: flex; flex-direction: column; gap: 2px; }
+    .roadmap-primary__stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .roadmap-primary__stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      color: var(--ink);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+    .roadmap-primary__stat-value--accent { color: var(--gold-deep); }
+    .roadmap-polish {
+      margin-top: var(--space-6);
+      padding-top: var(--space-5);
+      border-top: 1px dotted var(--line);
+    }
+    .roadmap-polish__head {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: var(--space-4);
+    }
+    .roadmap-polish__list {
+      list-style: none; padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: var(--space-3);
+    }
+    .roadmap-polish__item {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: var(--space-3);
+      align-items: baseline;
+      padding: var(--space-3) 0;
+      border-top: 1px dotted var(--line-soft);
+      color: var(--muted);
+    }
+    .roadmap-polish__item:first-child { border-top: 0; padding-top: 0; }
+    @media (max-width: 48em) {
+      .roadmap-polish__item { grid-template-columns: auto 1fr; }
+      .roadmap-polish__item-score, .roadmap-polish__item-rev { grid-column: 2; justify-self: start; font-size: 0.75rem; }
+    }
+    .roadmap-polish__item-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .roadmap-polish__item-action {
+      font-size: 0.9375rem;
+      color: var(--ink);
+    }
+    .roadmap-polish__item-action small { color: var(--muted); display: block; font-size: 0.8125rem; margin-top: 2px; }
+    .roadmap-polish__item-score, .roadmap-polish__item-rev {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ---------- Mid / final CTA band ---------- */
+    .cta-band {
+      background: #0E0D0B;
+      color: #F4EEE0;
+      border-radius: var(--radius-sm);
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 3rem);
+      text-align: center;
+      box-shadow: var(--shadow-card);
+    }
+    /* Mid-page CTA: soft, lighter weight, paper card not dark */
+    .cta-band--soft {
+      background: var(--paper);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      padding: clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 4vw, 2.5rem);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var(--space-5);
+      text-align: left;
+    }
+    @media (max-width: 48em) { .cta-band--soft { grid-template-columns: 1fr; text-align: left; } }
+    .cta-band--soft .cta-band__eyebrow { color: var(--gold-deep); }
+    .cta-band--soft .cta-band__heading {
+      font-size: clamp(1.125rem, 1.4vw + 0.75rem, 1.5rem);
+      color: var(--ink);
+      max-width: 32ch;
+      margin-inline: 0;
+    }
+    .cta-band--soft .cta-band__sub { color: var(--muted); margin-top: var(--space-2); margin-inline: 0; max-width: 56ch; font-size: 0.95rem; }
+    .cta-band--soft .cta-band__actions { margin-top: 0; justify-content: flex-start; }
+    .cta-band--soft .cta-band__btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 16px;
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--ink);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: var(--fw-semibold);
+      text-decoration: none;
+      transition: background 160ms var(--ease-out), color 160ms var(--ease-out);
+    }
+    .cta-band--soft .cta-band__btn:hover { background: var(--ink); color: var(--paper); }
+    .cta-band__eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .cta-band__heading {
+      margin-top: var(--space-3);
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+      line-height: 1.2;
+      font-variation-settings: "opsz" 72, "SOFT" 30;
+      color: #F4EEE0;
+      max-width: 28ch;
+      margin-inline: auto;
+    }
+    .cta-band__sub {
+      margin-top: var(--space-4);
+      color: rgba(244, 238, 224, 0.78);
+      max-width: 52ch;
+      margin-inline: auto;
+      font-size: var(--fs-body);
+    }
+    .cta-band__actions { margin-top: var(--space-6); display: flex; justify-content: center; gap: var(--space-4); flex-wrap: wrap; }
+    .cta-band .btn-primary { background: var(--gold); color: #0E0D0B; border-color: var(--gold); }
+    .cta-band .btn-primary:hover { background: #F4EEE0; border-color: #F4EEE0; }
+    .cta-band .btn-ghost { color: #F4EEE0; text-decoration-color: var(--gold); }
+    .cta-band .btn-ghost:hover { color: var(--gold); }
+
+    /* ---------- Methodology ---------- */
+    .method-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    @media (max-width: 56em) { .method-stats { grid-template-columns: repeat(2, 1fr); } }
+    .method-stat {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .method-stat__num {
+      font-family: var(--font-display);
+      font-size: clamp(2.75rem, 5vw, 4rem);
+      line-height: 1;
+      color: var(--ink);
+      font-variation-settings: "opsz" 144, "SOFT" 30;
+      letter-spacing: -0.04em;
+      font-weight: var(--fw-regular);
+    }
+    .method-stat__num-suffix {
+      font-family: var(--font-mono);
+      font-size: 0.4em;
+      color: var(--gold-deep);
+      letter-spacing: 0.04em;
+      vertical-align: 0.25em;
+      margin-left: 4px;
+    }
+    .method-stat__label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .method-stat__sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+    /* Sans-serif one-liner explaining how composite is calculated. Sits
+       directly under the 4 stat cards; not a card, just a calm body line. */
+    .method-explainer {
+      max-width: 64ch;
+      margin: var(--space-5) auto 0;
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      line-height: 1.6;
+      color: var(--muted);
+      text-align: center;
+    }
+    .method-explainer .num {
+      font-family: var(--font-mono);
+      color: var(--ink);
+      font-feature-settings: "tnum" 1;
+    }
+
+    /* Thin gold rule between methodology subsections. */
+    .method-rule {
+      margin: var(--space-12) auto;
+      max-width: 64ch;
+      border: 0;
+      border-top: 1px solid var(--gold);
+      opacity: 0.55;
+    }
+
+    /* Subsection eyebrow inside methodology — matches the page eyebrow style
+       but slightly smaller / left-aligned within the subsection block. */
+    .method-sub-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      margin: 0 0 var(--space-5);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .method-sub-eyebrow::before {
+      content: "";
+      width: 18px; height: 1px;
+      background: var(--gold);
+    }
+
+    /* "Why a specialist" pullquote — large serif italic Fraunces. */
+    .method-pullquote {
+      max-width: 32ch;
+      margin: 0;
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+      line-height: 1.25;
+      font-variation-settings: "opsz" 72, "SOFT" 30;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .method-pullquote::before {
+      content: "\201C";
+      color: var(--gold);
+      font-style: normal;
+      margin-right: 4px;
+      line-height: 0;
+      font-size: 0.9em;
+    }
+    .method-pullquote::after {
+      content: "\201D";
+      color: var(--gold);
+      font-style: normal;
+      margin-left: 2px;
+      line-height: 0;
+      font-size: 0.9em;
+    }
+    .method-sub-body {
+      max-width: 56ch;
+      margin: var(--space-5) 0 0;
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    /* Technical-detail subsection — sans-serif prose with mono treatment
+       only on the actual numbers and check names. Reads like a methodology
+       footnote in a research paper, not a terminal log. */
+    .method-detail {
+      max-width: 64ch;
+      margin: 0;
+    }
+    .method-detail p {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--fs-body-sm);
+      line-height: 1.65;
+      color: var(--muted);
+    }
+    .method-detail p + p { margin-top: var(--space-4); }
+    .method-detail__label {
+      color: var(--ink);
+      font-weight: var(--fw-semibold);
+    }
+    .method-detail .num {
+      font-family: var(--font-mono);
+      color: var(--ink);
+      font-feature-settings: "tnum" 1;
+      font-weight: 500;
+    }
+    .method-detail .check {
+      font-family: var(--font-mono);
+      color: var(--ink);
+      font-size: 0.92em;
+      font-weight: 500;
+    }
+
+    /* ---------- Testimonials ---------- */
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+    }
+    @media (max-width: 56em) { .testimonial-grid { grid-template-columns: 1fr; } }
+    .testimonial {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-card);
+      display: flex; flex-direction: column; gap: var(--space-4);
+    }
+    .testimonial__quote {
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      line-height: 1.45;
+      font-variation-settings: "opsz" 24;
+      color: var(--ink);
+      margin: 0;
+    }
+    .testimonial__quote::before { content: "\201C"; font-size: 1.3em; color: var(--gold); margin-right: 2px; line-height: 0; }
+    .testimonial__quote::after { content: "\201D"; font-size: 1.3em; color: var(--gold); margin-left: 2px; line-height: 0; }
+    .testimonial__attrib {
+      border-top: 1px dotted var(--line);
+      padding-top: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .testimonial__attrib strong { color: var(--ink); font-weight: 600; display: block; }
+
+    /* ---------- FAQ accordion ---------- */
+    .faq-list {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .faq-item { border-top: 1px dotted var(--line); }
+    .faq-item:first-child { border-top: 0; }
+    .faq-item__btn {
+      width: 100%;
+      padding: var(--space-5) var(--space-6);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+      background: transparent;
+      border: 0;
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      line-height: 1.35;
+      color: var(--ink);
+      font-variation-settings: "opsz" 24;
+    }
+    .faq-item__btn:hover { color: var(--gold-deep); }
+    .faq-item__btn::after {
+      content: "+";
+      font-family: var(--font-mono);
+      color: var(--gold-deep);
+      font-size: 1.2em;
+      flex-shrink: 0;
+      transition: transform 240ms var(--ease-out);
+    }
+    .faq-item[aria-expanded="true"] .faq-item__btn::after { content: "−"; }
+    .faq-item__body {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 360ms var(--ease-out);
+    }
+    .faq-item[aria-expanded="true"] .faq-item__body { max-height: 30rem; }
+    .faq-item__body-inner {
+      padding: 0 var(--space-6) var(--space-6);
+      font-size: 0.9375rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 70ch;
+    }
+    .faq-item__body-inner p { margin: 0; }
+    .faq-item__body-inner p + p { margin-top: var(--space-3); }
+
+    /* ---------- Reset + page-bottom ---------- */
+    .audit-reset { padding-block: var(--space-8); text-align: center; }
+    .audit-reset button {
+      font-family: var(--font-body);
+      font-size: var(--fs-body-sm);
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      text-decoration: underline;
+      text-decoration-color: var(--gold);
+      text-underline-offset: 0.25em;
+      cursor: pointer;
+      padding: var(--space-3) var(--space-4);
+    }
+    .audit-reset button:hover { color: var(--gold-deep); text-decoration-color: var(--gold-deep); }
+
+    /* ---------- Share toast ---------- */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      padding: var(--space-3) var(--space-5);
+      background: #0E0D0B;
+      color: #F4EEE0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      border-radius: 2px;
+      box-shadow: var(--shadow-card);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+      z-index: 200;
+    }
+    .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---------- Reduced motion ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .kpi-card { opacity: 1; transform: none; }
+      .gauge__fill { transition: none; }
+      .benchmark-row__bar { transition: none; }
+    }
+  </style>
+</head>
+
+<body data-page="audit" class="audit-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-nav">
+    <div class="site-nav__utility">
+      <div class="container site-nav__utility-inner">
+        <div class="site-nav__utility-left">
+          <a href="tel:+14089088131" aria-label="Call FlipFix Digital">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            (408) 908-8131
+          </a>
+          <a href="mailto:shanehnguyen@flipfixdigital.com">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            shanehnguyen@flipfixdigital.com
+          </a>
+          <span class="site-nav__hours"><span>Available 24/7 &middot; 12-hour reply</span></span>
+        </div>
+        <div class="site-nav__utility-right" aria-label="Social links">
+          <a class="site-nav__social" href="https://www.linkedin.com/in/shanenguyen1253/" target="_blank" rel="noopener" aria-label="Shane on LinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 2h-17A1.5 1.5 0 0 0 2 3.5v17A1.5 1.5 0 0 0 3.5 22h17a1.5 1.5 0 0 0 1.5-1.5v-17A1.5 1.5 0 0 0 20.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 1 1 8.25 6.5 1.78 1.78 0 0 1 6.5 8.25zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0 0 13 14.19a.66.66 0 0 0 0 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 0 1 2.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+          </a>
+          <a class="site-nav__social" href="https://www.facebook.com/flipfixdigital/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a class="site-nav__social" href="https://flipfixdigital.com/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Google">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972a6.033 6.033 0 110-12.064c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814A9.969 9.969 0 0012.545 2C7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-0.013z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container site-nav__inner">
+      <a class="site-nav__brand" href="index.html"><img src="assets/images/mylogos/logo-no-background.png" alt=""><span class="site-nav__brand-text">Kitchen Websites<span class="site-nav__brand-sub" style="display:block;font-family:var(--font-body);font-size:0.6875rem;font-weight:400;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px;line-height:1;">by FlipFix Digital</span></span></a>
+      <nav aria-label="Primary">
+        <ul class="site-nav__links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html">Work</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="site-nav__cta">
+        <a class="btn btn-outline-gold" href="audit.html">Score my homepage →</a>
+        <a class="btn btn-primary" href="schedule.html">Schedule intro call</a>
+      </div>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav" hidden>
+      <nav aria-label="Mobile">
+        <ul class="mobile-nav__links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html">Work</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+        </ul>
+        <div class="mobile-nav__cta">
+          <a class="btn btn-outline-gold btn-lg" href="audit.html">Score my homepage →</a>
+          <a class="btn btn-primary btn-lg" href="schedule.html">Schedule intro call</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- INPUT -->
+    <section class="audit-hero" id="audit-input">
+      <div class="audit-hero__inner">
+        <p class="eyebrow" style="margin-inline: auto;">Homepage scorecard</p>
+        <h1>The average cabinet dealer homepage scores <span class="score-emph">4.7</span> out of 10.</h1>
+        <p class="lede">The top 5% score above <span class="score-emph-sm">9</span>. Find out where your homepage actually lands &mdash; in 30 seconds, no signup.</p>
+        <p class="audit-hero__author"><strong>FlipFix Digital</strong> &mdash; we build cabinet dealer sites for a living. Owned by Shane Nguyen. Use it, share it, send us feedback.</p>
+
+        <form class="audit-form" id="audit-form" novalidate>
+          <div class="audit-form__field">
+            <label for="audit-url">Your homepage URL</label>
+            <input id="audit-url" name="url" type="url" autocomplete="url" required placeholder="https://yourcabinetshop.com">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg">Scan my homepage</button>
+
+          <!-- Honeypot: bots auto-fill named fields like "website" or "company". -->
+          <div class="honeypot-field" aria-hidden="true">
+            <label for="audit-honey">Website (leave blank)</label>
+            <input id="audit-honey" name="website" type="text" tabindex="-1" autocomplete="off" value="">
+          </div>
+        </form>
+        <div class="audit-captcha" id="audit-captcha-wrap">
+          <span class="audit-captcha__label">Verify you're human</span>
+          <span class="audit-captcha__q" id="audit-captcha-q">3 + 7</span>
+          <span aria-hidden="true">=</span>
+          <input id="audit-captcha-input" class="audit-captcha__input" type="text" inputmode="numeric" pattern="-?[0-9]+" autocomplete="off" aria-label="Captcha answer">
+          <button type="button" id="audit-captcha-refresh" class="audit-captcha__refresh" aria-label="New question">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+        </div>
+        <p id="audit-error" class="audit-error" role="alert"></p>
+        <p class="audit-quota" id="audit-quota" hidden>
+          <span id="audit-quota-text"><span class="audit-quota__num" id="audit-quota-num">3</span> free scans remaining today</span>
+        </p>
+
+        <p class="cohort-cite">
+          <span class="cohort-cite__lead">Benchmark set</span>
+          47 cabinet dealer homepages including
+          <span class="cohort-cite__name">CliqStudios</span> <span class="cohort-cite__score">(9.5)</span>,
+          <span class="cohort-cite__name">Kitchen Cabinet Kings</span> <span class="cohort-cite__score">(7.8)</span>,
+          <span class="cohort-cite__name">Cabinets.com</span> <span class="cohort-cite__score">(6.8)</span>,
+          and 44 regional cabinet dealer homepages. Refreshed quarterly. Last refresh: April 2026.
+        </p>
+      </div>
+    </section>
+
+    <!-- LOADING -->
+    <section class="audit-loading" id="audit-loading" hidden>
+      <div class="audit-loading__inner">
+        <div class="audit-spinner" aria-hidden="true"></div>
+        <p class="audit-loading__status" id="audit-loading-status" role="status" aria-live="polite">Fetching your homepage&hellip;</p>
+        <p class="audit-loading__caption">This usually takes 10&ndash;30 seconds</p>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="audit-results" id="audit-results" hidden>
+      <div class="audit-results__wrap">
+
+        <!-- Report meta strip -->
+        <div class="report-strip" id="report-strip">
+          <div class="report-strip__group">
+            <span class="report-strip__item report-strip__item--url">
+              <span class="report-strip__dot"></span>
+              <span id="strip-url">—</span>
+            </span>
+            <span class="report-strip__item">ID <span id="strip-id">—</span></span>
+            <span class="report-strip__item">Scanned <span id="strip-date">—</span></span>
+            <span class="report-strip__item">n=<span id="strip-n">47</span></span>
+          </div>
+          <div class="report-strip__actions">
+            <button type="button" class="report-strip__btn" id="btn-rescan" title="Re-scan this URL">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Re-scan
+            </button>
+            <button type="button" class="report-strip__btn" id="btn-pdf" title="Download PDF">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              PDF
+            </button>
+            <button type="button" class="report-strip__btn" id="btn-share" title="Copy share link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero verdict card -->
+        <div class="verdict-card has-marks" id="verdict-card" aria-live="polite">
+          <div class="gauge" id="gauge">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="gauge__track" cx="60" cy="60" r="50"
+                stroke-dasharray="235.619 314.159" />
+              <circle class="gauge__fill" id="gauge-fill" cx="60" cy="60" r="50"
+                stroke-dasharray="235.619 314.159" stroke-dashoffset="235.619" />
+            </svg>
+            <div class="gauge__center">
+              <span class="gauge__number" id="gauge-number" aria-label="Score 0 out of 10">0.0</span>
+              <span class="gauge__denom">Score / 10</span>
+            </div>
+          </div>
+          <div class="verdict-card__body">
+            <div class="verdict-card__row">
+              <span class="tier-badge" id="tier-badge">
+                <span class="tier-badge__dot"></span>
+                <span id="tier-badge-label">Tier</span>
+              </span>
+              <span class="verdict-card__url" id="verdict-url">—</span>
+            </div>
+            <p class="verdict-card__meta" id="verdict-meta">
+              <span id="verdict-percentile">Top 50%</span><span id="verdict-sample">of 47 cabinet sites audited</span>
+            </p>
+            <p class="verdict-card__headline" id="verdict-headline">Calibrating verdict…</p>
+            <div class="verdict-card__actions">
+              <a class="btn btn-primary btn-lg" id="verdict-cta" href="schedule.html">Book the 15-min walkthrough</a>
+              <button type="button" class="btn btn-ghost" id="verdict-pdf">Download PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Locked gate: 3-fix teaser + email-to-unlock -->
+        <div class="audit-locked-gate" id="audit-locked-gate">
+          <div class="audit-locked-gate__head">
+            <p class="eyebrow">Top 3 fixes</p>
+            <h3>Where you're losing the most revenue</h3>
+            <p>Drop your email to unlock the full breakdown — every check, evidence quotes, and the rebuild roadmap.</p>
+          </div>
+          <div class="fix-teaser-grid" id="fix-teaser-grid"></div>
+          <form class="audit-locked-gate__form" id="audit-email-form" novalidate>
+            <label class="audit-locked-gate__label" for="audit-email">Enter your email to unlock</label>
+            <div class="audit-locked-gate__row">
+              <input id="audit-email" name="email" type="email" autocomplete="email" required placeholder="you@yourcabinetshop.com">
+              <button type="submit" class="btn btn-primary" id="audit-email-submit">Unlock</button>
+            </div>
+            <div class="honeypot-field" aria-hidden="true">
+              <label for="audit-email-honey">Company (leave blank)</label>
+              <input id="audit-email-honey" name="company" type="text" tabindex="-1" autocomplete="off" value="">
+            </div>
+            <p class="audit-locked-gate__msg" id="audit-email-msg" role="status" aria-live="polite"></p>
+            <p class="audit-locked-gate__fineprint">We'll email a copy of the report. No pitch, reply "remove" to unsubscribe.</p>
+          </form>
+        </div>
+
+        <!-- Score history strip -->
+        <div class="history-strip" id="history-strip" hidden>
+          <svg class="history-strip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+          <span id="history-strip-text">First scan. Re-scan in 30 days to track score changes.</span>
+        </div>
+
+        <!-- KPI row -->
+        <div class="audit-block">
+          <div class="kpi-grid" id="kpi-grid"></div>
+        </div>
+
+        <!-- Benchmark -->
+        <section class="audit-section">
+          <div class="audit-section__head">
+            <div>
+              <p class="audit-section__eyebrow">Benchmark</p>
+              <h2>How you compare to the top of the market.</h2>
+            </div>
+            <span class="audit-section__note" id="benchmark-section-note">n=47 · updated quarterly</span>
+          </div>
+          <div class="benchmark-card has-marks">
+            <ul class="benchmark-list" id="benchmark-list"></ul>
+            <div class="benchmark-footnote">
+              <span id="benchmark-refresh-note">Benchmark set last refreshed — · n=47 · Next refresh: —</span>
+              <a href="#methodology">See methodology →</a>
+            </div>
+            <div class="benchmark-footnote" id="benchmark-exclusion" hidden>
+              <span id="benchmark-exclusion-text">Excluded from comparison set (this is your site).</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Diagnosis -->
+        <section class="audit-section" id="diag-section">
+          <div class="audit-section__head">
+            <div>
+              <p class="audit-section__eyebrow">Diagnosis</p>
+              <h2>What's working. What's costing you sales.</h2>
+            </div>
+          </div>
+          <div class="diag-grid">
+            <div class="diag-col">
+              <h3>Working</h3>
+              <p class="diag-col__meta"><span id="diag-pros-count">0</span> strengths confirmed</p>
+              <ul class="diag-list" id="pros-list"></ul>
+              <div class="diag-col__empty" id="pros-empty" hidden>No confirmed strengths at this score. Every section on the page needs work.</div>
+            </div>
+            <div class="diag-col">
+              <h3>Costing You Sales</h3>
+              <p class="diag-col__meta"><span id="diag-cons-count">0</span> revenue leaks flagged</p>
+              <ul class="diag-list" id="cons-list"></ul>
+              <div class="diag-col__empty" id="cons-empty" hidden>No leaks flagged. You're at the top of the benchmark — the call is about protecting the moat, not plugging holes.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10 Checks expanded -->
+        <section class="audit-section">
+          <div class="audit-section__head">
+            <div>
+              <p class="audit-section__eyebrow">The 10 checks</p>
+              <h2>Every dimension, fully expanded.</h2>
+            </div>
+            <span class="audit-section__note" id="checks-total">0.0 / 10 earned</span>
+          </div>
+          <div class="checks-panel has-marks">
+            <ul class="checks-panel__list" id="checks-list"></ul>
+          </div>
+        </section>
+
+        <!-- Roadmap -->
+        <section class="audit-section">
+          <div class="audit-section__head">
+            <div>
+              <p class="audit-section__eyebrow">Roadmap</p>
+              <h2>Prioritized fixes, ranked by % of pipeline at risk.</h2>
+            </div>
+          </div>
+          <div class="roadmap-table has-marks" id="roadmap-wrap">
+            <div class="roadmap-table__header">
+              <div>Pri</div>
+              <div>Action</div>
+              <div>Score impact</div>
+              <div>% at risk</div>
+              <div>Effort</div>
+              <div>Track</div>
+            </div>
+            <div id="roadmap-body"></div>
+            <div class="roadmap-total" id="roadmap-total" hidden>
+              <span>Total lift available: <strong id="roadmap-total-score">+0.0 points</strong></span>
+              <span>Pipeline at risk: <strong id="roadmap-total-rev">—</strong></span>
+              <span>Estimated effort: <strong id="roadmap-total-hrs">0h</strong></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Mid-page CTA — soft, low-pressure -->
+        <section class="audit-section">
+          <div class="cta-band cta-band--soft">
+            <div>
+              <p class="cta-band__eyebrow">No-pressure offer</p>
+              <h2 class="cta-band__heading" id="mid-cta-heading">Want me to walk through this live?</h2>
+              <p class="cta-band__sub" id="mid-cta-sub">Free 15-minute call, no rebuild pitch unless you ask. Bring questions on any specific check above and we'll show you what a fix actually looks like in the wild.</p>
+            </div>
+            <div class="cta-band__actions">
+              <a class="cta-band__btn" id="mid-cta-btn" href="schedule.html">Book the call →</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Methodology
+             Flow: what we measure → how we score → why it's us doing it →
+             technical detail → citation. -->
+        <section class="audit-section" id="methodology">
+          <div class="audit-section__head">
+            <div>
+              <p class="audit-section__eyebrow">06 &middot; Methodology</p>
+              <h2>How the score is built.</h2>
+            </div>
+          </div>
+
+          <!-- 1. What we measure: 4 stat cards -->
+          <div class="method-stats">
+            <div class="method-stat">
+              <span class="method-stat__num">10</span>
+              <span class="method-stat__label">Weighted checks</span>
+              <p class="method-stat__sub">Pass / partial / fail per check, ties to the lower tier.</p>
+            </div>
+            <div class="method-stat">
+              <span class="method-stat__num">0–10<span class="method-stat__num-suffix">scale</span></span>
+              <span class="method-stat__label">Score range</span>
+              <p class="method-stat__sub">Sum of earned points across all 10 checks. No curve.</p>
+            </div>
+            <div class="method-stat">
+              <span class="method-stat__num" id="method-stat-n">47</span>
+              <span class="method-stat__label">Cabinet homepages benchmarked</span>
+              <p class="method-stat__sub">Same rubric, refreshed quarterly. Percentile against this cohort.</p>
+            </div>
+            <div class="method-stat">
+              <span class="method-stat__num">1<span class="method-stat__num-suffix">category</span></span>
+              <span class="method-stat__label">Cabinet dealers only</span>
+              <p class="method-stat__sub">No SaaS, no plumbers, no general contractors. Just cabinet sites.</p>
+            </div>
+          </div>
+
+          <!-- 2. How the composite is calculated — one clean sentence -->
+          <p class="method-explainer">
+            Each of the 10 dimensions is scored <span class="num">0</span> to <span class="num">1.5</span> based on weighted criteria. Composite is the sum, capped at <span class="num">10</span>.
+          </p>
+
+          <hr class="method-rule" aria-hidden="true">
+
+          <!-- 3. Why a specialist — pull quote + follow-up -->
+          <div>
+            <p class="method-sub-eyebrow">Why a specialist</p>
+            <p class="method-pullquote">A generalist learns your vocabulary on your dollar. We already know what a 10&times;10 costs.</p>
+            <p class="method-sub-body">FlipFix Digital builds cabinet dealer sites and nothing else. Every project starts with the same vocabulary, the same buyer psychology, and the same conversion patterns &mdash; and Shane, the owner, is on every kickoff and review.</p>
+          </div>
+
+          <hr class="method-rule" aria-hidden="true">
+
+          <!-- 4. Technical detail — sans-serif prose, mono only on numbers / check names -->
+          <div>
+            <p class="method-sub-eyebrow">Technical detail</p>
+            <div class="method-detail">
+              <p>
+                <span class="method-detail__label">Weighting.</span>
+                Four checks at <span class="num">1.5&times;</span> — <span class="check">Hero specificity</span>, <span class="check">Contractor/trade fork</span>, <span class="check">Pricing signal</span>, <span class="check">Free-design offer</span>. Two at <span class="num">1.0&times;</span> — <span class="check">Benefit specificity</span>, <span class="check">Reviews / social proof</span>. Four at <span class="num">0.5&times;</span> — <span class="check">Trust signals</span>, <span class="check">Process</span>, <span class="check">Gallery</span>, <span class="check">Closing CTA</span>. Total: <span class="num">1.5&times;4 + 1.0&times;2 + 0.5&times;4 = 10.0</span>. The composite shown above is the sum of earned points across these ten checks.
+              </p>
+              <p>
+                <span class="method-detail__label">% pipeline at risk.</span>
+                The 10-point rubric represents <span class="num">100%</span> of the homepage's contribution to your sales pipeline. Each missing point ≈ <span class="num">10%</span> of pipeline at risk. Multiply against your own dealership's homepage-driven revenue — absolute dollars vary too widely between a <span class="num">$40K/mo</span> shop and a <span class="num">$400K/mo</span> regional chain to be useful here.
+              </p>
+            </div>
+          </div>
+
+          <!-- 5. Benchmark citation -->
+          <p class="cohort-cite">
+            <span class="cohort-cite__lead">Benchmark set</span>
+            <span class="cohort-cite__name">CliqStudios</span> <span class="cohort-cite__score">(9.5)</span>,
+            <span class="cohort-cite__name">Kitchen Cabinet Kings</span> <span class="cohort-cite__score">(7.8)</span>,
+            <span class="cohort-cite__name">Cabinets.com</span> <span class="cohort-cite__score">(6.8)</span>,
+            and 44 regional cabinet dealer homepages. Refreshed quarterly. Last refresh: April 2026.
+          </p>
+        </section>
+
+        <!-- Social proof -->
+        <section class="audit-section">
+          <div class="audit-section__head">
+            <div>
+              <p class="audit-section__eyebrow">What dealers say</p>
+              <h2>Feedback from cabinet dealers we've rebuilt.</h2>
+            </div>
+          </div>
+          <!-- TODO: swap names/shops for real quotes when available -->
+          <div class="testimonial-grid">
+            <figure class="testimonial">
+              <blockquote class="testimonial__quote">I almost didn't book the call. The audit said I was at 6.2 and I thought "who's this kid." Three months later we're at 8.9 and contractor leads are up 40%.</blockquote>
+              <figcaption class="testimonial__attrib">
+                <strong>Marcus Reeves</strong>
+                Owner · Hill Country Cabinets, Austin TX
+              </figcaption>
+            </figure>
+            <figure class="testimonial">
+              <blockquote class="testimonial__quote">Shane doesn't pitch. He showed me the four things costing me sales, gave me a number, and let me decide. We started in two weeks.</blockquote>
+              <figcaption class="testimonial__attrib">
+                <strong>Daniel Vasquez</strong>
+                Owner · Capital Kitchen &amp; Cabinet, Round Rock TX
+              </figcaption>
+            </figure>
+            <figure class="testimonial">
+              <blockquote class="testimonial__quote">The free-design page was buried three clicks deep. Surfaced it on the homepage and consultation bookings tripled in the first quarter — that one fix paid for the whole rebuild.</blockquote>
+              <figcaption class="testimonial__attrib">
+                <strong>Tom Brennan</strong>
+                Owner · Lone Star Cabinet Co., Austin TX
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="audit-section">
+          <div class="audit-section__head">
+            <div>
+              <p class="audit-section__eyebrow">FAQ</p>
+              <h2>Skeptical questions, direct answers.</h2>
+            </div>
+          </div>
+          <div class="faq-list" id="faq-list">
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-1">How is the score calculated?</button>
+              <div class="faq-item__body" id="faq-1" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Ten checks, weighted to total 10.0. Four carry 1.5 weight — hero specificity, contractor fork, pricing transparency, free-design offer. The other six range from 0.5 to 1.0. Each check is graded pass, partial, or fail with specific evidence from the page. Ties break downward. No mystery, no curves.</p>
+                </div>
+              </div>
+            </div>
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-2">What sites did you benchmark against, and how many?</button>
+              <div class="faq-item__body" id="faq-2" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Forty-seven cabinet dealer homepages: <span class="cohort-cite__name">CliqStudios</span> <span class="cohort-cite__score">(9.5)</span>, <span class="cohort-cite__name">Kitchen Cabinet Kings</span> <span class="cohort-cite__score">(7.8)</span>, <span class="cohort-cite__name">Cabinets.com</span> <span class="cohort-cite__score">(6.8)</span>, plus 44 regional dealers across US metros (regional average: 4.7). All scanned with the same rubric, refreshed quarterly. The benchmark reflects the actual market you compete against — not a random internet sample.</p>
+                </div>
+              </div>
+            </div>
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-3">Is this audit actually personalized, or templated?</button>
+              <div class="faq-item__body" id="faq-3" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Personalized. The scanner pulls your live homepage, extracts headings, copy, CTAs, nav links, and trust signals, and grades them against the rubric with specific evidence. The template is the rubric; the findings are yours. That's why the "Evidence" row on each check quotes your actual page text.</p>
+                </div>
+              </div>
+            </div>
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-4">I scored low — what does a rebuild cost?</button>
+              <div class="faq-item__body" id="faq-4" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Fixed scope, dealer-owned, typically five figures depending on scope. Book the walkthrough and you'll get a hard number — not a range, not a quote-to-follow. Cabinet dealers run on margin; the price is set so the rebuild pays for itself inside the first quarter if the roadmap above is roughly right.</p>
+                </div>
+              </div>
+            </div>
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-5">I scored high — why would I hire you?</button>
+              <div class="faq-item__body" id="faq-5" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Moat maintenance. A high-scoring site drifts: gallery ages, testimonials stale, pricing page lags the new line, contractor portal outgrows itself. A quarterly walkthrough plus targeted refinements keeps the gap between you and the next dealer from closing. For a 9.0+ site the engagement is small and retainer-shaped, not a rebuild.</p>
+                </div>
+              </div>
+            </div>
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-6">How long does a rebuild take?</button>
+              <div class="faq-item__body" id="faq-6" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Three to five weeks for a standard cabinet dealer site — homepage, contractor portal, free-design funnel, gallery, and a pricing-visibility layer. Scope is fixed on day one. If something threatens the ship date, I cut scope rather than slip — that's in the contract.</p>
+                </div>
+              </div>
+            </div>
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-7">Do you only work with cabinet dealers?</button>
+              <div class="faq-item__body" id="faq-7" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Yes. A generalist agency learns your vocabulary on your dollar. We already know what a 10×10 costs, why contractors need a separate portal, and why the free-design page drives 50% of revenue. That's why this site scored 9.5 and the median cabinet dealer site we audit scores below 5.</p>
+                </div>
+              </div>
+            </div>
+            <div class="faq-item" aria-expanded="false">
+              <button class="faq-item__btn" type="button" aria-expanded="false" aria-controls="faq-8">Can I do these fixes myself?</button>
+              <div class="faq-item__body" id="faq-8" role="region">
+                <div class="faq-item__body-inner">
+                  <p>Some of them, yes — the roadmap above marks which. A hero copy rewrite, a trust-signal stack, a closing CTA: all DIY-friendly with your existing CMS. The ones tagged "with FlipFix" usually require new page templates, funnel flows, or integrations that are slow to hand-roll. The audit tells you which pile each fix belongs in.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Final CTA — hard close -->
+        <section class="audit-section">
+          <div class="cta-band">
+            <p class="cta-band__eyebrow" id="final-cta-eyebrow">47 cabinet dealers audited</p>
+            <h2 class="cta-band__heading" id="final-cta-heading">You're in the top 5%. Book the walkthrough before a competitor closes the gap.</h2>
+            <p class="cta-band__sub" id="final-cta-sub">We'll screen-share your site, walk every check above, and point at the 1–2 fixes with the highest return for a site at your score level.</p>
+            <div class="cta-band__actions">
+              <a class="btn btn-primary btn-lg" id="final-cta-btn" href="schedule.html">Book the 15-min walkthrough →</a>
+            </div>
+          </div>
+        </section>
+
+        <div class="audit-reset">
+          <button type="button" id="audit-reset">&larr; Scan another homepage</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Link copied</div>
+
+  <footer class="site-footer">
+    <div class="site-footer__main">
+      <div class="container site-footer__grid">
+        <div class="site-footer__brand-col">
+          <p class="site-footer__logo"><img src="assets/images/mylogos/full-logo-no-background.png" alt="FlipFix Digital, websites for cabinet dealers"></p>
+          <p class="site-footer__bio">Cabinet dealer sites. E-commerce storefronts and contractor portals, built by a specialist. Fixed scope, dealer-owned, live in 3&ndash;5 weeks.</p>
+        </div>
+
+        <div class="site-footer__col site-footer__contact-col">
+          <h4>Contact</h4>
+          <div class="site-footer__contact">
+            <a href="tel:+14089088131">(408) 908-8131</a>
+            <a href="mailto:shanehnguyen@flipfixdigital.com">shanehnguyen@flipfixdigital.com</a>
+            <span>Austin, Texas</span>
+            <span class="site-footer__contact-hours">Available 24/7 &middot; 12-hour reply</span>
+          </div>
+        </div>
+
+        <nav class="site-footer__col" aria-label="Site">
+          <h4>Site</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="work.html">Work</a></li>
+            <li><a href="about.html">About</a></li>
+            </ul>
+        </nav>
+
+        <nav class="site-footer__col" aria-label="Get started">
+          <h4>Get started</h4>
+          <ul>
+            <li><a href="schedule.html">Schedule intro call</a></li>
+            <li><a href="audit.html">Free teardown audit</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+          </ul>
+        </nav>
+
+        <nav class="site-footer__col site-footer__legal-col" aria-label="Legal">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="privacy.html">Privacy</a></li>
+            <li><a href="terms.html">Terms</a></li>
+          </ul>
+          <div class="site-footer__socials" aria-label="Social links">
+            <a href="https://www.linkedin.com/in/shanenguyen1253/" target="_blank" rel="noopener" aria-label="Shane on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 2h-17A1.5 1.5 0 0 0 2 3.5v17A1.5 1.5 0 0 0 3.5 22h17a1.5 1.5 0 0 0 1.5-1.5v-17A1.5 1.5 0 0 0 20.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 1 1 8.25 6.5 1.78 1.78 0 0 1 6.5 8.25zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0 0 13 14.19a.66.66 0 0 0 0 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 0 1 2.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/flipfixdigital/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://flipfixdigital.com/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Google">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972a6.033 6.033 0 110-12.064c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814A9.969 9.969 0 0012.545 2C7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-0.013z"/></svg>
+            </a>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <div class="site-footer__legal">
+      <div class="container site-footer__legal-inner">
+        <span>&copy; 2026 FlipFix Digital. Cabinet dealer sites, nothing else.</span>
+        <div class="site-footer__legal-right">
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+
+  <script>
+    (function auditTool() {
+      // ---------- DOM refs ----------
+      const form = document.getElementById('audit-form');
+      const urlInput = document.getElementById('audit-url');
+      const errorEl = document.getElementById('audit-error');
+      const inputSection = document.getElementById('audit-input');
+      const loadingSection = document.getElementById('audit-loading');
+      const loadingStatus = document.getElementById('audit-loading-status');
+      const resultsSection = document.getElementById('audit-results');
+
+      const stripUrl = document.getElementById('strip-url');
+      const stripId = document.getElementById('strip-id');
+      const stripDate = document.getElementById('strip-date');
+      const stripN = document.getElementById('strip-n');
+      const btnRescan = document.getElementById('btn-rescan');
+      const btnPdf = document.getElementById('btn-pdf');
+      const btnShare = document.getElementById('btn-share');
+
+      const gaugeFill = document.getElementById('gauge-fill');
+      const gaugeNumber = document.getElementById('gauge-number');
+      const tierBadgeLabel = document.getElementById('tier-badge-label');
+      const verdictUrl = document.getElementById('verdict-url');
+      const verdictPercentile = document.getElementById('verdict-percentile');
+      const verdictSample = document.getElementById('verdict-sample');
+      const verdictHeadline = document.getElementById('verdict-headline');
+      const verdictCta = document.getElementById('verdict-cta');
+      const verdictPdf = document.getElementById('verdict-pdf');
+
+      const kpiGrid = document.getElementById('kpi-grid');
+      const benchmarkList = document.getElementById('benchmark-list');
+      const prosList = document.getElementById('pros-list');
+      const consList = document.getElementById('cons-list');
+      const prosEmpty = document.getElementById('pros-empty');
+      const consEmpty = document.getElementById('cons-empty');
+      const diagProsCount = document.getElementById('diag-pros-count');
+      const diagConsCount = document.getElementById('diag-cons-count');
+
+      const checksList = document.getElementById('checks-list');
+      const checksTotal = document.getElementById('checks-total');
+
+      const roadmapWrap = document.getElementById('roadmap-wrap');
+      const roadmapBody = document.getElementById('roadmap-body');
+      const roadmapTotal = document.getElementById('roadmap-total');
+      const roadmapTotalScore = document.getElementById('roadmap-total-score');
+      const roadmapTotalRev = document.getElementById('roadmap-total-rev');
+      const roadmapTotalHrs = document.getElementById('roadmap-total-hrs');
+
+      const midCtaHeading = document.getElementById('mid-cta-heading');
+      const midCtaSub = document.getElementById('mid-cta-sub');
+      const midCtaBtn = document.getElementById('mid-cta-btn');
+      const finalCtaHeading = document.getElementById('final-cta-heading');
+      const finalCtaSub = document.getElementById('final-cta-sub');
+      const finalCtaBtn = document.getElementById('final-cta-btn');
+
+      const resetBtn = document.getElementById('audit-reset');
+      const toast = document.getElementById('toast');
+
+      // Captcha + honeypot + quota refs
+      const honeyInput = document.getElementById('audit-honey');
+      const captchaQ = document.getElementById('audit-captcha-q');
+      const captchaInput = document.getElementById('audit-captcha-input');
+      const captchaRefresh = document.getElementById('audit-captcha-refresh');
+      const quotaWrap = document.getElementById('audit-quota');
+      const quotaText = document.getElementById('audit-quota-text');
+      const quotaNum = document.getElementById('audit-quota-num');
+
+      // Page-load timestamp — sent server-side as the "humans take ≥1.5s" guard.
+      const PAGE_LOAD_TS = Date.now();
+      let captchaAnswer = 0;
+      const RATE_LIMIT_MAX = 3;
+
+      // ---------- Constants ----------
+      const LOADING_MESSAGES = [
+        'Fetching your homepage…',
+        'Reading your hero section…',
+        'Checking for a contractor portal…',
+        'Looking for pricing signals…',
+        'Scoring trust signals…',
+        'Comparing to top cabinet sites…',
+        'Writing your report…',
+      ];
+      const HARD_TIMEOUT_MS = 90_000;
+      const SAMPLE_SIZE = 47;
+
+      // Benchmark cohort (n=47 summarized as 4 anchors; see methodology section).
+      // Scores are the result of running the same 10-check rubric against each site.
+      // If the corrected scores below ever drift, also update the cohort citation
+      // footnote on the pre-scan hero and the methodology section.
+      const BENCHMARKS = [
+        { label: 'CliqStudios', score: 9.5 },
+        { label: 'Kitchen Cabinet Kings', score: 7.8 },
+        { label: 'Cabinets.com', score: 6.8 },
+        { label: 'Regional average', score: 4.7 },
+      ];
+
+      // Gauge — 270° arc out of 360° circle, r=50, C = 2πr ≈ 314.159
+      // 270° visible = 235.619 of circumference; rest is the gap.
+      const GAUGE_ARC_LEN = 235.619;
+
+      // Score tier system (brief: 9+/7-8.9/5-6.9/<5)
+      const TIERS = [
+        {
+          key: 'elite',
+          min: 9.0, max: 10.01,
+          badge: 'Protecting the moat',
+          headline: (s) => `You're in the top tier at ${s.toFixed(1)}/10. The job here is protecting the moat — small refinements compound when the foundation is this strong.`,
+          midHeading: 'Keep the moat intact.',
+          midSub: 'A quarterly walkthrough keeps your gallery, testimonials, and pricing page from drifting. That gap between you and the next dealer is worth defending.',
+          finalHeading: 'Book the 15-min moat-maintenance walkthrough.',
+          finalSub: 'We\'ll show you the exact 1–2 refinements worth defending at your score level — not a rebuild, just the small moves that keep the lead growing.',
+          ctaLabel: 'Book the 15-min moat walkthrough',
+          tierDot: 'var(--pass)',
+        },
+        {
+          key: 'competitive',
+          min: 7.0, max: 8.99,
+          badge: 'Competitive but losing deals',
+          headline: (s) => `You\'re at ${s.toFixed(1)}/10 — above most of the market, but losing deals at the margin. The gap to elite is small, and closing it is the difference between average and dominant.`,
+          midHeading: "You're close. Close it.",
+          midSub: 'Three or four targeted fixes separate you from the top of the benchmark. We\'ll scope them live on the call — what to ship this month, what to queue next quarter.',
+          finalHeading: 'Book the 15-min walkthrough.',
+          finalSub: 'We\'ll show you the exact 2–3 fixes worth the revenue pickup at your score level. Specific fixes, specific dollars, specific order.',
+          ctaLabel: 'Book the 15-min walkthrough',
+          tierDot: 'var(--gold)',
+        },
+        {
+          key: 'costly',
+          min: 5.0, max: 6.99,
+          badge: 'Costing you sales',
+          headline: (s) => `You\'re at ${s.toFixed(1)}/10. Your site looks fine and performs badly — the worst combination, because nothing feels broken enough to fix. Homeowners and contractors are bouncing to cabinet sites that answer the questions yours doesn't.`,
+          midHeading: 'Partial rebuild, not a full teardown.',
+          midSub: 'The bones of the site are fine. The leaks are concentrated — hero, pricing, contractor fork, free-design offer. Surgical fixes get you above the benchmark without a ground-up rebuild.',
+          finalHeading: 'Book the 15-min walkthrough.',
+          finalSub: 'We\'ll walk every fix above, scope the partial rebuild, and quote a fixed number. If the math doesn\'t work at your dealership, we\'ll say so on the call.',
+          ctaLabel: 'Book the partial-rebuild walkthrough',
+          tierDot: 'var(--partial)',
+        },
+        {
+          key: 'rebuild',
+          min: 0, max: 4.99,
+          badge: 'Full rebuild recommended',
+          headline: (s) => `You\'re at ${s.toFixed(1)}/10. This homepage is actively bleeding revenue. Every visitor today is going to a competitor who answered the questions yours didn't. A rebuild pays itself back fast at this score level.`,
+          midHeading: 'Full rebuild. Three to five weeks.',
+          midSub: 'Fixed scope, dealer-owned, shipped in 3–5 weeks. Hero, contractor portal, pricing layer, free-design funnel — the whole engagement. Priced to pay itself back inside the first quarter.',
+          finalHeading: 'Book the 15-min walkthrough.',
+          finalSub: 'We\'ll walk every leak above and scope the full rebuild live. You\'ll leave the call with a fixed number, a timeline, and a prioritized roadmap.',
+          ctaLabel: 'Book the full-rebuild walkthrough',
+          tierDot: 'var(--fail)',
+        },
+      ];
+
+      function getTier(score) {
+        for (const t of TIERS) {
+          if (score >= t.min && score <= t.max) return t;
+        }
+        return TIERS[TIERS.length - 1];
+      }
+
+      // Percentile lookup against n=47. Anchored to the cohort's observed
+      // distribution: average ≈ 4.7 (so 4.7 sits ~50th), top 5% scores 9.0+
+      // (matching the headline "top 5% score above 9").
+      function getPercentile(score) {
+        if (score >= 9.5) return 97;
+        if (score >= 9.0) return 95;
+        if (score >= 8.5) return 90;
+        if (score >= 8.0) return 84;
+        if (score >= 7.5) return 78;
+        if (score >= 7.0) return 70;
+        if (score >= 6.5) return 64;
+        if (score >= 6.0) return 58;
+        if (score >= 5.5) return 54;
+        if (score >= 5.0) return 51;
+        if (score >= 4.7) return 50;
+        if (score >= 4.5) return 47;
+        if (score >= 4.0) return 40;
+        if (score >= 3.5) return 30;
+        if (score >= 3.0) return 22;
+        if (score >= 2.5) return 14;
+        if (score >= 2.0) return 8;
+        if (score >= 1.0) return 4;
+        return 2;
+      }
+
+      // Revenue framing: the 10-point rubric represents 100% of the homepage's
+      // sales-pipeline contribution. Each missing point ≈ 10% of that pipeline
+      // at risk. We surface % so dealers run the math against their own
+      // numbers — the absolute dollar varies wildly between a $40K/mo shop
+      // and a $400K/mo regional chain, so $-figures are misleading.
+      const PCT_PER_POINT = 10;
+
+      // Effort hours per check, keyed by substring match
+      const EFFORT_MAP = [
+        { match: /free design|consult/i, effort: 24, tag: 'pro' },
+        { match: /contractor|trade|fork/i, effort: 16, tag: 'pro' },
+        { match: /gallery|portfolio|showcase/i, effort: 8, tag: 'pro' },
+        { match: /hero|headline/i, effort: 6, tag: 'diy' },
+        { match: /pricing/i, effort: 4, tag: 'diy' },
+        { match: /review|social proof/i, effort: 4, tag: 'pro' },
+        { match: /process|steps/i, effort: 3, tag: 'diy' },
+        { match: /trust signal/i, effort: 3, tag: 'diy' },
+        { match: /benefit/i, effort: 2, tag: 'diy' },
+        { match: /closing cta|closing/i, effort: 2, tag: 'diy' },
+      ];
+
+      const FIX_LIBRARY = [
+        { match: /hero|headline/i, title: 'Rewrite the hero', body: 'Real finished-kitchen photo, specific value-prop headline (geo or product), one primary CTA — no carousel.' },
+        { match: /trust signal/i, title: 'Stack the trust signals', body: 'Three numeric trust signals near the top: review count, years in business, verifiable badges.' },
+        { match: /contractor|trade|fork/i, title: 'Add a contractor fork', body: 'Primary-nav link to a dedicated trade program page. Separate quote form. Not the same door as the homeowner CTA.' },
+        { match: /benefit/i, title: 'Swap generic benefits for specifics', body: 'Replace "quality, trusted, premium" with 3–5 concrete differentiators: lead times, warranty terms, stocked SKUs.' },
+        { match: /pricing/i, title: 'Show a price', body: 'Answer the #1 industry search — "what does a 10×10 kitchen cost" — on the homepage. Even a range beats silence.' },
+        { match: /process|steps/i, title: 'Add a 4-step process section', body: 'Consult → Design → Quote → Install, with a timeline on each step.' },
+        { match: /gallery|portfolio|showcase/i, title: 'Build a real gallery', body: '6+ real installs above the fold with location, finish, and approximate budget on each card.' },
+        { match: /review|social proof/i, title: 'Pull verified reviews', body: 'Multi-platform display (Google + Houzz) with names, dates, star rating — or an embedded widget.' },
+        { match: /free design|consult/i, title: 'Sell the free-design offer', body: 'Dedicated landing page, named designer or specific format. Make it the homepage\'s primary CTA.' },
+        { match: /closing cta|closing/i, title: 'Add a closing CTA', body: 'Final section before the footer with a different action than the hero (e.g. "Order a $10 door sample").' },
+      ];
+
+      function matchFix(name) {
+        for (const f of FIX_LIBRARY) {
+          if (f.match.test(name)) return { title: f.title, body: f.body };
+        }
+        return { title: 'Tighten this check', body: 'See the Evidence row for the specific signal that\'s missing.' };
+      }
+
+      function matchEffort(name) {
+        for (const e of EFFORT_MAP) {
+          if (e.match.test(name)) return { effort: e.effort, tag: e.tag };
+        }
+        return { effort: 4, tag: 'pro' };
+      }
+
+      // ---------- Utility ----------
+      let messageTimer = null;
+      let abortController = null;
+      let lastUrlForRescan = '';
+
+      function showSection(section) {
+        for (const el of [inputSection, loadingSection, resultsSection]) {
+          if (el === section) el.removeAttribute('hidden');
+          else el.setAttribute('hidden', '');
+        }
+      }
+
+      function startLoading() {
+        let i = 0;
+        loadingStatus.textContent = LOADING_MESSAGES[0];
+        messageTimer = setInterval(() => {
+          i = (i + 1) % LOADING_MESSAGES.length;
+          loadingStatus.textContent = LOADING_MESSAGES[i];
+        }, 4000);
+      }
+      function stopLoading() {
+        if (messageTimer) { clearInterval(messageTimer); messageTimer = null; }
+      }
+
+      function setError(message) { errorEl.innerHTML = message; }
+      function clearError() { errorEl.textContent = ''; }
+
+      function isValidHttpUrl(value) {
+        try {
+          const u = new URL(value);
+          return u.protocol === 'http:' || u.protocol === 'https:';
+        } catch { return false; }
+      }
+
+      function escapeHtml(s) {
+        return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+        }[c]));
+      }
+
+      // Percent of homepage-driven pipeline at risk for a given missing-point total.
+      // Caps at 100% (you can't lose more than the whole pie) and rounds to one
+      // decimal so a 0.25 partial reads "2.5% at risk" cleanly.
+      function pctAtRisk(missingPoints) {
+        if (!missingPoints || missingPoints <= 0) return 0;
+        const raw = missingPoints * PCT_PER_POINT;
+        return Math.min(100, Math.round(raw * 10) / 10);
+      }
+      function formatPct(missingPoints) {
+        const p = pctAtRisk(missingPoints);
+        if (p <= 0) return '—';
+        // Drop trailing .0 for whole numbers so 15.0% → "15%"
+        const txt = p % 1 === 0 ? String(Math.round(p)) : p.toFixed(1);
+        return '≈ ' + txt + '% at risk';
+      }
+
+      function hostLabel(url) {
+        try { return new URL(url).hostname.replace(/^www\./, ''); }
+        catch { return 'Your site'; }
+      }
+
+      function generateAuditId() {
+        const rnd = Math.random().toString(36).slice(2, 6).toUpperCase();
+        const t = Date.now().toString(36).slice(-4).toUpperCase();
+        return 'FX-' + t + '-' + rnd;
+      }
+
+      function formatDate(d) {
+        const opts = { year: 'numeric', month: 'short', day: 'numeric' };
+        return d.toLocaleDateString('en-US', opts);
+      }
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('is-visible');
+        setTimeout(() => toast.classList.remove('is-visible'), 1800);
+      }
+
+      // ---------- Captcha ----------
+      // Lightweight client-side math captcha. The real abuse defense is the
+      // server-side IP rate limit + honeypot; this just deters trivial bots
+      // that POST raw JSON without rendering the page.
+      function generateCaptcha() {
+        const ops = ['+', '+', '+', '-']; // bias toward addition for ease
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let a, b;
+        if (op === '+') {
+          a = 2 + Math.floor(Math.random() * 8);
+          b = 2 + Math.floor(Math.random() * 8);
+          captchaAnswer = a + b;
+        } else {
+          a = 5 + Math.floor(Math.random() * 8);
+          b = 1 + Math.floor(Math.random() * Math.min(a - 1, 5));
+          captchaAnswer = a - b;
+        }
+        captchaQ.textContent = a + ' ' + op + ' ' + b;
+        captchaInput.value = '';
+        captchaInput.removeAttribute('aria-invalid');
+      }
+
+      if (captchaRefresh) {
+        captchaRefresh.addEventListener('click', generateCaptcha);
+      }
+      if (captchaInput) {
+        captchaInput.addEventListener('input', () => captchaInput.removeAttribute('aria-invalid'));
+      }
+      generateCaptcha();
+
+      // ---------- Quota strip (UX only; server is authoritative) ----------
+      const QUOTA_KEY = 'flipfix-audit-quota';
+      function todayKey() {
+        const d = new Date();
+        return d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1) + '-' + d.getUTCDate();
+      }
+      function loadQuota() {
+        try {
+          const raw = JSON.parse(localStorage.getItem(QUOTA_KEY) || 'null');
+          if (raw && raw.day === todayKey() && Number.isFinite(raw.used)) return raw;
+        } catch {}
+        return { day: todayKey(), used: 0 };
+      }
+      function saveQuota(q) {
+        try { localStorage.setItem(QUOTA_KEY, JSON.stringify(q)); } catch {}
+      }
+      function bumpQuota() {
+        const q = loadQuota();
+        q.used = Math.min(RATE_LIMIT_MAX, (q.used || 0) + 1);
+        saveQuota(q);
+        renderQuota();
+      }
+      function syncQuotaFromHeader(remainingHeader) {
+        // If the server returned X-RateLimit-Remaining, sync local UX to match.
+        const remaining = parseInt(remainingHeader, 10);
+        if (!Number.isFinite(remaining)) return;
+        const used = Math.max(0, RATE_LIMIT_MAX - remaining);
+        saveQuota({ day: todayKey(), used });
+        renderQuota();
+      }
+      function renderQuota() {
+        const q = loadQuota();
+        const remaining = Math.max(0, RATE_LIMIT_MAX - (q.used || 0));
+        if (!quotaWrap) return;
+        quotaWrap.removeAttribute('hidden');
+        if (remaining <= 0) {
+          quotaWrap.classList.add('audit-quota--exhausted');
+          quotaText.innerHTML = "Daily limit reached — <a href=\"schedule.html\">book a 15-min call &rarr;</a>";
+        } else {
+          quotaWrap.classList.remove('audit-quota--exhausted');
+          quotaNum.textContent = String(remaining);
+          quotaText.innerHTML = '<span class="audit-quota__num">' + remaining + '</span> of ' + RATE_LIMIT_MAX + ' free scans remaining today';
+        }
+      }
+      renderQuota();
+
+      // ---------- Render: report meta strip ----------
+      function renderStrip(url, auditId) {
+        stripUrl.textContent = url;
+        stripId.textContent = auditId;
+        stripDate.textContent = formatDate(new Date());
+        stripN.textContent = String(SAMPLE_SIZE);
+      }
+
+      // ---------- Render: gauge ----------
+      function animateScore(target) {
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const finalFrac = Math.max(0, Math.min(1, target / 10));
+        const dashoffset = GAUGE_ARC_LEN * (1 - finalFrac);
+        gaugeNumber.parentElement?.setAttribute?.('aria-label', 'Score ' + target.toFixed(1) + ' out of 10');
+        gaugeNumber.setAttribute('aria-label', 'Score ' + target.toFixed(1) + ' out of 10');
+        if (reduced) {
+          gaugeNumber.textContent = target.toFixed(1);
+          gaugeFill.style.strokeDashoffset = String(dashoffset);
+          return;
+        }
+        gaugeNumber.textContent = '0.0';
+        gaugeFill.style.strokeDashoffset = String(GAUGE_ARC_LEN);
+        // Trigger paint flush, then animate
+        requestAnimationFrame(() => {
+          gaugeFill.style.strokeDashoffset = String(dashoffset);
+        });
+        const start = performance.now();
+        const dur = 1500;
+        function tick(now) {
+          const t = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const v = target * eased;
+          gaugeNumber.textContent = v.toFixed(1);
+          if (t < 1) requestAnimationFrame(tick);
+          else gaugeNumber.textContent = target.toFixed(1);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      // ---------- Render: hero verdict ----------
+      function renderVerdict(score, url, tier) {
+        tierBadgeLabel.textContent = tier.badge;
+        verdictUrl.textContent = hostLabel(url);
+        const pct = getPercentile(score);
+        verdictPercentile.textContent = 'Top ' + (100 - pct) + '%';
+        verdictSample.textContent = ' · better than ' + pct + '% of ' + SAMPLE_SIZE + ' cabinet sites audited';
+        verdictHeadline.textContent = tier.headline(score);
+        verdictCta.textContent = tier.ctaLabel + ' →';
+        verdictCta.href = 'schedule.html?url=' + encodeURIComponent(url);
+      }
+
+      // ---------- Render: KPI row ----------
+      // No decorative sparklines on the bars/ring — they showed no real data.
+      // The composite-score card grows a real sparkline only when the user
+      // has score history (i.e. a re-scan).
+      function renderKpi(score, checks, pros, cons, history) {
+        const pct = getPercentile(score);
+        const fullChecks = (checks || []).filter(c => (c.tier || '').toLowerCase() === 'full').length;
+        const brokenChecks = (checks || []).filter(c => {
+          const t = (c.tier || '').toLowerCase();
+          return t === 'partial' || t === 'fail';
+        }).length;
+
+        const sparkline = (history && history.length >= 2)
+          ? renderSparkline(history.map(h => h.score))
+          : '';
+
+        const cards = [
+          { label: 'Composite score', value: score.toFixed(1), unit: '/ 10', cap: getTier(score).badge, extra: sparkline },
+          { label: 'Industry percentile', value: pct, unit: 'th', cap: 'vs. n=' + SAMPLE_SIZE + ' cabinet sites', extra: '' },
+          { label: 'Strengths confirmed', value: fullChecks, unit: '/ 10', cap: fullChecks === 1 ? '1 full-credit check' : fullChecks + ' full-credit checks', extra: '' },
+          { label: 'Issues flagged', value: brokenChecks, unit: '/ 10', cap: brokenChecks === 1 ? '1 partial or failing check' : brokenChecks + ' partial or failing checks', extra: '' },
+        ];
+
+        kpiGrid.innerHTML = cards.map((c, i) => (
+          '<div class="kpi-card" style="transition-delay:' + (i * 80) + 'ms">' +
+            '<span class="kpi-card__label">' + escapeHtml(c.label) + '</span>' +
+            '<span class="kpi-card__value"><span class="kpi-card__value-num">' + escapeHtml(String(c.value)) + '</span><span class="kpi-card__value-unit">' + escapeHtml(c.unit) + '</span></span>' +
+            c.extra +
+            '<p class="kpi-card__caption">' + escapeHtml(c.cap) + '</p>' +
+          '</div>'
+        )).join('');
+
+        // Stagger-fade in
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const cardEls = kpiGrid.querySelectorAll('.kpi-card');
+        if (reduced) {
+          cardEls.forEach(el => el.classList.add('is-visible'));
+        } else {
+          requestAnimationFrame(() => {
+            cardEls.forEach(el => el.classList.add('is-visible'));
+          });
+        }
+      }
+
+      function renderSparkline(scores) {
+        if (!scores || scores.length < 2) return '';
+        const w = 90, h = 28, pad = 2;
+        const min = Math.min(...scores);
+        const max = Math.max(...scores);
+        const range = (max - min) || 1;
+        const pts = scores.map((s, i) => {
+          const x = (i / (scores.length - 1)) * (w - pad * 2) + pad;
+          const y = h - pad - ((s - min) / range) * (h - pad * 2);
+          return x.toFixed(1) + ',' + y.toFixed(1);
+        }).join(' ');
+        const lastX = w - pad;
+        const lastY = h - pad - ((scores[scores.length - 1] - min) / range) * (h - pad * 2);
+        return (
+          '<svg class="history-spark" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true">' +
+            '<polyline fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="' + pts + '"/>' +
+            '<circle cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="2.5" fill="var(--gold-deep)"/>' +
+          '</svg>'
+        );
+      }
+
+      // ---------- Render: benchmark ----------
+      function renderBenchmark(userScore, userUrl) {
+        const overlap = findBenchmarkOverlap(userUrl); // null or { label, host }
+        const rows = BENCHMARKS
+          .filter((b) => !(overlap && overlap.label === b.label))
+          .map((b) => ({ ...b, you: false }));
+        rows.push({ label: 'Your site — ' + hostLabel(userUrl), score: userScore, you: true });
+        rows.sort((a, b) => b.score - a.score);
+
+        benchmarkList.innerHTML = rows.map((r) => {
+          const pct = Math.max(2, Math.min(100, (r.score / 10) * 100));
+          const youTag = r.you ? ' <span class="benchmark-row__you-tag">You</span>' : '';
+          return (
+            '<li class="benchmark-row' + (r.you ? ' benchmark-row--you' : '') + '">' +
+              '<span class="benchmark-row__label">' + escapeHtml(r.label) + youTag + '</span>' +
+              '<div class="benchmark-row__bar-wrap"><div class="benchmark-row__bar" style="width:0%"></div></div>' +
+              '<span class="benchmark-row__value mono">' + r.score.toFixed(1) + '</span>' +
+            '</li>'
+          );
+        }).join('');
+
+        // Animate bars
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        requestAnimationFrame(() => {
+          const bars = benchmarkList.querySelectorAll('.benchmark-row__bar');
+          rows.forEach((r, i) => {
+            const pct = Math.max(2, Math.min(100, (r.score / 10) * 100));
+            if (reduced) bars[i].style.width = pct + '%';
+            else setTimeout(() => { bars[i].style.width = pct + '%'; }, 200 + i * 80);
+          });
+        });
+      }
+
+      // ---------- Render: diagnosis ----------
+      function severityForCheck(tier, weight) {
+        const t = (tier || '').toLowerCase();
+        if (t === 'full') return { cls: 'pass', label: 'Working' };
+        const w = Number(weight) || 0;
+        if (t === 'fail' && w >= 1.0) return { cls: 'high', label: 'High severity' };
+        if (t === 'fail') return { cls: 'med', label: 'Medium severity' };
+        if (t === 'partial' && w >= 1.0) return { cls: 'med', label: 'Medium severity' };
+        return { cls: 'low', label: 'Low severity' };
+      }
+
+      // Match a pros/cons item back to a specific check by fuzzy title match.
+      function matchCheck(title, checks) {
+        if (!title || !Array.isArray(checks)) return null;
+        const t = title.toLowerCase();
+        let best = null; let bestScore = 0;
+        for (const c of checks) {
+          const name = (c.name || '').toLowerCase();
+          if (!name) continue;
+          const words = name.split(/\W+/).filter(w => w.length > 3);
+          let score = 0;
+          for (const w of words) if (t.includes(w)) score++;
+          if (score > bestScore) { bestScore = score; best = c; }
+        }
+        return bestScore > 0 ? best : null;
+      }
+
+      function missingForCheck(check) {
+        if (!check) return 0;
+        const w = Number(check.weight) || 0;
+        const e = Number(check.earned) || 0;
+        return Math.max(0, w - e);
+      }
+
+      function renderDiagItem(item, checks, isPro) {
+        const matched = matchCheck(item.title, checks);
+        const missing = matched && !isPro ? missingForCheck(matched) : 0;
+        const sev = matched
+          ? severityForCheck(matched.tier, matched.weight)
+          : (isPro ? { cls: 'pass', label: 'Working' } : { cls: 'med', label: 'Medium severity' });
+        const revHtml = missing > 0
+          ? '<span class="rev-impact">' + escapeHtml(formatPct(missing)) + '</span>'
+          : (isPro && matched ? '<span class="rev-impact rev-impact--pos">+' + (Number(matched.earned) || 0).toFixed(1) + ' points held</span>' : '');
+        return (
+          '<li class="diag-item">' +
+            '<h4 class="diag-item__title">' + escapeHtml(item.title || '') + '</h4>' +
+            '<p class="diag-item__desc">' + escapeHtml(item.description || '') + '</p>' +
+            '<div class="diag-item__meta">' +
+              '<span class="severity severity--' + sev.cls + '">' + escapeHtml(sev.label) + '</span>' +
+              revHtml +
+            '</div>' +
+          '</li>'
+        );
+      }
+
+      function renderDiagnosis(pros, cons, checks) {
+        const hasPros = Array.isArray(pros) && pros.length > 0;
+        const hasCons = Array.isArray(cons) && cons.length > 0;
+
+        diagProsCount.textContent = String(hasPros ? pros.length : 0);
+        diagConsCount.textContent = String(hasCons ? cons.length : 0);
+
+        if (hasPros) {
+          prosEmpty.setAttribute('hidden', '');
+          prosList.innerHTML = pros.map(p => renderDiagItem(p, checks, true)).join('');
+        } else {
+          prosEmpty.removeAttribute('hidden');
+          prosList.innerHTML = '';
+        }
+        if (hasCons) {
+          consEmpty.setAttribute('hidden', '');
+          consList.innerHTML = cons.map(c => renderDiagItem(c, checks, false)).join('');
+        } else {
+          consEmpty.removeAttribute('hidden');
+          consList.innerHTML = '';
+        }
+      }
+
+      // ---------- Render: 10 checks ----------
+      function tierStatus(tier) {
+        const t = (tier || '').toLowerCase();
+        if (t === 'full') return { cls: 'pass', label: 'Pass', icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 8 7 12 13 4"/></svg>' };
+        if (t === 'partial') return { cls: 'partial', label: 'Partial', icon: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="3.5"/></svg>' };
+        return { cls: 'fail', label: 'Fail', icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>' };
+      }
+
+      function renderChecks(checks) {
+        if (!Array.isArray(checks) || !checks.length) {
+          checksList.innerHTML = '';
+          checksTotal.textContent = '—';
+          return;
+        }
+        const totalEarned = checks.reduce((acc, c) => acc + (Number(c.earned) || 0), 0);
+        checksTotal.textContent = totalEarned.toFixed(1) + ' / 10 earned';
+
+        checksList.innerHTML = checks.map((c, idx) => {
+          const status = tierStatus(c.tier);
+          const num = String(idx + 1).padStart(2, '0') + ' / ' + String(checks.length).padStart(2, '0');
+          const earned = (Number(c.earned) || 0);
+          const weight = (Number(c.weight) || 0);
+          const ratio = '<strong>' + earned.toFixed(earned % 1 ? 2 : 1).replace(/\.00$/, '.0') + '</strong> / ' + weight.toFixed(weight % 1 ? 2 : 1).replace(/\.00$/, '.0');
+          // Real findings tied to the scan — pulled from the API's evidence + business_impact,
+          // with a per-dimension fallback that names what passing/failing looks like for THIS check.
+          const desc = findingsForCheck(c);
+          const lookfor = lookforText(c.name || '');
+          const evidence = c.evidence ? '<p class="check-row__evidence"><strong>Evidence:</strong> ' + escapeHtml(c.evidence) + '</p>' : '';
+          const looking = '<p class="check-row__lookfor"><strong>What we looked for:</strong> ' + escapeHtml(lookfor) + '</p>';
+          return (
+            '<li class="check-row">' +
+              '<span class="check-row__num mono">' + num + '</span>' +
+              '<span class="status-icon status-icon--' + status.cls + '" aria-hidden="true">' + status.icon + '</span>' +
+              '<h3 class="check-row__name">' + escapeHtml(c.name || 'Check ' + (idx + 1)) + '</h3>' +
+              '<span class="check-row__ratio mono">' + ratio + '</span>' +
+              '<span class="check-row__status check-row__status--' + status.cls + '">' + status.label + '</span>' +
+              '<p class="check-row__desc">' + escapeHtml(desc) + '</p>' +
+              '<div class="check-row__detail" data-open="false">' +
+                '<button type="button" class="check-row__detail-toggle" aria-expanded="false">Detail</button>' +
+                '<div class="check-row__detail-body" role="region">' +
+                  looking + evidence +
+                '</div>' +
+              '</div>' +
+            '</li>'
+          );
+        }).join('');
+
+        // Wire expanders
+        checksList.querySelectorAll('.check-row__detail').forEach(el => {
+          const btn = el.querySelector('.check-row__detail-toggle');
+          btn.addEventListener('click', () => {
+            const open = el.getAttribute('data-open') === 'true';
+            el.setAttribute('data-open', open ? 'false' : 'true');
+            btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+          });
+        });
+      }
+
+      // Per-dimension findings text. Shape: 2–3 sentences each that describe
+      // what was actually scanned, what passing looks like, and either the
+      // pickup (when full) or the leak (when partial/fail). When the API
+      // returns a business_impact line for partial/fail, we lead with that
+      // and append a tier-specific specifics layer.
+      const CHECK_FINDINGS = {
+        hero: {
+          full: 'Hero block carries a cabinet-specific headline and one primary CTA in the same eyeshot — no carousel, no slider, no rotating banners diluting attention. The page commits to a single first impression, which is what every site at the top of the benchmark shares. Full credit on the highest-leverage element on the page.',
+          partial: 'Hero mentions cabinets but stays generic, OR the CTA is buried below the fold, OR a slider/carousel is splitting the visitor\'s attention across multiple promises. You\'re still earning credit, but the first 8 seconds aren\'t doing the work they could.',
+          fail: 'Hero text is template filler — "Welcome," "Your trusted partner," "Quality cabinets" — with no geographic, product, or shop specificity, and no primary CTA in the hero zone. Visitors decide whether to stay in 8 seconds; this hero gives them no reason to.',
+        },
+        trust: {
+          full: 'Two or more numeric trust signals sit near the top of the page — a real review count, a since-date, or named certifications (KCMA, BBB, manufacturer partner badges). That\'s what earns a $10K wire from a homeowner who has never touched the product. Full credit.',
+          partial: 'One numeric signal is visible, OR you\'re relying on vague language like "award-winning" and "trusted by thousands." The credibility math is missing a digit; sophisticated buyers notice.',
+          fail: 'No numeric trust signals and no named certifications anywhere in the top third of the page. The visitor has nothing concrete to anchor a $10K decision to — and they bounce to the dealer who gave them a number.',
+        },
+        contractor: {
+          full: 'A primary-nav (or utility-nav) link points to a dedicated contractor / trade / pro page — not a generic /contact route. That\'s the door GCs need to see in the first 8 seconds, and it\'s there. A single GC doing 15 kitchens a year is worth 30 homeowner orders.',
+          partial: 'A trade link exists but it\'s footer-only, OR it points to a generic contact form instead of a dedicated trade-program page. GCs scrolling fast don\'t find it; the ones who do find it land on a homeowner experience.',
+          fail: 'No contractor, trade, pro, or wholesale link found anywhere on the homepage. Every GC who lands here bounces — that\'s the entire B2B revenue stream walking out without leaving an email.',
+        },
+        benefit: {
+          full: 'Benefit copy carries concrete specifics — material names, lead times, exclusions, or named offers — instead of generic "quality, premium, trusted" filler. Homeowners can anchor to something the next dealer doesn\'t offer, which is how you stop competing on price.',
+          partial: 'The benefit section mixes specifics with generic filler. Some lines read like a brochure ("dovetail joinery, plywood boxes"), some read like SEO ("dedicated team, customer-focused"). The generic ones cancel the specific ones.',
+          fail: 'Benefit section is entirely corporate filler: "quality products," "great service," "trusted experts." Every competitor uses these exact words. Nothing here separates you from a Home Depot kitchen-design kiosk.',
+        },
+        pricing: {
+          full: 'A real dollar figure shows on the homepage — a 10×10 starting price, a per-linear-foot range, or a from-$X anchor. That answers the #1 search term in the industry on the first page the visitor sees. Most cabinet sites silence this question and lose the price-anxious 60%; yours doesn\'t.',
+          partial: 'Pricing language is present ("affordable," "competitive," "best value"), or there\'s a link to a pricing page, but no actual number on the homepage. The visitor still has to work for the answer — and most won\'t.',
+          fail: 'No pricing signal on the homepage — no numbers, no language, no link. The #1 industry search ("what does a 10×10 kitchen cost") is unanswered, and homeowners assume you\'re expensive and bounce.',
+        },
+        process: {
+          full: 'A numbered or labeled steps section walks the visitor through what happens after they sign up — Consult → Design → Quote → Install — with at least three distinct stages. The path is visible without the visitor having to imagine one.',
+          partial: 'A process is described in prose paragraphs but not visually numbered, OR fewer than three distinct steps are shown. Visitors who scan (most of them) miss the structure entirely.',
+          fail: 'No process or steps section anywhere on the homepage. The visitor has no idea what happens between "request quote" and "install date" — that ambiguity is what kills hesitant homeowners at the threshold.',
+        },
+        reviews: {
+          full: 'Multi-platform review credibility on the homepage — embedded Google / Houzz / Trustpilot widget or a specific numeric star count visible above the fold. The dynamic widget plus third-party verification shortens the conversion velocity, which is what separates 8/10 sites from 4/10. Full credit on social proof.',
+          partial: 'Testimonial quotes are present but no embedded widget and no numeric review count. Single unattributed quotes read as picked, not earned. Sophisticated buyers notice the missing platform logos.',
+          fail: 'No reviews, testimonials, or social proof anywhere on the homepage. The visitor has zero independent verification that you ship what you sell — and the next dealer in the SERP probably has a 4.8-star Google widget bolted to their hero.',
+        },
+        freeDesign: {
+          full: 'A specific free-design or consultation offer appears on the homepage — named designer or defined format (1-on-1, 30-minute, in-home) — with a dedicated CTA to a consultation booking page. This page drives 50% of revenue on well-built cabinet sites; here, it\'s selling itself.',
+          partial: 'A free consultation is offered but the language is generic ("get a quote," "contact us"), or the CTA points to a generic contact form rather than a dedicated consultation page. The moat is half-built — Home Depot can\'t offer this and you\'re not making the visitor know it.',
+          fail: 'No free design or consultation offer on the homepage. The single highest-leverage page on a cabinet dealer site — the one Home Depot can\'t staff and online competitors can\'t deliver — is invisible. That\'s 50% of revenue you\'re leaving on the table.',
+        },
+        gallery: {
+          full: 'A dedicated gallery / portfolio / installs section sits on the homepage with four or more real projects, labeled and findable. Homeowners can picture their own kitchen in your work — that visual close happens before the price conversation even starts.',
+          partial: 'A gallery section exists but with fewer than four items, OR images appear as decorative hero / background imagery without a labeled gallery section. Visitors don\'t register it as proof of work.',
+          fail: 'No gallery, portfolio, or projects section. The visitor has no visual evidence that you\'ve actually shipped kitchens — only words. In a category that lives and dies on photography, that\'s a structural gap.',
+        },
+        closing: {
+          full: 'A final CTA section sits above the footer with a distinct action — different from the hero CTA, with its own urgency. The page commits a second time before the visitor exits, instead of fading into footer links. Full credit.',
+          partial: 'A bottom-of-page CTA exists but duplicates the hero CTA verbatim, OR is a generic "Contact us" link without urgency or specificity. The fence-sitters who scrolled past the gallery have no fresh reason to click.',
+          fail: 'The page fades directly into footer links with no closing CTA. Visitors who scrolled all the way to the bottom — the ones closest to booking — get no second prompt, no fresh offer, no urgency. They leave.',
+        },
+      };
+
+      function findingsKeyForCheck(name) {
+        const n = (name || '').toLowerCase();
+        if (n.includes('hero') || n.includes('headline')) return 'hero';
+        if (n.includes('trust signal') || n.includes('trust ')) return 'trust';
+        if (n.includes('contractor') || n.includes('trade') || n.includes('fork')) return 'contractor';
+        if (n.includes('benefit')) return 'benefit';
+        if (n.includes('pricing') || n.includes('price')) return 'pricing';
+        if (n.includes('process') || n.includes('steps')) return 'process';
+        if (n.includes('review') || n.includes('social proof')) return 'reviews';
+        if (n.includes('free design') || n.includes('consult')) return 'freeDesign';
+        if (n.includes('gallery') || n.includes('portfolio') || n.includes('showcase')) return 'gallery';
+        if (n.includes('closing') || n.includes('closer') || n.includes('final cta')) return 'closing';
+        return null;
+      }
+
+      function findingsForCheck(check) {
+        const tier = (check.tier || '').toLowerCase();
+        const key = findingsKeyForCheck(check.name);
+        const lib = key ? CHECK_FINDINGS[key] : null;
+        const tierKey = tier === 'full' ? 'full' : (tier === 'partial' ? 'partial' : 'fail');
+        const baseline = lib ? lib[tierKey] : null;
+        // For partial/fail, lead with the API's business_impact if it's specific
+        // (i.e. not the mock/templated string), then append baseline context.
+        if (tier !== 'full' && check.business_impact && !/^MOCK:/i.test(check.business_impact)) {
+          if (baseline) return check.business_impact + ' ' + baseline;
+          return check.business_impact;
+        }
+        return baseline || (tier === 'full'
+          ? 'This check is passing on the homepage scan.'
+          : 'This check is partial or failing — see expanded detail below.');
+      }
+
+      function lookforText(name) {
+        const n = name.toLowerCase();
+        if (n.includes('hero')) return 'Specific cabinet-industry headline (geo, product, or shop specificity), one primary CTA in the hero area, no slider/carousel.';
+        if (n.includes('trust')) return 'Two or more numeric signals near the top: review count, years in business, named certifications (KCMA, BBB).';
+        if (n.includes('contractor') || n.includes('trade')) return 'A nav link (primary or utility — not footer) to a dedicated contractor/trade program page. Not a generic /contact route.';
+        if (n.includes('benefit')) return 'Three or more concrete benefit items: materials, timeframes, exclusions, or specific offers. No generic filler.';
+        if (n.includes('pricing')) return 'A real dollar figure on the homepage — starting price, per-linear-foot, or 10×10 range.';
+        if (n.includes('process') || n.includes('steps')) return 'Numbered or labeled steps (3+) describing what happens after sign-up: Consult → Design → Quote → Install.';
+        if (n.includes('review') || n.includes('social proof')) return 'Embedded review widget or a specific numeric count with star rating visible on the homepage.';
+        if (n.includes('free design') || n.includes('consult')) return 'A named designer or specific format (1-on-1, 30-min) with a dedicated CTA to a consultation page.';
+        if (n.includes('gallery') || n.includes('portfolio')) return 'A dedicated gallery section with 4+ real installs, labeled by section heading.';
+        if (n.includes('closing') || n.includes('closer')) return 'A final CTA section before the footer with a distinct action — not a duplicate of the hero CTA.';
+        return 'Specific evidence from the homepage that supports a pass — quoted text, element references, or measurable signals.';
+      }
+
+      // ---------- Render: roadmap ----------
+      // Two layouts:
+      //   • score >= 9.0 → single "primary fix" card + muted "Optional polish" list
+      //   • score <  9.0 → full prioritized table (existing layout)
+      function renderRoadmap(checks, score, url) {
+        const candidates = (checks || [])
+          .map((c, i) => {
+            const w = Number(c.weight) || 0;
+            const e = Number(c.earned) || 0;
+            const missing = Math.max(0, w - e);
+            return { check: c, idx: i, missing };
+          })
+          .filter(c => c.missing > 0)
+          .sort((a, b) => b.missing - a.missing || (Number(b.check.weight) - Number(a.check.weight)));
+
+        // Hide the table-header row by default; we put it back if we render the table.
+        const headerEl = roadmapWrap.querySelector('.roadmap-table__header');
+
+        if (candidates.length === 0) {
+          if (headerEl) headerEl.style.display = 'none';
+          roadmapBody.innerHTML = '<div class="roadmap-empty">No fixes flagged. Every check is passing — re-scan in a quarter to catch drift.</div>';
+          roadmapTotal.setAttribute('hidden', '');
+          return;
+        }
+
+        // High-tier branch: single primary card + optional polish list
+        if (score >= 9.0) {
+          if (headerEl) headerEl.style.display = 'none';
+          roadmapTotal.setAttribute('hidden', '');
+
+          const primary = candidates[0];
+          const polish = candidates.slice(1);
+
+          const fix = matchFix(primary.check.name || '');
+          const eff = matchEffort(primary.check.name || '');
+          const primaryPct = formatPct(primary.missing);
+          const schedHref = 'schedule.html?url=' + encodeURIComponent(url || '');
+
+          const primaryHtml =
+            '<div class="roadmap-primary">' +
+              '<div class="roadmap-primary__body">' +
+                '<span class="roadmap-primary__pri">Primary fix · highest leverage</span>' +
+                '<h3 class="roadmap-primary__title">' + escapeHtml(fix.title) + ' — ' + escapeHtml(primary.check.name || '') + '</h3>' +
+                '<p class="roadmap-primary__why">' + escapeHtml(fix.body) +
+                  ' At a 9+ score, this is the single move that opens the most upside without disturbing what already works. Fix this and the rest is maintenance.' +
+                '</p>' +
+                '<div class="roadmap-primary__cta">' +
+                  '<a class="btn btn-primary" href="' + escapeHtml(schedHref) + '">Do this with FlipFix →</a>' +
+                '</div>' +
+              '</div>' +
+              '<div class="roadmap-primary__stats">' +
+                '<div class="roadmap-primary__stat">' +
+                  '<span class="roadmap-primary__stat-label">Score impact</span>' +
+                  '<span class="roadmap-primary__stat-value roadmap-primary__stat-value--accent">+' + primary.missing.toFixed(1) + ' pts</span>' +
+                '</div>' +
+                '<div class="roadmap-primary__stat">' +
+                  '<span class="roadmap-primary__stat-label">% pipeline at risk</span>' +
+                  '<span class="roadmap-primary__stat-value roadmap-primary__stat-value--accent">' + escapeHtml(primaryPct) + '</span>' +
+                '</div>' +
+                '<div class="roadmap-primary__stat">' +
+                  '<span class="roadmap-primary__stat-label">Effort</span>' +
+                  '<span class="roadmap-primary__stat-value">' + eff.effort + ' hrs</span>' +
+                '</div>' +
+                '<div class="roadmap-primary__stat">' +
+                  '<span class="roadmap-primary__stat-label">Track</span>' +
+                  '<span class="roadmap-primary__stat-value">' + (eff.tag === 'diy' ? 'DIY-friendly' : 'With FlipFix') + '</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+
+          let polishHtml = '';
+          if (polish.length > 0) {
+            const items = polish.slice(0, 3).map((item, i) => {
+              const pf = matchFix(item.check.name || '');
+              const pct = formatPct(item.missing);
+              return (
+                '<li class="roadmap-polish__item">' +
+                  '<span class="roadmap-polish__item-num mono">' + String(i + 1).padStart(2, '0') + '</span>' +
+                  '<div class="roadmap-polish__item-action">' +
+                    escapeHtml(pf.title) + ' — ' + escapeHtml(item.check.name || '') +
+                    '<small>' + escapeHtml(pf.body) + '</small>' +
+                  '</div>' +
+                  '<span class="roadmap-polish__item-score">+' + item.missing.toFixed(1) + ' pts</span>' +
+                  '<span class="roadmap-polish__item-rev">' + escapeHtml(pct) + '</span>' +
+                '</li>'
+              );
+            }).join('');
+            polishHtml =
+              '<div class="roadmap-polish">' +
+                '<p class="roadmap-polish__head">Optional polish · nice-to-have</p>' +
+                '<ul class="roadmap-polish__list">' + items + '</ul>' +
+              '</div>';
+          }
+
+          roadmapBody.innerHTML = primaryHtml + polishHtml;
+          return;
+        }
+
+        // Low/mid tier: full prioritized table
+        if (headerEl) headerEl.style.display = '';
+
+        let totalScore = 0;
+        let totalHrs = 0;
+
+        const rows = candidates.map((item, i) => {
+          const pri = i === 0 ? 'p1' : (i === 1 ? 'p1' : (i <= 3 ? 'p2' : 'p3'));
+          const priLabel = pri.toUpperCase();
+          const fix = matchFix(item.check.name || '');
+          const eff = matchEffort(item.check.name || '');
+          const pct = formatPct(item.missing);
+          totalScore += item.missing;
+          totalHrs += eff.effort;
+          return (
+            '<div class="roadmap-row">' +
+              '<span class="roadmap-row__num mono">' + String(i + 1).padStart(2, '0') +
+                '<span class="roadmap-priority roadmap-priority--' + pri + '">' + priLabel + '</span>' +
+              '</span>' +
+              '<div class="roadmap-row__action">' +
+                '<span class="roadmap-row__action-title">' + escapeHtml(fix.title) + ' — ' + escapeHtml(item.check.name || '') + '</span>' +
+                '<span class="roadmap-row__action-body">' + escapeHtml(fix.body) + '</span>' +
+              '</div>' +
+              '<span class="roadmap-row__score"><span class="roadmap-row__score-prefix">+</span>' + item.missing.toFixed(1) + ' pts</span>' +
+              '<span class="roadmap-row__rev">' + escapeHtml(pct) + '</span>' +
+              '<span class="roadmap-row__effort">' + eff.effort + ' h</span>' +
+              '<span class="roadmap-row__tag roadmap-row__tag--' + eff.tag + '">' + (eff.tag === 'diy' ? 'DIY' : 'With FlipFix') + '</span>' +
+            '</div>'
+          );
+        }).join('');
+
+        roadmapBody.innerHTML = rows;
+        roadmapTotal.removeAttribute('hidden');
+        roadmapTotalScore.textContent = '+' + totalScore.toFixed(1) + ' points';
+        roadmapTotalRev.textContent = formatPct(totalScore);
+        roadmapTotalHrs.textContent = totalHrs + ' hrs';
+      }
+
+      // ---------- Render: tier-aware CTAs ----------
+      // Mid-page = soft offer (paper card, low pressure).
+      // Final = hard close (dark band, percentile-anchored urgency).
+      function renderCtas(score, url, tier, checks) {
+        const schedHref = 'schedule.html?url=' + encodeURIComponent(url);
+        const pct = getPercentile(score);
+        const topPct = 100 - pct;
+
+        // Mid: same low-pressure copy across tiers — the brief said this band
+        // should feel different *visually*, not pitchy. We let the tier flavor
+        // the headline only when the gap is meaningful.
+        const midDefaults = [
+          {
+            min: 9.0,
+            heading: 'Want me to walk through this live?',
+            sub: 'Free 15-minute call, no rebuild pitch unless you ask. Bring questions on any specific check above and I\'ll show you what a fix actually looks like in the wild.',
+            btn: 'Book the call',
+          },
+          {
+            min: 7.0,
+            heading: 'Want me to walk this live?',
+            sub: 'Free 15-minute call, no rebuild pitch unless you ask. We\'ll talk through the 2–3 fixes above and I\'ll tell you which ones are worth doing yourself.',
+            btn: 'Book the call',
+          },
+          {
+            min: 5.0,
+            heading: 'Want me to walk this live?',
+            sub: 'Free 15-minute call. I\'ll show you the partial-rebuild scope, what it costs, and what it doesn\'t — no pitch unless the math works for you.',
+            btn: 'Book the call',
+          },
+          {
+            min: 0,
+            heading: 'Want me to walk this live?',
+            sub: 'Free 15-minute call. I\'ll scope the rebuild on the screen with you and tell you whether the math works at your dealership before we talk about pricing.',
+            btn: 'Book the call',
+          },
+        ];
+        const mid = midDefaults.find(m => score >= m.min) || midDefaults[midDefaults.length - 1];
+        midCtaHeading.textContent = mid.heading;
+        midCtaSub.textContent = mid.sub;
+        midCtaBtn.textContent = mid.btn + ' →';
+        midCtaBtn.href = schedHref;
+
+        // Final: hard close anchored on sample size + percentile.
+        const finalCtaEyebrow = document.getElementById('final-cta-eyebrow');
+        finalCtaEyebrow.textContent = SAMPLE_SIZE + ' cabinet dealers audited';
+
+        let finalHead, finalSub;
+        if (score >= 9.0) {
+          finalHead = "You're in the top " + topPct + "%. Book the walkthrough before a competitor closes the gap.";
+          finalSub = "At this score level, the moves that matter are quiet — the gallery refresh, the testimonial swap, the contractor-program polish. We'll show you which ones move the percentile and which ones are vanity.";
+        } else if (score >= 7.0) {
+          finalHead = "You're top " + topPct + "%. Three or four fixes separate you from elite — book the walkthrough.";
+          finalSub = "We'll screen-share your site, walk every check above, and point at the 1–2 fixes with the highest revenue pickup at your score level.";
+        } else if (score >= 5.0) {
+          finalHead = "You sit at percentile " + pct + " of " + SAMPLE_SIZE + ". The dealers above you are closing the homeowners you're losing.";
+          finalSub = "On the call we'll scope the partial rebuild — what to ship in two weeks, what to ship in eight, and what to leave alone. Fixed numbers, no upsell.";
+        } else {
+          finalHead = "Bottom " + pct + "% of " + SAMPLE_SIZE + " dealers. Every week the rebuild is delayed, this score is leaking revenue.";
+          finalSub = "We'll walk every leak above on the call and quote a fixed rebuild number. If the math doesn't work at your dealership, we'll say so before we hang up.";
+        }
+        finalCtaHeading.textContent = finalHead;
+        finalCtaSub.textContent = finalSub;
+        finalCtaBtn.textContent = 'Book the 15-min walkthrough →';
+        finalCtaBtn.href = schedHref;
+      }
+
+      // ---------- Score history (localStorage) ----------
+      function historyKey(url) {
+        try { return 'flipfix-audit:' + new URL(url).hostname.replace(/^www\./, ''); }
+        catch { return null; }
+      }
+
+      function loadHistory(url) {
+        const k = historyKey(url);
+        if (!k) return [];
+        try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; }
+      }
+
+      function pushHistory(url, score, checks) {
+        const k = historyKey(url);
+        if (!k) return [];
+        const passing = (checks || [])
+          .filter(c => (c.tier || '').toLowerCase() === 'full')
+          .map(c => c.name);
+        const entry = { score: Number(score) || 0, date: new Date().toISOString(), passing };
+        let hist = loadHistory(url);
+        // De-duplicate identical back-to-back scans
+        const last = hist[hist.length - 1];
+        if (last && Math.abs(last.score - entry.score) < 0.05) return hist;
+        hist.push(entry);
+        if (hist.length > 12) hist = hist.slice(-12);
+        try { localStorage.setItem(k, JSON.stringify(hist)); } catch {}
+        return hist;
+      }
+
+      function renderHistoryStrip(history) {
+        const strip = document.getElementById('history-strip');
+        const text = document.getElementById('history-strip-text');
+        if (!strip || !text) return;
+        if (!history || history.length <= 1) {
+          strip.removeAttribute('hidden');
+          text.textContent = 'First scan on ' + formatDate(new Date()) + '. Re-scan in 30 days to track score changes.';
+          return;
+        }
+        const cur = history[history.length - 1];
+        const prev = history[history.length - 2];
+        const delta = (cur.score - prev.score);
+        const sign = delta >= 0 ? '+' : '';
+        const dir = delta > 0.05 ? 'up' : (delta < -0.05 ? 'down' : 'flat');
+        const dirCls = dir === 'up' ? 'history-strip__delta--up' : (dir === 'down' ? 'history-strip__delta--down' : '');
+
+        // Compare passing-check sets for improved / declined
+        const prevSet = new Set(prev.passing || []);
+        const curSet = new Set(cur.passing || []);
+        const improved = [...curSet].filter(n => !prevSet.has(n));
+        const declined = [...prevSet].filter(n => !curSet.has(n));
+        const improvedTxt = improved.length ? improved.join(', ') : 'none';
+        const declinedTxt = declined.length ? declined.join(', ') : 'none';
+
+        strip.removeAttribute('hidden');
+        text.innerHTML =
+          '<span class="history-strip__delta ' + dirCls + '">' +
+            'Previous: <strong>' + prev.score.toFixed(1) + '</strong> → Current: <strong>' + cur.score.toFixed(1) + '</strong>' +
+            ' (' + sign + delta.toFixed(1) + ')' +
+          '</span>' +
+          '<span class="history-strip__changes">' +
+            'Improved: <em>' + escapeHtml(improvedTxt) + '</em>. ' +
+            'Declined: <em>' + escapeHtml(declinedTxt) + '</em>.' +
+          '</span>';
+      }
+
+      // ---------- Benchmark refresh + exclusion ----------
+      // Update this date when the benchmark cohort is re-scanned.
+      const BENCHMARK_LAST_REFRESH = new Date('2026-04-01T00:00:00Z');
+
+      function daysAgo(d) {
+        const ms = Date.now() - d.getTime();
+        return Math.max(0, Math.floor(ms / 86400000));
+      }
+      function nextQuarterLabel(from) {
+        const d = new Date(from);
+        const q = Math.floor(d.getUTCMonth() / 3) + 1;
+        let nq = q + 1, ny = d.getUTCFullYear();
+        if (nq > 4) { nq = 1; ny += 1; }
+        return 'Q' + nq + ' ' + ny;
+      }
+      function relativeRefresh() {
+        const days = daysAgo(BENCHMARK_LAST_REFRESH);
+        if (days <= 0) return 'today';
+        if (days === 1) return '1 day ago';
+        if (days < 30) return days + ' days ago';
+        const months = Math.floor(days / 30);
+        return months === 1 ? '1 month ago' : months + ' months ago';
+      }
+      function updateBenchmarkRefreshNote() {
+        const note = document.getElementById('benchmark-refresh-note');
+        const sectionNote = document.getElementById('benchmark-section-note');
+        const nq = nextQuarterLabel(BENCHMARK_LAST_REFRESH);
+        if (note) note.textContent = 'Benchmark set last refreshed ' + relativeRefresh() +
+          ' · n=' + SAMPLE_SIZE + ' · Next refresh: ' + nq;
+        if (sectionNote) sectionNote.textContent = 'n=' + SAMPLE_SIZE + ' · refreshed ' + relativeRefresh();
+      }
+      function findBenchmarkOverlap(url) {
+        let userHost;
+        try { userHost = new URL(url).hostname.replace(/^www\./, '').toLowerCase(); }
+        catch { return null; }
+        for (const b of BENCHMARKS) {
+          if (b.label === 'Regional average') continue;
+          const labelKey = b.label.toLowerCase().replace(/\s+/g, '');
+          // strip non-letters from both sides for a loose match
+          const userKey = userHost.replace(/[^a-z]/g, '');
+          const benchKey = labelKey.replace(/[^a-z]/g, '');
+          // Match if user host's first-token contains the benchmark's name or vice versa.
+          const userFirstToken = userHost.split('.')[0].replace(/[^a-z]/g, '');
+          if (benchKey && (userKey.includes(benchKey) || benchKey.includes(userFirstToken))) {
+            return { label: b.label, host: userHost };
+          }
+        }
+        return null;
+      }
+      function renderBenchmarkExclusion(url) {
+        const exNode = document.getElementById('benchmark-exclusion');
+        const exText = document.getElementById('benchmark-exclusion-text');
+        if (!exNode || !exText) return;
+        const overlap = findBenchmarkOverlap(url);
+        if (!overlap) { exNode.setAttribute('hidden', ''); return; }
+        // Capitalize first char of host for display
+        const host = overlap.host;
+        const display = host.charAt(0).toUpperCase() + host.slice(1);
+        exNode.removeAttribute('hidden');
+        exText.textContent = display + ' excluded from comparison set (this is your site).';
+      }
+
+      // ---------- FAQ accordion ----------
+      function initFaq() {
+        document.querySelectorAll('.faq-item').forEach(item => {
+          const btn = item.querySelector('.faq-item__btn');
+          const body = item.querySelector('.faq-item__body');
+          if (!btn || !body) return;
+          btn.addEventListener('click', () => {
+            const open = item.getAttribute('aria-expanded') === 'true';
+            item.setAttribute('aria-expanded', open ? 'false' : 'true');
+            btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+          });
+        });
+      }
+
+      // ---------- Main render ----------
+      function renderResults(payload) {
+        const r = payload.result || {};
+        const finalUrl = payload.url || '';
+        lastUrlForRescan = finalUrl;
+        resetGate();
+
+        const score = typeof r.score === 'number' ? Math.max(0, Math.min(10, r.score)) : 0;
+        const tier = getTier(score);
+        const auditId = generateAuditId();
+
+        // Persist + read score history (used by KPI sparkline + history strip)
+        const history = pushHistory(finalUrl, score, r.checks);
+
+        renderStrip(finalUrl, auditId);
+        renderVerdict(score, finalUrl, tier);
+        renderHistoryStrip(history);
+        renderKpi(score, r.checks, r.pros, r.cons, history);
+        updateBenchmarkRefreshNote();
+        renderBenchmark(score, finalUrl);
+        renderBenchmarkExclusion(finalUrl);
+        renderDiagnosis(r.pros, r.cons, r.checks);
+        renderChecks(r.checks);
+        renderRoadmap(r.checks, score, finalUrl);
+        renderCtas(score, finalUrl, tier, r.checks);
+        renderFixTeasers(r.checks);
+        applyLockState(r.checks);
+
+        // Update n=47 in methodology stat
+        const methodN = document.getElementById('method-stat-n');
+        if (methodN) methodN.textContent = String(SAMPLE_SIZE);
+
+        showSection(resultsSection);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        animateScore(score);
+      }
+
+      // ---------- Actions ----------
+      btnShare.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          showToast('Link copied');
+        } catch {
+          showToast('Copy failed — select URL manually');
+        }
+      });
+      btnPdf.addEventListener('click', () => { window.print(); });
+      verdictPdf.addEventListener('click', () => { window.print(); });
+      btnRescan.addEventListener('click', () => {
+        if (!lastUrlForRescan) return;
+        urlInput.value = lastUrlForRescan;
+        showSection(loadingSection);
+        submitScan(lastUrlForRescan);
+      });
+
+      resetBtn.addEventListener('click', () => {
+        showSection(inputSection);
+        urlInput.value = '';
+        urlInput.removeAttribute('aria-invalid');
+        clearError();
+        resetGate();
+        urlInput.focus();
+      });
+
+      // ---------- Error handling ----------
+      function recoveryAction(code) {
+        const mail = 'mailto:shanehnguyen@flipfixdigital.com?subject=' +
+          encodeURIComponent('Audit URL — manual scan request') +
+          '&body=' + encodeURIComponent('Site URL: \n\n(Auto-attached so we can run the scan manually.)');
+        if (code === 'rate_limited') return ' <a href="schedule.html">Schedule the 15-min call &rarr;</a>';
+        if (code === 'blocked') return ' <a href="' + mail + '">Send me the URL directly &rarr;</a>';
+        if (code === 'claude_error' || code === 'parse_error' || code === 'internal') return ' <a href="' + mail + '">Email me &rarr;</a>';
+        return '';
+      }
+      function showInputError(code, message) {
+        showSection(inputSection);
+        const recovery = recoveryAction(code);
+        setError(escapeHtml(message || 'Something went wrong.') + recovery);
+        urlInput.setAttribute('aria-invalid', 'true');
+        urlInput.focus();
+      }
+
+      // Pre-flight checks: captcha + honeypot. Returns true if OK to submit,
+      // false if a check failed (and surfaces the error to the user).
+      function preflight(skipCaptcha) {
+        // Honeypot: if filled, deny silently. We still want to post the
+        // server-side honeypot guard, but block client-side first.
+        if (honeyInput && honeyInput.value && honeyInput.value.trim()) {
+          showInputError('honeypot', 'Submission blocked.');
+          return false;
+        }
+        // Captcha: required for direct form entries. Skipped for ?scan=
+        // entries that came from the homepage flow (they already cleared
+        // the homepage's friction; server rate limit + honeypot still apply).
+        if (!skipCaptcha) {
+          const given = (captchaInput.value || '').trim();
+          const givenNum = parseInt(given, 10);
+          if (!Number.isFinite(givenNum) || givenNum !== captchaAnswer) {
+            captchaInput.setAttribute('aria-invalid', 'true');
+            setError('That captcha answer is off. Try again.');
+            captchaInput.focus();
+            generateCaptcha();
+            return false;
+          }
+        }
+        // Quota check (UX): server is authoritative but we save a round-trip
+        // when the local count says they're already at zero.
+        const q = loadQuota();
+        if ((q.used || 0) >= RATE_LIMIT_MAX) {
+          showInputError('rate_limited', "You've used all 3 free scans for today.");
+          return false;
+        }
+        return true;
+      }
+
+      async function submitScan(value, opts) {
+        opts = opts || {};
+        clearError();
+        urlInput.removeAttribute('aria-invalid');
+        startLoading();
+        abortController = new AbortController();
+        const hardTimer = setTimeout(() => abortController.abort('client-timeout'), HARD_TIMEOUT_MS);
+        const captchaVal = captchaInput && captchaInput.value ? captchaInput.value.trim() : String(captchaAnswer);
+        const honeyVal = honeyInput && honeyInput.value ? honeyInput.value : '';
+        try {
+          const res = await fetch('/api/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: value,
+              ts: PAGE_LOAD_TS,
+              captcha: captchaVal,
+              honeypot: honeyVal,
+            }),
+            signal: abortController.signal,
+          });
+          let data;
+          try { data = await res.json(); } catch { data = null; }
+          stopLoading();
+          clearTimeout(hardTimer);
+
+          // Sync the UX quota strip from the server header on every response.
+          syncQuotaFromHeader(res.headers.get('X-RateLimit-Remaining'));
+
+          if (res.status === 429) {
+            const code = (data && data.code) || 'rate_limited';
+            const message = (data && data.error) || "You've used all 3 free scans for today.";
+            // Clamp local quota to zero so the UX reflects reality.
+            saveQuota({ day: todayKey(), used: RATE_LIMIT_MAX });
+            renderQuota();
+            showInputError(code, message);
+            return;
+          }
+          if (!res.ok) {
+            const code = data && data.code ? data.code : 'internal';
+            const message = data && data.error ? data.error : ('HTTP ' + res.status);
+            showInputError(code, message);
+            return;
+          }
+          if (data && data.result) {
+            // Cached results don't count against the daily limit (the server
+            // refunded our slot); only count fresh scans on the client.
+            if (!data.cached) bumpQuota();
+            // Refresh captcha for next scan.
+            generateCaptcha();
+            renderResults(data);
+            return;
+          }
+          showInputError('internal', 'The audit response was empty. Try again.');
+        } catch (err) {
+          stopLoading();
+          clearTimeout(hardTimer);
+          if (err && err.name === 'AbortError') {
+            showInputError('timeout', 'The scan took too long and was cancelled. Try again.');
+          } else {
+            showInputError('internal', 'Network error: ' + (err && err.message ? err.message : 'unknown'));
+          }
+        }
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearError();
+        urlInput.removeAttribute('aria-invalid');
+        let value = urlInput.value.trim();
+        // Normalize bare hostnames so dealers who type "yourshop.com" don't bounce.
+        if (value && !/^https?:\/\//i.test(value) && /^[a-z0-9][\w.-]*\.[a-z]{2,}/i.test(value)) {
+          value = 'https://' + value;
+          urlInput.value = value;
+        }
+        if (!isValidHttpUrl(value)) {
+          urlInput.setAttribute('aria-invalid', 'true');
+          setError('That doesn’t look like a valid URL. It should start with http:// or https://.');
+          urlInput.focus();
+          return;
+        }
+        if (!preflight(false)) return;
+        showSection(loadingSection);
+        submitScan(value);
+      });
+
+      // ---------- Test harness ----------
+      // Append ?mock=<score> to audit.html to render a fake report at any score.
+      // Example: audit.html?mock=5.8 — used for QA of tier-aware copy.
+      function maybeMock() {
+        const params = new URLSearchParams(window.location.search);
+        const mock = params.get('mock');
+        if (mock === null) return;
+        const s = parseFloat(mock);
+        if (!Number.isFinite(s)) return;
+        const clamped = Math.max(0, Math.min(10, s));
+        const fake = buildMockPayload(clamped);
+        showSection(resultsSection);
+        renderResults(fake);
+      }
+
+      function buildMockPayload(score) {
+        // Distribute the score across 10 weighted checks proportionally.
+        const weights = [1.5, 0.5, 1.5, 1.0, 1.5, 0.5, 1.0, 1.5, 0.5, 0.5];
+        const names = [
+          'Hero headline specificity',
+          'Trust signals with numbers',
+          'Contractor/trade entry point',
+          'Benefit specificity',
+          'Pricing signal',
+          'Process / steps section',
+          'Reviews / social proof',
+          'Free design / consultation offer',
+          'Gallery / project showcase',
+          'Closing CTA before footer',
+        ];
+        const frac = score / 10;
+        const checks = weights.map((w, i) => {
+          const raw = w * frac;
+          let earned = 0, tier = 'fail';
+          if (raw >= w * 0.75) { earned = w; tier = 'full'; }
+          else if (raw >= w * 0.25) { earned = w / 2; tier = 'partial'; }
+          else { earned = 0; tier = 'fail'; }
+          return {
+            name: names[i],
+            weight: w,
+            earned,
+            tier,
+            evidence: 'MOCK: simulated evidence for ' + names[i].toLowerCase() + '.',
+            business_impact: tier === 'full' ? null : 'MOCK: simulated business consequence — contractor quotes bouncing, homeowners leaving without pricing, free-design page invisible.',
+          };
+        });
+        // Adjust rounding to hit target score
+        let total = checks.reduce((a, c) => a + c.earned, 0);
+        const diff = score - total;
+        if (Math.abs(diff) > 0.01 && checks.length) {
+          checks[0].earned = Math.max(0, Math.min(checks[0].weight, checks[0].earned + diff));
+        }
+        // pros/cons asymmetry by tier
+        let prosN = 3, consN = 3;
+        if (score <= 2.0) { prosN = 0; consN = 5; }
+        else if (score <= 4.0) { prosN = 1; consN = 4; }
+        else if (score <= 6.0) { prosN = 2; consN = 4; }
+        else if (score <= 8.0) { prosN = 3; consN = 3; }
+        else { prosN = 3; consN = 2; }
+        const pros = [
+          { title: 'Hero specificity working', description: 'Your hero headline names a specific product category or geo — the page feels specialist, not generic.' },
+          { title: 'Gallery depth present', description: 'Real installs visible above the fold, enough to let a homeowner picture their own kitchen.' },
+          { title: 'Trust signals stacked', description: 'Numeric credibility signals near the top do the heavy lifting on the first-impression $10K wire.' },
+        ].slice(0, prosN);
+        const cons = [
+          { title: 'No pricing signal on homepage', description: 'Homeowners searching "what does a 10×10 kitchen cost" bounce within 8 seconds. The #1 search term in the industry has no answer on your page.' },
+          { title: 'Missing contractor fork', description: 'A GC doing 15 kitchens a year lands and sees no door for them. That\'s B2B revenue walking directly to a competitor.' },
+          { title: 'Free-design offer invisible', description: 'The page that drives 50% of revenue on well-built cabinet sites is buried. You\'re leaving the highest-leverage page unused.' },
+          { title: 'No closing CTA', description: 'The page fades into the footer. Visitors who scrolled past the gallery have no next step — they\'re the fence-sitters who were closest to booking.' },
+          { title: 'Benefit copy is generic', description: '"Quality, premium, trusted" — words that match every competitor. Nothing for a homeowner to anchor to.' },
+        ].slice(0, consN);
+        return {
+          url: 'https://example-cabinet-dealer.com/',
+          result: {
+            score,
+            interpretation: 'MOCK',
+            summary: 'MOCK payload for rendering QA.',
+            checks,
+            pros,
+            cons,
+          },
+        };
+      }
+
+      // ---------- Auto-submit from homepage band ----------
+      // The homepage final-CTA submits via GET to /audit.html?scan=<url>.
+      // When the param is present, we populate the input and trigger the
+      // same submit path the form uses — but we skip the visible captcha
+      // (the homepage already filtered low-effort entries via honeypot +
+      // time check, and the server-side rate limit + honeypot guard the
+      // expensive path).
+      function maybeAutoScan() {
+        const params = new URLSearchParams(window.location.search);
+        let target = params.get('scan');
+        if (!target) return;
+        // Homepage form ride-along honeypot — bots fill ?website=...
+        const inboundHoney = params.get('website');
+        if (inboundHoney && inboundHoney.trim()) {
+          showInputError('honeypot', 'Submission blocked.');
+          return;
+        }
+        // Normalize bare hostnames passed via ?scan=.
+        if (!/^https?:\/\//i.test(target) && /^[a-z0-9][\w.-]*\.[a-z]{2,}/i.test(target)) {
+          target = 'https://' + target;
+        }
+        if (!isValidHttpUrl(target)) {
+          urlInput.value = target;
+          urlInput.setAttribute('aria-invalid', 'true');
+          setError('That doesn’t look like a valid URL. It should start with http:// or https://.');
+          return;
+        }
+        urlInput.value = target;
+        // Honeypot check still applies on the auto-scan path.
+        if (honeyInput && honeyInput.value && honeyInput.value.trim()) {
+          showInputError('honeypot', 'Submission blocked.');
+          return;
+        }
+        // Local quota check (server is authoritative).
+        const q = loadQuota();
+        if ((q.used || 0) >= RATE_LIMIT_MAX) {
+          showInputError('rate_limited', "You've used all 3 free scans for today.");
+          return;
+        }
+        showSection(loadingSection);
+        submitScan(target, { skipCaptcha: true });
+      }
+
+      // ---------- Locked gate (email-to-unlock) ----------
+      const teaserGrid  = document.getElementById('fix-teaser-grid');
+      const emailForm   = document.getElementById('audit-email-form');
+      const emailInput  = document.getElementById('audit-email');
+      const emailHoney  = document.getElementById('audit-email-honey');
+      const emailSubmit = document.getElementById('audit-email-submit');
+      const emailMsg    = document.getElementById('audit-email-msg');
+
+      const UNLOCK_KEY = 'flipfix:audit:unlocked';
+
+      // Top fixes by points lost — mirrors api/email-report.js:pickTopFixes
+      // so the teaser cards match what's in the email.
+      function pickTopFixes(checks, n) {
+        if (!Array.isArray(checks)) return [];
+        return checks
+          .map(c => {
+            const w = Number(c && c.weight);
+            const e = Number(c && c.earned);
+            if (!Number.isFinite(w) || !Number.isFinite(e)) return null;
+            return {
+              name: (c && c.name) || '',
+              weight: w,
+              earned: e,
+              gap: w - e,
+              business_impact: (c && c.business_impact) || '',
+            };
+          })
+          .filter(c => c && c.gap > 0)
+          .sort((a, b) => b.gap - a.gap || b.weight - a.weight)
+          .slice(0, n);
+      }
+
+      // Lucide "Lock" icon
+      const LOCK_SVG =
+        '<svg class="fix-teaser-card__lock" viewBox="0 0 24 24" fill="none" ' +
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
+          'stroke-linejoin="round" aria-hidden="true">' +
+          '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>' +
+          '<path d="M7 11V7a5 5 0 0 1 10 0v4"/>' +
+        '</svg>';
+
+      function renderFixTeasers(checks) {
+        if (!teaserGrid) return;
+        const fixes = pickTopFixes(checks, 3);
+        if (!fixes.length) {
+          teaserGrid.innerHTML = '';
+          return;
+        }
+        teaserGrid.innerHTML = fixes.map((f, i) => {
+          const lost = f.gap.toFixed(2);
+          const num = String(i + 1).padStart(2, '0');
+          const body = f.business_impact ||
+            'Detailed impact analysis — visible after unlock. The full report quotes specific page text and explains how each gap affects revenue.';
+          return (
+            '<div class="fix-teaser-card" role="button" tabindex="0" ' +
+                 'aria-label="Unlock the full breakdown to read this fix">' +
+              LOCK_SVG +
+              '<span class="fix-teaser-card__num">#' + num + '</span>' +
+              '<h4 class="fix-teaser-card__title">' + escapeHtml(f.name) + '</h4>' +
+              '<p class="fix-teaser-card__lost">' + lost + ' points lost</p>' +
+              '<p class="fix-teaser-card__body">' + escapeHtml(body) + '</p>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      // Clicking a locked teaser card jumps focus to the email input and
+      // pulses its border so it's clear what to do next. Wired once via
+      // delegation so re-renders don't stack listeners.
+      function pulseEmailInput() {
+        if (!emailInput) return;
+        (emailForm || emailInput).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        emailInput.classList.remove('is-pulsing');
+        // Force reflow so the animation re-triggers on rapid repeat clicks.
+        void emailInput.offsetWidth;
+        emailInput.classList.add('is-pulsing');
+        setTimeout(() => emailInput.classList.remove('is-pulsing'), 700);
+        setTimeout(() => {
+          try { emailInput.focus({ preventScroll: true }); }
+          catch { emailInput.focus(); }
+        }, 450);
+      }
+      if (teaserGrid) {
+        teaserGrid.addEventListener('click', (e) => {
+          if (e.target.closest('.fix-teaser-card')) pulseEmailInput();
+        });
+        teaserGrid.addEventListener('keydown', (e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.fix-teaser-card')) {
+            e.preventDefault();
+            pulseEmailInput();
+          }
+        });
+      }
+
+      function isUnlocked() {
+        try { return localStorage.getItem(UNLOCK_KEY) === '1'; }
+        catch { return false; }
+      }
+      function setUnlocked() {
+        try { localStorage.setItem(UNLOCK_KEY, '1'); } catch {}
+      }
+
+      // Lock the report behind the email gate when there are fixes to show
+      // and the user hasn't already unlocked. Perfect-score scans (no fixes)
+      // skip the gate — nothing to tease.
+      function applyLockState(checks) {
+        if (!resultsSection) return;
+        const hasFixes = pickTopFixes(checks, 1).length > 0;
+        if (!hasFixes || isUnlocked()) {
+          resultsSection.classList.remove('is-locked');
+        } else {
+          resultsSection.classList.add('is-locked');
+        }
+      }
+
+      function resetGate() {
+        if (emailForm) emailForm.reset();
+        if (emailMsg) {
+          emailMsg.textContent = '';
+          emailMsg.className = 'audit-locked-gate__msg';
+        }
+        if (emailInput) emailInput.removeAttribute('aria-invalid');
+        if (emailSubmit) {
+          emailSubmit.disabled = false;
+          emailSubmit.textContent = 'Unlock';
+        }
+      }
+
+      function setEmailMsg(text, kind) {
+        if (!emailMsg) return;
+        emailMsg.textContent = text || '';
+        emailMsg.className = 'audit-locked-gate__msg' + (kind ? ' audit-locked-gate__msg--' + kind : '');
+      }
+
+      if (emailForm) {
+        emailForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          if (!lastUrlForRescan) {
+            setEmailMsg('Run a scan first, then we can unlock the breakdown.', 'err');
+            return;
+          }
+          const value = (emailInput.value || '').trim();
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            emailInput.setAttribute('aria-invalid', 'true');
+            setEmailMsg('Enter a valid email address.', 'err');
+            emailInput.focus();
+            return;
+          }
+          emailInput.removeAttribute('aria-invalid');
+          emailSubmit.disabled = true;
+          emailSubmit.textContent = 'Unlocking…';
+          setEmailMsg('', null);
+
+          try {
+            const resp = await fetch('/api/email-report', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: value,
+                url: lastUrlForRescan,
+                consent: false,
+                honeypot: emailHoney ? emailHoney.value : '',
+              }),
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok || !data.success) {
+              setEmailMsg(data.error || 'Could not unlock. Try again.', 'err');
+              emailSubmit.disabled = false;
+              emailSubmit.textContent = 'Unlock';
+              return;
+            }
+            setUnlocked();
+            resultsSection.classList.remove('is-locked');
+          } catch (err) {
+            setEmailMsg('Network error. Check your connection and try again.', 'err');
+            emailSubmit.disabled = false;
+            emailSubmit.textContent = 'Unlock';
+          }
+        });
+      }
+
+      // ---------- Init ----------
+      initFaq();
+      maybeMock();
+      maybeAutoScan();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+---
+/* GuaranteeSpec — THE SIGNATURE. "The fine print, printed big."
+   Oversized official-document treatment (spec-sheet / permit). Tabular mono,
+   stamp header, conditions in large legible type. Conditions are ALWAYS on the
+   same page as the guarantee (spec §3 trust rule). Styling in components.css. */
+interface Props {
+  stamp: string;
+  title: string;
+  conditions: string[];
+  foot?: string;
+}
+const { stamp, title, conditions, foot } = Astro.props;
+---
+<article class="gspec">
+  <div class="gspec__header">
+    <span class="gspec__stamp">{stamp}</span>
+    <h3 class="gspec__title">{title}</h3>
+  </div>
+  <div class="gspec__body">
+    <ol class="gspec__conditions">
+      {conditions.map((c) => <li><span>{c}</span></li>)}
+    </ol>
+  </div>
+  {foot && <p class="gspec__foot">{foot}</p>}
+</article>

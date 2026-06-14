@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F6F2EC">
+  <!-- Dev specimen page — excluded from search + sitemap. -->
+  <meta name="robots" content="noindex, nofollow">
+  <title>Style guide &mdash; FlipFix Digital (internal)</title>
+  <meta name="description" content="Internal design-system specimen — typography, color tokens, button and form styles.">
+
+  <meta property="og:site_name" content="FlipFix Digital">
+  <meta property="og:title" content="Style guide — FlipFix Digital (internal)">
+  <meta property="og:description" content="Internal design-system specimen — typography, color tokens, button and form styles.">
+  <meta property="og:url" content="https://flipfixdigital.com/styleguide">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://flipfixdigital.com/assets/images/og-cover.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Style guide — FlipFix Digital (internal)">
+  <meta name="twitter:description" content="Internal design-system specimen — typography, color tokens, button and form styles.">
+  <meta name="twitter:image" content="https://flipfixdigital.com/assets/images/og-cover.svg">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..600,30..100;1,9..144,400..500,30..100&family=Manrope:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+
+  <style>
+    /* Styleguide-only scaffolding — NOT part of production CSS. */
+    .sg-row {
+      display: grid;
+      grid-template-columns: 14rem 1fr;
+      gap: var(--space-6);
+      align-items: baseline;
+      padding-block: var(--space-6);
+      border-bottom: 1px solid var(--rule-soft);
+    }
+    .sg-row:last-child { border-bottom: 0; }
+    .sg-label {
+      font-family: var(--font-body);
+      font-size: var(--fs-caption);
+      font-weight: var(--fw-semibold);
+      letter-spacing: var(--tracking-caps);
+      text-transform: uppercase;
+      color: var(--warm-gray);
+    }
+    .sg-label code {
+      display: block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.75rem;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--ink-soft);
+      margin-top: var(--space-1);
+    }
+    .sg-swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+      gap: var(--space-4);
+    }
+    .sg-swatch {
+      border: 1px solid var(--rule);
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .sg-swatch__chip {
+      height: 4.5rem;
+      border: 1px solid var(--rule);
+    }
+    .sg-swatch__name {
+      font-size: var(--fs-caption);
+      font-weight: var(--fw-semibold);
+      color: var(--ink);
+    }
+    .sg-swatch__hex {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.75rem;
+      color: var(--warm-gray);
+    }
+    @media (max-width: 40em) {
+      .sg-row { grid-template-columns: 1fr; gap: var(--space-3); }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-nav">
+    <div class="container site-nav__inner">
+      <a class="site-nav__brand" href="index.html">FlipFix Digital</a>
+      <nav aria-label="Primary">
+        <ul class="site-nav__links">
+          <li><a href="work.html">Work</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- =================== Intro =================== -->
+    <section class="section">
+      <div class="container-narrow">
+        <p class="eyebrow">00 &mdash; Specimen</p>
+        <h1>The style guide.</h1>
+        <p class="lede">A rendered specimen of the design tokens and base components that drive the site. Use this page to eyeball typography, color, and interactive states before building page content.</p>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- =================== Typography =================== -->
+    <section class="section">
+      <div class="container-narrow">
+        <h6>01 &mdash; Typography</h6>
+        <p class="caption" style="margin-top: var(--space-2);">Fraunces for display, Manrope for body. H1 uses the Fraunces optical-size axis at 144 for dramatic contrast.</p>
+
+        <div class="sg-row">
+          <div class="sg-label">H1 <code>Fraunces / clamp(48–96px)</code></div>
+          <h1>Cabinet dealer websites, built by a specialist.</h1>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">H2 <code>Fraunces / clamp(36–60px)</code></div>
+          <h2>The split that kills most cabinet sites.</h2>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">H3 <code>Fraunces / clamp(26–38px)</code></div>
+          <h3>Your 40+ door styles deserve better than a PDF.</h3>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">H4 <code>Fraunces / 23px</code></div>
+          <h4>Teardown call — fifteen minutes.</h4>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">H5 <code>Manrope semibold / 18px</code></div>
+          <h5>Fixed scope, fixed price, dealer-owned.</h5>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">H6 (eyebrow) <code>Manrope semibold caps / 13px</code></div>
+          <h6>Section label</h6>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">Body paragraph <code>Manrope / 17px / 1.65 / max 65ch</code></div>
+          <p>Your site serves two people who want opposite things. A homeowner browsing for weeks wants the look, the feel, and a designer to hold their hand. A contractor needs price, availability, and a spec sheet they can forward to their client by four o&rsquo;clock. Most dealers try to build one site for both. It ends up sucking at both.</p>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">Lede <code>.lede / 21px / ink-soft</code></div>
+          <p class="lede">Your site serves two people who want opposite things. Most dealers try to build one site for both. We build yours to handle the split cleanly.</p>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">Caption <code>.caption / 13px / warm-gray</code></div>
+          <p class="caption">Photography: PK Cabinets showroom, installed February 2025.</p>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">Link (inline) <code>underline / gold decoration</code></div>
+          <p>Read the full <a href="work.html">PK Cabinets case study</a> or <a href="audit.html">run a free teardown</a>.</p>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">Blockquote</div>
+          <blockquote>I only do cabinets. That&rsquo;s why the work is better.</blockquote>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- =================== Color =================== -->
+    <section class="section section-bleed">
+      <div class="container-narrow">
+        <h6>02 &mdash; Color</h6>
+        <p class="caption" style="margin-top: var(--space-2);">Warm cream base, near-black ink, ochre accent, warm gray secondary. No cool tones, no gradients.</p>
+
+        <div class="sg-swatches" style="margin-top: var(--space-8);">
+          <div class="sg-swatch">
+            <div class="sg-swatch__chip" style="background: var(--bg-cream);"></div>
+            <span class="sg-swatch__name">Bg cream</span>
+            <span class="sg-swatch__hex">#F6F2EC &middot; --bg-cream</span>
+          </div>
+          <div class="sg-swatch">
+            <div class="sg-swatch__chip" style="background: var(--ink);"></div>
+            <span class="sg-swatch__name">Ink</span>
+            <span class="sg-swatch__hex">#1A1A1A &middot; --ink</span>
+          </div>
+          <div class="sg-swatch">
+            <div class="sg-swatch__chip" style="background: var(--gold);"></div>
+            <span class="sg-swatch__name">Gold</span>
+            <span class="sg-swatch__hex">#A89060 &middot; --gold</span>
+          </div>
+          <div class="sg-swatch">
+            <div class="sg-swatch__chip" style="background: var(--warm-gray);"></div>
+            <span class="sg-swatch__name">Warm gray</span>
+            <span class="sg-swatch__hex">#6B6258 &middot; --warm-gray</span>
+          </div>
+          <div class="sg-swatch">
+            <div class="sg-swatch__chip" style="background: var(--bg-cream-deep);"></div>
+            <span class="sg-swatch__name">Cream deep</span>
+            <span class="sg-swatch__hex">derived &middot; --bg-cream-deep</span>
+          </div>
+          <div class="sg-swatch">
+            <div class="sg-swatch__chip" style="background: var(--gold-deep);"></div>
+            <span class="sg-swatch__name">Gold deep</span>
+            <span class="sg-swatch__hex">derived &middot; --gold-deep</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- =================== Buttons =================== -->
+    <section class="section">
+      <div class="container-narrow">
+        <h6>03 &mdash; Buttons</h6>
+        <p class="caption" style="margin-top: var(--space-2);">Square-edged. Ink fill for primary, ink outline for secondary, underlined for ghost.</p>
+
+        <div class="sg-row">
+          <div class="sg-label">Primary <code>.btn .btn-primary</code></div>
+          <div class="cluster">
+            <a class="btn btn-primary" href="#">Get a free teardown</a>
+            <a class="btn btn-primary btn-lg" href="#">Large primary</a>
+            <a class="btn btn-primary btn-sm" href="#">Small primary</a>
+          </div>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">Secondary <code>.btn .btn-secondary</code></div>
+          <div class="cluster">
+            <a class="btn btn-secondary" href="#">See the work</a>
+            <a class="btn btn-secondary btn-lg" href="#">Large secondary</a>
+            <a class="btn btn-secondary btn-sm" href="#">Small secondary</a>
+          </div>
+        </div>
+
+        <div class="sg-row">
+          <div class="sg-label">Ghost / text <code>.btn .btn-ghost</code></div>
+          <div class="cluster">
+            <a class="btn btn-ghost" href="#">Keep reading</a>
+            <a class="link-arrow" href="#">View the case study</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- =================== Form =================== -->
+    <section class="section section-bleed">
+      <div class="container-narrow">
+        <h6>04 &mdash; Form input</h6>
+        <p class="caption" style="margin-top: var(--space-2);">Square corners, hairline border, gold focus ring. Labels set in uppercase caption.</p>
+
+        <form class="form" style="margin-top: var(--space-8); max-width: 32rem;" onsubmit="return false;">
+          <div class="form-field">
+            <label class="form-label" for="sg-name">Your name</label>
+            <input class="form-input" id="sg-name" type="text" placeholder="Jane Dealer">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="sg-url">Current site URL</label>
+            <input class="form-input" id="sg-url" type="url" placeholder="https://yourcabinetshop.com">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="sg-notes">What&rsquo;s broken about your current setup?</label>
+            <textarea class="form-textarea" id="sg-notes" placeholder="Contractors keep emailing me Saturday mornings…"></textarea>
+            <span class="form-hint">Two sentences is plenty. I read every one.</span>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Send it over</button>
+            <a class="btn btn-ghost" href="#">Or book a call</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- =================== Misc chrome =================== -->
+    <section class="section">
+      <div class="container-narrow">
+        <h6>05 &mdash; Misc</h6>
+        <div class="sg-row">
+          <div class="sg-label">Tag / pill</div>
+          <div class="cluster">
+            <span class="tag">Shopline</span>
+            <span class="tag">Shopify</span>
+            <span class="tag">Custom stack</span>
+          </div>
+        </div>
+        <div class="sg-row">
+          <div class="sg-label">Placeholder slot</div>
+          <div class="placeholder" style="min-height: 10rem;">Image placeholder</div>
+        </div>
+        <div class="sg-row">
+          <div class="sg-label">Horizontal rule</div>
+          <hr class="rule">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div>
+        <p class="site-footer__tagline">FlipFix Digital &mdash; Cabinet dealer sites. Austin, TX.</p>
+        <p class="site-footer__copy">&copy; 2026 FlipFix Digital</p>
+      </div>
+      <nav aria-label="Footer">
+        <ul class="site-footer__links">
+          <li><a href="work.html">Work</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="mailto:shanehnguyen@flipfixdigital.com">Email</a></li>
+        </ul>
+      </nav>
+      <div class="site-footer__meta-right">
+        <a class="site-footer__email" href="mailto:shanehnguyen@flipfixdigital.com">shanehnguyen@flipfixdigital.com</a>
+        <p class="site-footer__tagline-sm">Booking one project at a time.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+---
+/* BareLayout — single-goal pages (/book). No nav, no footer links;
+   legal line only. Spec §3: "the page IS the CTA." */
+import { site } from '../data/site.config';
+import Analytics from '../components/Analytics.astro';
+import '@fontsource-variable/archivo';
+import '@fontsource-variable/source-serif-4';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  noindex?: boolean;
+}
+const { title, description, ogImage = '/assets/images/og-cover.svg', noindex = true } = Astro.props;
+const canonical = new URL(Astro.url.pathname, site.url).toString();
+const fullTitle = title.includes(site.brand) ? title : `${title} | ${site.brand}`;
+const year = 2026;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F4F1EA" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex
+      ? <meta name="robots" content="noindex, nofollow" />
+      : <meta name="robots" content="index, follow" />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(ogImage, site.url).toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg" />
+    <Analytics />
+  </head>
+  <body>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="bare-legal">
+      <span>© {year} {site.brand}</span>
+      <span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></span>
+    </footer>
+    <style>
+      .bare-legal {
+        max-width: var(--container-standard);
+        margin-inline: auto;
+        padding: var(--space-8) var(--gutter);
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);
+        font-size: var(--fs-caption); color: var(--ink-50);
+      }
+      .bare-legal a { color: var(--ink-50); }
+    </style>
+  </body>
+</html>

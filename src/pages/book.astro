@@ -1,0 +1,467 @@
+---
+/* /book — the 30-minute strategy session funnel. Copies the King Kong booking
+   flow beat for beat (intro → name → email → qualifiers → details → Calendly
+   calendar), with KK's qualifiers swapped for kitchen-and-bath ones and the
+   carnival voice swapped for Shane's straight register. Progress dots (gold
+   fill, no "X of Y" numbers); {first} injected through the flow; choice screens
+   are tap-to-select cards. Name + email captured up front (so a mid-funnel
+   bail still leaves contact), heavy contact at the end. The qualifier intel
+   POSTs to the API on "Book my session" so Shane gets the lead even if the
+   calendar step is abandoned; the real booking happens in the Calendly embed.
+   [ TRUE DETAIL ] = a real fact only Shane supplies. */
+import BareLayout from '../layouts/BareLayout.astro';
+import { site } from '../data/site.config';
+const minutes = site.callLengthMinutes;
+const DOTS = 12; // question screens 1–12
+---
+<BareLayout
+  title={`Book your ${minutes}-minute strategy session`}
+  description="Thirty minutes with me and you walk off with a plan to win back the jobs you're losing online. A few quick questions, then pick a time."
+  noindex={true}
+>
+  <div data-book-flow>
+    <div class="bk-prog" data-prog-row aria-hidden="true">
+      {Array.from({ length: DOTS }).map(() => <span class="bk-dot"></span>)}
+    </div>
+
+    <section class="section bk-funnel">
+      <div class="container container--narrow">
+        <form class="bk-form" data-book-form novalidate>
+
+          <!-- 0 — INTRO -->
+          <fieldset class="bk-screen bk-screen--intro" data-screen="0" data-active>
+            <p class="eyebrow">For kitchen &amp; bath shops</p>
+            <h1 class="bk-intro__h1">Your free {minutes}-minute game plan</h1>
+            <p class="bk-intro__lede">Thirty minutes with me, and you walk off with a plan to win back the jobs you’re losing online. The kind of plan I’d normally only put together for a paying client.</p>
+            <p class="bk-intro__sub">It’s for owners who do good work and are done watching it go to shops that do worse.</p>
+            <div class="bk-nav"><button type="button" class="btn btn--primary btn--lg" data-next>Get started <span aria-hidden="true">→</span></button></div>
+            {/* PROOF SLOT: real star rating / review count goes here once it exists (KK runs "4.8 stars out of 7,576 reviews"). Off until it's real. */}
+          </fieldset>
+
+          <!-- 1 — NAME -->
+          <fieldset class="bk-screen" data-screen="1" hidden>
+            <h2 class="bk-q">Quick and easy, I promise. First off, what do I call you?</h2>
+            <input class="bk-input" name="name" type="text" autocomplete="given-name" placeholder="First name" required />
+            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- 2 — EMAIL -->
+          <fieldset class="bk-screen" data-screen="2" hidden>
+            <h2 class="bk-q">Good to meet you, <span data-first>there</span>. What’s the best email for you?</h2>
+            <input class="bk-input" name="email" type="email" autocomplete="email" placeholder="you@email.com" required />
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- 3 — FIT (single-select, auto-advance) -->
+          <fieldset class="bk-screen" data-screen="3" hidden>
+            <h2 class="bk-q">Thanks <span data-first>there</span>. A few quick questions so I know whether I’m the right guy for your shop.</h2>
+            <p class="bk-sub">First: is your work mostly for homeowners, or builder and contractor accounts?</p>
+            <div class="bk-cards" data-name="customers" data-single>
+              <button type="button" class="bk-card" data-value="Homeowners">Homeowners</button>
+              <button type="button" class="bk-card" data-value="Builder & contractor accounts">Builder &amp; contractor accounts</button>
+              <button type="button" class="bk-card" data-value="A mix">A mix</button>
+            </div>
+            <p class="bk-why">It’s the one that tells me fast if I’m your guy. Mostly wholesale and I’ll say so on the call instead of taking your money.</p>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button></div>
+          </fieldset>
+
+          <!-- 4 — CHANNELS (multi-select) -->
+          <fieldset class="bk-screen" data-screen="4" hidden>
+            <h2 class="bk-q">Where does most of your work come from right now? Pick all that apply.</h2>
+            <div class="bk-cards bk-cards--multi" data-name="sources" data-multi>
+              <button type="button" class="bk-card" data-value="Word of mouth">Word of mouth</button>
+              <button type="button" class="bk-card" data-value="Google">Google</button>
+              <button type="button" class="bk-card" data-value="Angi or Houzz">Angi or Houzz</button>
+              <button type="button" class="bk-card" data-value="Repeat customers">Repeat customers</button>
+              <button type="button" class="bk-card" data-value="Facebook / Instagram">Facebook / Instagram</button>
+              <button type="button" class="bk-card" data-value="Somewhere else">Somewhere else</button>
+            </div>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- 5 — WEBSITE -->
+          <fieldset class="bk-screen" data-screen="5" hidden>
+            <h2 class="bk-q"><span data-first>There</span>, what’s your website? If you don’t have one yet, just type “don’t have one.”</h2>
+            <input class="bk-input" name="website" type="text" placeholder="yoursite.com" required />
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- 6 — THE SHOP -->
+          <fieldset class="bk-screen" data-screen="6" hidden>
+            <h2 class="bk-q">In a sentence or two, what’s the shop known for, and what’s a typical job worth?</h2>
+            <textarea class="bk-input" name="shopDesc" rows="3" required></textarea>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- 7 — THE OBSTACLE -->
+          <fieldset class="bk-screen" data-screen="7" hidden>
+            <h2 class="bk-q"><span data-first>There</span>, be straight with me. What’s the one thing about getting found and getting picked online that’s eating at you most?</h2>
+            <p class="bk-why">Don’t tidy it up. Give me the real version, in your own words. It’s the first thing I read before we talk.</p>
+            <textarea class="bk-input" name="obstacle" rows="4" required></textarea>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- 8 — SIZE (single-select, auto-advance) -->
+          <fieldset class="bk-screen" data-screen="8" hidden>
+            <h2 class="bk-q">Roughly how many kitchens or baths do you run in a month?</h2>
+            <p class="bk-why">I ask so what I tell you is actually worth your money. Under a certain size, hiring me doesn’t pay off, and I’d rather you hear that now.</p>
+            <div class="bk-cards bk-cards--row" data-name="jobs" data-single>
+              <button type="button" class="bk-card" data-value="1–2">1–2</button>
+              <button type="button" class="bk-card" data-value="3–5">3–5</button>
+              <button type="button" class="bk-card" data-value="6–10">6–10</button>
+              <button type="button" class="bk-card" data-value="10+">10+</button>
+            </div>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button></div>
+          </fieldset>
+
+          <!-- 9 — TIMELINE (single-select, auto-advance) -->
+          <fieldset class="bk-screen" data-screen="9" hidden>
+            <h2 class="bk-q">How soon are you trying to sort this out?</h2>
+            <div class="bk-cards" data-name="timeline" data-single>
+              <button type="button" class="bk-card" data-value="Right away">Right away</button>
+              <button type="button" class="bk-card" data-value="Next month or two">Next month or two</button>
+              <button type="button" class="bk-card" data-value="Sometime this year">Sometime this year</button>
+              <button type="button" class="bk-card" data-value="Just looking for now">Just looking for now</button>
+            </div>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button></div>
+          </fieldset>
+
+          <!-- 10 — ATTRIBUTION -->
+          <fieldset class="bk-screen" data-screen="10" hidden>
+            <h2 class="bk-q">Last easy one. Where’d you first come across me?</h2>
+            <select class="bk-input bk-select" name="attribution" required>
+              <option value="" disabled selected>Pick one</option>
+              <option value="Google">Google</option>
+              <option value="A referral">A referral</option>
+              <option value="Facebook or Instagram">Facebook or Instagram</option>
+              <option value="A mailer or email">A mailer or email</option>
+              <option value="Saw a Kitchen Websites site">Saw a Kitchen Websites site</option>
+              <option value="Somewhere else">Somewhere else</option>
+            </select>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- 11 — SHOW-UP (single-select, auto-advance) -->
+          <fieldset class="bk-screen" data-screen="11" hidden>
+            <h2 class="bk-q">You made it, <span data-first>there</span>. Last one.</h2>
+            <p class="bk-sub">I run every session myself and I block the time for you. If you book, will you show up, or give me a heads-up if something comes up?</p>
+            <div class="bk-cards" data-name="showup" data-single>
+              <button type="button" class="bk-card" data-value="Yes, that's fair">Yes, that’s fair</button>
+              <button type="button" class="bk-card" data-value="No">No</button>
+            </div>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button></div>
+          </fieldset>
+
+          <!-- 12 — DETAILS + BOOK -->
+          <fieldset class="bk-screen" data-screen="12" hidden>
+            <h2 class="bk-q">Looks like a fit, <span data-first>there</span>. Last step is your details, then you’ll pick a time on the calendar.</h2>
+            <div class="bk-grid2">
+              <input class="bk-input" name="firstNamePrefill" type="text" autocomplete="given-name" placeholder="First name" data-firstfill required />
+              <input class="bk-input" name="lastName" type="text" autocomplete="family-name" placeholder="Last name" required />
+            </div>
+            <input class="bk-input" name="mobile" type="tel" autocomplete="tel" placeholder="Best mobile" required />
+            <input class="bk-input" name="shopName" type="text" placeholder="Shop name" required />
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="submit" class="btn btn--primary btn--lg">Book my session <span aria-hidden="true">→</span></button></div>
+            <p class="bk-form__status mono" data-book-status hidden></p>
+          </fieldset>
+
+          <!-- 13 — CALENDAR -->
+          <fieldset class="bk-screen bk-screen--cal" data-screen="13" hidden>
+            <div class="bk-cal">
+              <div class="bk-cal__panel">
+                <p class="bk-cal__brand mono">{site.founder} · {site.brand}</p>
+                <h2 class="bk-cal__h">{minutes}-Minute Strategy Session</h2>
+                <p class="bk-cal__meta mono"><span>🕧 {minutes} min</span><span>📞 Phone call</span></p>
+                <p class="bk-cal__copy">Claim your free, no-obligation {minutes}-minute strategy session. Straight talk, a real plan, and a clear next step. Pick whatever time works.</p>
+                <p class="bk-cal__ps">P.S. Nothing on the calendar that works for you? <a href={`mailto:${site.email}`}>Reach me here.</a></p>
+              </div>
+              <div class="bk-cal__widget" data-calendly></div>
+            </div>
+          </fieldset>
+
+          <!-- honeypot -->
+          <div class="honeypot" aria-hidden="true">
+            <label for="company">Company (leave blank)</label>
+            <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- CONFIRMATION (after Calendly schedules) -->
+  <section class="section bk-done" data-book-done hidden>
+    <div class="container container--narrow">
+      <p class="eyebrow">You’re on the books</p>
+      <h2 class="bk-done__h">You’re on the books, <span data-first>there</span>.</h2>
+      <p class="bk-done__p">Check your email for the time and the call link. Before we talk, I’ll dig into your shop’s setup so we don’t waste a minute playing catch-up.</p>
+      <p class="bk-done__sig">See you then.<br />— Shane</p>
+    </div>
+  </section>
+</BareLayout>
+
+<script>
+  import { site } from '../data/site.config';
+  const bookingUrl = site.bookingUrl;
+
+  const form = document.querySelector<HTMLFormElement>('[data-book-form]');
+  const flow = document.querySelector<HTMLElement>('[data-book-flow]');
+  const done = document.querySelector<HTMLElement>('[data-book-done]');
+  const status = document.querySelector<HTMLElement>('[data-book-status]');
+  const dots = Array.from(document.querySelectorAll<HTMLElement>('.bk-dot'));
+  const progRow = document.querySelector<HTMLElement>('[data-prog-row]');
+
+  type Answers = Record<string, string | string[]>;
+  const answers: Answers = {};
+
+  if (form) {
+    const screens = Array.from(form.querySelectorAll<HTMLElement>('.bk-screen'));
+    const total = screens.length; // 0..13
+    let i = 0;
+
+    const setFirst = (name: string) => {
+      document.querySelectorAll<HTMLElement>('[data-first]').forEach((el) => { el.textContent = name; });
+      document.querySelectorAll<HTMLInputElement>('[data-firstfill]').forEach((el) => { if (!el.value) el.value = name; });
+    };
+
+    const flag = (screen: HTMLElement) => {
+      screen.classList.remove('bk-screen--err');
+      void screen.offsetWidth;
+      screen.classList.add('bk-screen--err');
+      return false;
+    };
+
+    const collect = (screen: HTMLElement) => {
+      screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input[name], textarea[name], select[name]').forEach((f) => {
+        if ((f as HTMLInputElement).type === 'radio' || (f as HTMLInputElement).type === 'checkbox') return;
+        if (f.name === 'company' || f.name === 'firstNamePrefill') return;
+        answers[f.name] = f.value.trim();
+      });
+    };
+
+    const valid = (screen: HTMLElement) => {
+      const fields = Array.from(screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input[name]:not([data-firstfill]), textarea[name], select[name]'));
+      for (const f of fields) {
+        if (f.name === 'company') continue;
+        if ((f as HTMLInputElement).type === 'radio' || (f as HTMLInputElement).type === 'checkbox') continue;
+        if (!f.value.trim()) return flag(screen);
+        if ((f as HTMLInputElement).type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value)) return flag(screen);
+      }
+      // data-firstfill (the prefilled first name on the details screen) is required too
+      const ff = screen.querySelector<HTMLInputElement>('[data-firstfill]');
+      if (ff && !ff.value.trim()) return flag(screen);
+      const multi = screen.querySelector<HTMLElement>('[data-multi]');
+      if (multi && !multi.querySelector('.is-on')) return flag(screen);
+      return true;
+    };
+
+    const updateDots = () => {
+      const onCal = i >= total - 1;
+      if (progRow) progRow.style.display = onCal ? 'none' : '';
+      const filled = i >= 1 && i <= dots.length ? i : (i > dots.length ? dots.length : 0);
+      dots.forEach((d, idx) => d.classList.toggle('is-on', idx < filled));
+    };
+
+    const show = (n: number) => {
+      i = Math.max(0, Math.min(total - 1, n));
+      screens.forEach((s, idx) => { s.hidden = idx !== i; });
+      updateDots();
+      if (i === total - 1) initCalendly();
+      const focusable = screens[i].querySelector<HTMLElement>('input:not([hidden]), textarea, select');
+      requestAnimationFrame(() => focusable?.focus());
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const advance = () => {
+      if (i === 1) { collect(screens[1]); setFirst((answers.name as string) || ''); }
+      else collect(screens[i]);
+      show(i + 1);
+    };
+
+    // single-select cards: store + auto-advance
+    form.querySelectorAll<HTMLElement>('[data-single]').forEach((group) => {
+      group.querySelectorAll<HTMLButtonElement>('.bk-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          group.querySelectorAll('.bk-card').forEach((c) => c.classList.remove('is-on'));
+          card.classList.add('is-on');
+          answers[group.dataset.name!] = card.dataset.value!;
+          setTimeout(() => show(i + 1), 220);
+        });
+      });
+    });
+
+    // multi-select cards: toggle, store array on Continue
+    form.querySelectorAll<HTMLElement>('[data-multi]').forEach((group) => {
+      group.querySelectorAll<HTMLButtonElement>('.bk-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          card.classList.toggle('is-on');
+          answers[group.dataset.name!] = Array.from(group.querySelectorAll('.bk-card.is-on')).map((c) => (c as HTMLElement).dataset.value!);
+        });
+      });
+    });
+
+    form.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-next]')) { if (i === 0 || valid(screens[i])) advance(); }
+      else if (t.closest('[data-back]')) show(i - 1);
+    });
+
+    form.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
+      if (i < total - 1) { e.preventDefault(); if (i === 0 || valid(screens[i])) advance(); }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const details = screens.find((s) => s.dataset.screen === '12')!;
+      if (!valid(details)) return;
+      collect(details);
+      if ((form.querySelector<HTMLInputElement>('[name=company]')?.value || '').trim()) return; // honeypot
+
+      const sources = answers.sources;
+      const first = (answers.name as string) || (details.querySelector<HTMLInputElement>('[data-firstfill]')?.value.trim() || '');
+      const payload: Record<string, unknown> = {
+        type: 'booking',
+        name: [first, answers.lastName].filter(Boolean).join(' '),
+        email: answers.email,
+        phone: answers.mobile,
+        shop: answers.shopName,
+        website: answers.website,
+        customers: answers.customers,
+        sources: Array.isArray(sources) ? sources.join(', ') : sources,
+        jobs: answers.jobs,
+        shopDesc: answers.shopDesc,
+        bug: answers.obstacle,
+        timeline: answers.timeline,
+        attribution: answers.attribution,
+        showup: answers.showup,
+      };
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('from')) payload.from = params.get('from');
+
+      if (status) { status.hidden = false; status.textContent = 'One moment…'; }
+      try {
+        await fetch('/api/score-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch { /* never block the calendar on a failed capture */ }
+      (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
+      show(i + 1); // → Calendly calendar
+    });
+
+    // ---- Calendly inline embed (loaded lazily on the calendar screen) ----
+    function initCalendly() {
+      const host = document.querySelector<HTMLElement>('[data-calendly]');
+      if (!host || host.dataset.ready) return;
+      const w = window as any;
+      const go = () => {
+        if (!w.Calendly) return;
+        host.dataset.ready = '1';
+        const first = (answers.name as string) || '';
+        const name = [first, answers.lastName].filter(Boolean).join(' ');
+        w.Calendly.initInlineWidget({
+          url: bookingUrl,
+          parentElement: host,
+          prefill: { name, email: (answers.email as string) || '' },
+        });
+      };
+      if (w.Calendly) { go(); return; }
+      if (!document.querySelector('link[data-calendly-css]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://assets.calendly.com/assets/external/widget.css';
+        link.setAttribute('data-calendly-css', '');
+        document.head.appendChild(link);
+      }
+      const s = document.createElement('script');
+      s.src = 'https://assets.calendly.com/assets/external/widget.js';
+      s.async = true;
+      s.onload = go;
+      document.body.appendChild(s);
+    }
+
+    // Calendly fires this once a time is picked → swap to the confirmation
+    window.addEventListener('message', (e) => {
+      if ((e.data as any)?.event === 'calendly.event_scheduled') {
+        (window as any).kwTrack?.('CallBooked', { via: 'calendly' });
+        setFirst((answers.name as string) || '');
+        if (flow) flow.hidden = true;
+        if (done) done.hidden = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+
+    show(0);
+  }
+</script>
+
+<style>
+  /* progress dots — gold fill, no numbers */
+  .bk-prog { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-8) var(--gutter) 0; }
+  .bk-dot { width: 9px; height: 9px; border-radius: 999px; background: var(--line); transition: background 240ms, transform 240ms; }
+  .bk-dot.is-on { background: var(--accent); transform: scale(1.15); }
+
+  /* sit the funnel in the middle of the page, centered, not jammed to the top */
+  .bk-funnel { min-height: calc(100vh - 9rem); display: grid; align-items: center; padding-block: var(--space-8); }
+  .bk-form { text-align: center; }
+  .bk-screen { border: 0; padding: 0; margin: 0; min-height: 18rem; animation: bk-in 320ms cubic-bezier(.2,.7,.2,1); }
+  @keyframes bk-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .bk-screen--err { animation: bk-shake 320ms; }
+  @keyframes bk-shake { 10%,90%{transform:translateX(-1px)} 30%,70%{transform:translateX(3px)} 50%{transform:translateX(-4px)} }
+  .bk-screen--err .bk-input, .bk-screen--err .bk-card { border-color: var(--warn); }
+
+  .bk-intro__h1 { margin-top: var(--space-4); font-size: var(--fs-h2); }
+  .bk-intro__lede { margin: var(--space-5) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); max-width: 54ch; }
+  .bk-intro__sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }
+
+  .bk-q { font-size: var(--fs-h4); line-height: 1.3; max-width: 40ch; margin-inline: auto; }
+  .bk-sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }
+  .bk-why { margin: var(--space-3) auto 0; font-style: italic; font-size: var(--fs-body); color: var(--ink-50); max-width: 56ch; }
+
+  .bk-input { margin: var(--space-5) auto 0; width: 100%; max-width: 32rem; font-family: var(--font-sans); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .bk-input:focus-visible { outline: none; border-color: var(--ink); }
+  textarea.bk-input { resize: vertical; line-height: 1.5; }
+  .bk-select { appearance: none; cursor: pointer; }
+
+  /* tap-to-select cards */
+  .bk-cards { margin: var(--space-5) auto 0; display: grid; gap: var(--space-3); max-width: 32rem; }
+  .bk-cards--row { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 34em) { .bk-cards--row { grid-template-columns: repeat(4, 1fr); } .bk-cards--multi { grid-template-columns: 1fr 1fr; } }
+  .bk-card { text-align: center; font-family: var(--font-sans); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); cursor: pointer; min-height: 52px; display: flex; align-items: center; justify-content: center; transition: border-color 120ms, background 120ms, transform 120ms; }
+  .bk-card:hover { border-color: var(--ink-50); }
+  .bk-card.is-on { border-color: var(--ink); background: var(--accent-wash, color-mix(in srgb, var(--accent) 16%, #fff)); }
+
+  .bk-grid2 { margin: var(--space-5) auto 0; display: grid; grid-template-columns: 1fr; gap: var(--space-3); max-width: 32rem; }
+  @media (min-width: 40em) { .bk-grid2 { grid-template-columns: 1fr 1fr; } }
+  .bk-grid2 .bk-input { margin-top: 0; max-width: none; }
+  .bk-screen .bk-grid2 + .bk-input { margin-top: var(--space-3); }
+
+  .bk-nav { margin-top: var(--space-8); display: flex; align-items: center; justify-content: center; gap: var(--space-4); }
+  .bk-back { background: none; border: 0; padding: var(--space-2); color: var(--ink-50); font-size: var(--fs-body); cursor: pointer; }
+  .bk-back:hover { color: var(--ink); }
+  .bk-form__status { margin-top: var(--space-4); font-size: var(--fs-caption); color: var(--ink-50); }
+
+  /* calendar screen — keep the two-column layout left-aligned */
+  .bk-screen--cal { min-height: auto; text-align: left; }
+  .bk-cal { display: grid; grid-template-columns: 1fr; gap: var(--space-6); margin-top: var(--space-2); }
+  @media (min-width: 56em) { .bk-cal { grid-template-columns: 22rem 1fr; gap: var(--space-8); align-items: start; } }
+  .bk-cal__brand { font-size: var(--fs-caption); color: var(--ink-50); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+  .bk-cal__h { margin-top: var(--space-3); font-size: var(--fs-h3); }
+  .bk-cal__meta { margin-top: var(--space-4); display: flex; gap: var(--space-5); font-size: var(--fs-body-sm); color: var(--ink-70); }
+  .bk-cal__copy { margin-top: var(--space-5); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .bk-cal__ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm); color: var(--ink-50); }
+  .bk-cal__widget { min-width: 0; min-height: 660px; }
+
+  /* confirmation */
+  .bk-done { padding-top: var(--space-12); }
+  .bk-done__h { margin-top: var(--space-4); font-size: var(--fs-h2); }
+  .bk-done__p { margin-top: var(--space-5); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); max-width: 54ch; }
+  .bk-done__sig { margin-top: var(--space-8); font-family: var(--font-display); font-size: var(--fs-h4); color: var(--ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bk-screen, .bk-dot { animation: none; transition: none; }
+  }
+</style>

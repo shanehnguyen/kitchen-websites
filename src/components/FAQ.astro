@@ -1,0 +1,49 @@
+---
+/* FAQ — CSS-only details/summary accordions + FAQPage schema.org markup.
+   Voice-forward; doubles as on-page SEO (spec §5 / §6). */
+import type { Faq } from '../data/faqs';
+interface Props { items: Faq[]; }
+const { items } = Astro.props;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+<div class="faq">
+  {items.map((f) => (
+    <details class="faq__item">
+      <summary class="faq__q">
+        <span>{f.q}</span>
+        <span class="faq__icon" aria-hidden="true"></span>
+      </summary>
+      <div class="faq__a"><p>{f.a}</p></div>
+    </details>
+  ))}
+</div>
+<script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+<style>
+  .faq { border-top: var(--rule-width) solid var(--rule); }
+  .faq__item { border-bottom: var(--rule-width) solid var(--rule); }
+  .faq__q {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+    padding: var(--space-5) 0; cursor: pointer; list-style: none;
+    font-family: var(--font-display); text-transform: none; font-size: var(--fs-h4);
+    color: var(--ink); font-weight: var(--fw-display);
+  }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__icon { position: relative; width: 16px; height: 16px; flex-shrink: 0; }
+  .faq__icon::before, .faq__icon::after {
+    content: ""; position: absolute; background: var(--brass); transition: opacity var(--duration-fast) var(--ease-out);
+  }
+  .faq__icon::before { top: 7px; left: 0; width: 16px; height: 2px; }
+  .faq__icon::after { left: 7px; top: 0; width: 2px; height: 16px; }
+  .faq__item[open] .faq__icon::after { opacity: 0; }
+  .faq__a { padding-bottom: var(--space-5); max-width: 65ch; }
+  .faq__a p { color: var(--ink-70); }
+</style>

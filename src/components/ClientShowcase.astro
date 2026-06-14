@@ -1,0 +1,203 @@
+---
+/* ClientShowcase — infinite auto-scrolling portfolio marquee (King Kong style).
+   Self-contained: scoped CSS + vanilla JS, no libraries. Device frames are pure
+   CSS (no image-based frame deps). Data-driven: edit the `cards` array below to
+   add/remove projects in one place. Tuning lives in the <script> (SPEED_SECONDS)
+   and the CSS (--card-w). */
+type Device = 'laptop' | 'desktop' | 'phone' | 'fill';
+type Card = { brand: string; device: Device; img: string; bg?: string; fg?: string };
+
+// All six are full-bleed branded images (3:4, matching the card box). Edit here
+// to add/remove projects in one place.
+const cards: Card[] = [
+  { brand: 'Absolute Kitchen Distributors', device: 'fill', img: '/assets/images/ai-images-work/absolute-kitchen-distributors-image.png' },
+  { brand: 'Austin Home Creations',         device: 'fill', img: '/assets/images/ai-images-work/austin-home-creations-image.png' },
+  { brand: 'Cabinet IQ',                    device: 'fill', img: '/assets/images/ai-images-work/cabinet-iq-image.png' },
+  { brand: 'Kitch Cabinetry',               device: 'fill', img: '/assets/images/ai-images-work/kitch-cabinetry-image.png' },
+  { brand: 'PK Cabinet',                    device: 'fill', img: '/assets/images/ai-images-work/pk-cabinet-image.png' },
+  { brand: 'Texas Remodelers Build',        device: 'fill', img: '/assets/images/ai-images-work/texas-remodelers-build-image.png' },
+];
+// Duplicate the set for a seamless loop; the second copy is hidden from AT.
+const loop = [...cards, ...cards];
+const n = cards.length;
+---
+<section class="cl" aria-label="Client work showcase">
+  <div
+    class="cl__viewport"
+    data-cl-viewport
+    tabindex="0"
+    role="group"
+    aria-label="Projects we have built. Use the left and right arrow keys to scrub."
+  >
+    <div class="cl__track" data-cl-track>
+      {loop.map((c, i) => {
+        const dup = i >= n;
+        const alt = dup ? '' : `${c.brand} project by Kitchen Websites`;
+        if (c.device === 'fill') {
+          // full-bleed image, no device frame — fills the whole card
+          return (
+            <article class="cl-card cl-card--fill" aria-hidden={dup ? 'true' : undefined}>
+              <img class="cl-card__media" src={c.img} alt={alt} loading="lazy" decoding="async" />
+              <span class="cl-card__brand cl-card__brand--over">{c.brand}</span>
+            </article>
+          );
+        }
+        return (
+          <article class="cl-card" style={c.bg ? `background:${c.bg};color:${c.fg}` : undefined} aria-hidden={dup ? 'true' : undefined}>
+            <span class="cl-card__brand">{c.brand}</span>
+            <div class="cl-card__stage">
+              <div class={`dev dev--${c.device}`}>
+                <div class="dev__screen">
+                  <img src={c.img} alt={alt} loading="lazy" decoding="async" />
+                </div>
+                <div class="dev__stand" aria-hidden="true"></div>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+  <p class="cl__hint" data-cl-hint hidden aria-hidden="true">Drag to explore</p>
+</section>
+
+<style>
+  .cl {
+    --card-w: clamp(240px, 26vw, 360px);
+    padding-block: var(--space-4);
+    overflow: hidden; /* clip the bleeding cards */
+  }
+  .cl__viewport { overflow: hidden; cursor: grab; touch-action: pan-y; outline-offset: 4px; }
+  .cl__viewport.is-dragging { cursor: grabbing; }
+  .cl__track { display: flex; gap: var(--space-5); width: max-content; will-change: transform; padding-inline: var(--space-3); }
+
+  .cl-card {
+    flex: 0 0 var(--card-w);
+    aspect-ratio: 3 / 4;
+    border-radius: 18px;
+    padding: var(--space-5) var(--space-5) var(--space-6);
+    display: flex; flex-direction: column;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .cl-card__brand {
+    font-family: var(--font-display); font-weight: var(--fw-display);
+    text-transform: uppercase; letter-spacing: -0.01em;
+    font-size: clamp(1.05rem, 1.4vw, 1.4rem); line-height: 1;
+  }
+  .cl-card__stage { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+
+  /* full-bleed image card (no device frame) */
+  .cl-card--fill { position: relative; padding: 0; }
+  .cl-card__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .cl-card--fill::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 42%; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0)); z-index: 1; pointer-events: none; }
+  .cl-card__brand--over { position: relative; z-index: 2; padding: var(--space-5); color: #fff; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.6); }
+
+  /* ---------- pure-CSS device frames ---------- */
+  .dev { width: 100%; filter: drop-shadow(0 16px 22px rgba(0,0,0,0.32)); }
+  .dev__screen { overflow: hidden; background: #fff; }
+  .dev__screen img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+  .dev__stand { display: none; }
+
+  /* laptop */
+  .dev--laptop .dev__screen { border: 7px solid #14110d; border-radius: 10px 10px 0 0; aspect-ratio: 16 / 10; }
+  .dev--laptop .dev__stand { display: block; height: 10px; margin: 0 -6%; background: linear-gradient(#3a3f38, #14110d); border-radius: 0 0 11px 11px; position: relative; }
+  .dev--laptop .dev__stand::before { content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 16%; height: 42%; background: rgba(0,0,0,0.45); border-radius: 0 0 5px 5px; }
+
+  /* desktop monitor */
+  .dev--desktop .dev__screen { border: 9px solid #14110d; border-radius: 8px; aspect-ratio: 16 / 10; }
+  .dev--desktop .dev__stand { display: block; position: relative; height: 26px; }
+  .dev--desktop .dev__stand::before { content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 11%; height: 16px; background: #14110d; }
+  .dev--desktop .dev__stand::after { content: ""; position: absolute; top: 17px; left: 50%; transform: translateX(-50%); width: 42%; height: 7px; background: #14110d; border-radius: 4px; }
+
+  /* phone */
+  .dev--phone { width: 52%; margin-inline: auto; }
+  .dev--phone .dev__screen { border: 7px solid #14110d; border-radius: 28px; aspect-ratio: 9 / 19; position: relative; }
+  .dev--phone .dev__screen::before { content: ""; position: absolute; top: 7px; left: 50%; transform: translateX(-50%); width: 34%; height: 12px; background: #14110d; border-radius: 0 0 10px 10px; z-index: 2; }
+
+  .cl__hint { text-align: center; margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--ink-50); }
+
+  /* responsive: desktop ~3 + bleed, tablet ~2, mobile 1 + peek */
+  @media (max-width: 64em) { .cl { --card-w: clamp(260px, 44vw, 360px); } }
+  @media (max-width: 40em) { .cl { --card-w: 76vw; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cl__viewport { overflow-x: auto; scroll-snap-type: x proximity; }
+    .cl-card { scroll-snap-align: center; }
+  }
+</style>
+
+<script>
+  // One full cycle of a single card set, in seconds. Higher = slower drift.
+  const SPEED_SECONDS = 52;
+
+  document.querySelectorAll<HTMLElement>('.cl').forEach((root) => {
+    const viewport = root.querySelector<HTMLElement>('[data-cl-viewport]');
+    const track = root.querySelector<HTMLElement>('[data-cl-track]');
+    const hint = root.querySelector<HTMLElement>('[data-cl-hint]');
+    if (!viewport || !track) return;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { if (hint) hint.hidden = false; return; } // native scroll handles it
+
+    // setWidth = width of ONE card set (the track holds two identical sets).
+    let setWidth = 0;
+    const measure = () => { setWidth = track.scrollWidth / 2; };
+    measure();
+    window.addEventListener('resize', measure);
+    track.querySelectorAll('img').forEach((img) => {
+      if (!img.complete) img.addEventListener('load', measure, { once: true });
+    });
+
+    let offset = -40;          // small initial left-bleed
+    let paused = false, hovering = false, dragging = false;
+    let startX = 0, startOffset = 0, last = 0;
+
+    // keep offset inside [-setWidth, 0] so the seam is invisible
+    const wrap = () => {
+      if (setWidth <= 0) return;
+      while (offset <= -setWidth) offset += setWidth;
+      while (offset > 0) offset -= setWidth;
+    };
+    const apply = () => { track.style.transform = `translateX(${offset}px)`; };
+
+    const frame = (ts: number) => {
+      const dt = last ? (ts - last) / 1000 : 0; last = ts;
+      if (!paused && setWidth > 0) { offset -= (setWidth / SPEED_SECONDS) * dt; wrap(); apply(); }
+      requestAnimationFrame(frame);
+    };
+    apply();
+    requestAnimationFrame(frame);
+
+    // pause on hover (desktop) and on focus
+    viewport.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { hovering = true; paused = true; } });
+    viewport.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hovering = false; if (!dragging) paused = false; } });
+    viewport.addEventListener('focus', () => { paused = true; });
+    viewport.addEventListener('blur', () => { paused = false; });
+
+    // click-drag (desktop) + touch-swipe (mobile) to scrub, then resume
+    viewport.addEventListener('pointerdown', (e) => {
+      dragging = true; paused = true; startX = e.clientX; startOffset = offset;
+      viewport.classList.add('is-dragging');
+      try { viewport.setPointerCapture(e.pointerId); } catch {}
+    });
+    viewport.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      offset = startOffset + (e.clientX - startX); wrap(); apply();
+    });
+    const endDrag = () => {
+      if (!dragging) return;
+      dragging = false; viewport.classList.remove('is-dragging');
+      paused = hovering; // stay paused only if mouse is still over it
+    };
+    viewport.addEventListener('pointerup', endDrag);
+    viewport.addEventListener('pointercancel', endDrag);
+
+    // keyboard: arrow keys scrub
+    viewport.addEventListener('keydown', (e) => {
+      const step = 90;
+      if (e.key === 'ArrowLeft') { offset += step; wrap(); apply(); e.preventDefault(); }
+      else if (e.key === 'ArrowRight') { offset -= step; wrap(); apply(); e.preventDefault(); }
+    });
+  });
+</script>

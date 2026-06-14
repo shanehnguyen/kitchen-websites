@@ -1,0 +1,147 @@
+---
+/* /websites — "Converting Website / get chosen", rebuilt on the King Kong
+   landing-page-agency flow but pointed entirely at the OWNER and HIS money:
+   mind-read → reframe (it's a leak, not a leads problem) → make the money
+   undeniable → name the enemy (the brochure standing in for his work) →
+   personify the deliverable (the 24/7 salesman) → reverse the risk
+   (see-it-first) → anchor the price (less than one kitchen's cabinets) →
+   prove it → qualify. Sibling to /seo and /about: same type, voice, signature,
+   highlighter (light sections only — never on dark). One CTA: the session.
+   [ TRUE DETAIL ] = a real fact only Shane supplies. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CTAButton from '../components/CTAButton.astro';
+import StickyMobileCTA from '../components/StickyMobileCTA.astro';
+import { site } from '../data/site.config';
+
+const minutes = site.callLengthMinutes;
+const bookHref = '/book';
+---
+<BaseLayout
+  title="See-It-First Website Build for Kitchen & Bath | Kitchen Websites"
+  description="You don't need more homeowners to find you. You need to stop losing the ones who already do. I build the website that closes them, you see it before you pay a dollar, and you own all of it. Kitchen and bath only."
+>
+  <!-- 1 — HERO -->
+  <section class="section web-hero">
+    <div class="container container--narrow">
+      <p class="eyebrow">Get chosen · Kitchen &amp; bath only</p>
+      <h1 class="web-hero__h1">A website that books more jobs. You see it before you pay a dollar.</h1>
+      <p class="lede web-hero__sub">I build you a website that turns the homeowners already finding you into booked jobs. You see the whole thing before you pay a cent, and you walk free if you don’t love it.</p>
+      <div class="web-hero__cta">
+        <CTAButton href={bookHref} label="Schedule your free strategy session" event="Web:HeroToBook" size="lg" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 2–7 — THE LETTER -->
+  <section class="section web-body">
+    <div class="container container--prose web-prose">
+      <h2 class="web-h">You don’t have a leads problem. You’ve got a leak.</h2>
+      <p>Let me guess. You figure if more homeowners just saw your name, the phone would ring more.</p>
+      <p>Maybe. But that’s not where your money’s going.</p>
+      <p>The homeowners are already finding you. Referrals, Google, your truck in the driveway. They look you up before they call.</p>
+      <p class="web-beat"><span class="hl">And a chunk of them land on your website and leave without dialing. That’s not a leads problem. That’s a leak. And every drop was a job.</span></p>
+      <p>You’re not short on customers. You’re bleeding the ones you already earned.</p>
+
+      <h2 class="web-h">Every one that leaks out is twenty grand gone.</h2>
+      <p>One kitchen runs your customer twenty, thirty thousand dollars. You know that number better than I do.</p>
+      <p>So when a homeowner lands on your site, gets a bad feeling, and backs out, that isn’t a lost click. <span class="hl">That’s a job. Real money, walked out the door, and you never even saw it show up.</span></p>
+      <p>Do that a few times a month and you’re not having a slow season. You’re funding the other guy’s.</p>
+
+      <h2 class="web-h">It’s not your work. It’s what’s standing in for it.</h2>
+      <p>Your work isn’t the problem. You know it’s good, and so do the people who’ve hired you.</p>
+      <p>The problem is the website most guys in the trade get sold. A pretty brochure. A stock kitchen that was never yours. A template a homeowner has already seen on ten other contractors that week.</p>
+      <p>It makes the best builder in town look exactly like the worst one. And when she can’t tell you apart, she picks on price, or on whoever’s site looked like they’d actually pick up.</p>
+      <p class="web-beat"><span class="hl">That’s the one thing you get to fix. Not the market. Not Google. The thing speaking for your work when you’re not in the room.</span></p>
+
+      <h2 class="web-h">A website that sells while you’re on the job.</h2>
+      <p>Built right, your website is the best salesman you’ve ever put on the payroll.</p>
+      <p>It works while you’re cutting a countertop. It works at eleven at night while you’re asleep and a homeowner is deciding who she calls in the morning. It never takes a day off, never calls in sick, never quits for the shop down the road.</p>
+      <p>It puts your real kitchens in front of her. Reviews from her street. Your number, one tap away. And it closes her while you’re three jobs across town.</p>
+      <p class="web-beat"><span class="hl">That’s what you’re paying for. Not a website. A salesman that works around the clock and only charges you once.</span></p>
+
+      <h2 class="web-h">I build it first. You pay after you’ve seen it.</h2>
+      <p>You’ve cut a check to a marketer before and got nothing back for it. I won’t ask you to do that again.</p>
+      <p>So I go first.</p>
+      <p>Before you owe me a dollar, I design your homepage. Your kitchens. Your market. Your name on it. The real thing, on your screen.</p>
+      <p>Love it, I build the rest at one flat price I quote up front.</p>
+      <p class="web-beat"><span class="hl">Don’t love it, you walk, and it cost you nothing.</span></p>
+      <p>You can’t get ripped off on a website you saw before you paid for it. I carry the risk because you’ve carried it long enough. And you deal with me, the man who builds it, not a salesman who shakes your hand and vanishes the day you sign.</p>
+
+      <h2 class="web-h">It pays for itself the first job it brings back.</h2>
+      <p>The whole thing costs less than the cabinets in one kitchen.</p>
+      <p>Win back a single homeowner you’d have lost, and it’s already paid for itself. Every job after that is money that used to leak straight out the door.</p>
+      <p>This isn’t a bill you pay and hope on. It’s the salesman that brings the jobs back.</p>
+    </div>
+  </section>
+
+  <!-- 8 — DON'T TAKE MY WORD. LOOK. -->
+  <section class="section section--sm web-proof">
+    <div class="container container--narrow">
+      <h2 class="web-h">Don’t take my word. Look.</h2>
+      <figure class="web-ba">
+        <div class="web-ba__col">
+          <span class="web-ba__tag mono">Before</span>
+          <img src="/assets/images/beforevsafter/beforeimage.png" alt="A kitchen & bath site before the rebuild" loading="lazy" decoding="async" width="1828" height="961" />
+        </div>
+        <div class="web-ba__col web-ba__col--after">
+          <span class="web-ba__tag web-ba__tag--after mono">After</span>
+          <img src="/assets/images/beforevsafter/afterimage.png" alt="The same business after a See-It-First rebuild by Kitchen Websites" loading="lazy" decoding="async" width="1897" height="1022" />
+        </div>
+      </figure>
+      <div class="web-prose web-proof__copy">
+        <p>I build for kitchen and bath shops and nothing else. So the homepage I draw you comes out looking like a man who’s stood in a showroom built it, because one did. <span class="web-todo">[ TRUE DETAIL: link two or three real kitchen &amp; bath sites you’ve built, and one real owner’s sentence with a real name and shop ]</span></p>
+        <p>You don’t have to take that on faith. <span class="hl">You’ll see your own homepage before you decide a single thing.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 — THE STRATEGY SESSION (dark; no highlighter, left-aligned wider) -->
+  <section class="section section--dark web-session">
+    <div class="container container--narrow web-session__inner">
+      <h2 class="web-session__h">Find out how many jobs your website is losing you.</h2>
+      <p>In {minutes} minutes you’ll see exactly where homeowners are landing and leaving, what it’s costing you, and what to fix first. <span class="web-em">Written down, yours to keep, even if you never hire me.</span></p>
+      <div class="web-session__cta">
+        <CTAButton href={bookHref} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Web:SessionToBook" size="lg" />
+      </div>
+      <p class="web-sig">— Shane Nguyen, Kitchen Websites</p>
+      <p class="web-ps">P.S. And if you want it built, you’ll see your new homepage before you pay a dollar. Worst case here is a free plan. There’s no version where you come out behind.</p>
+    </div>
+  </section>
+
+  <StickyMobileCTA href={bookHref} label={`Book the ${minutes}-minute call`} event="Web:StickyToBook" />
+</BaseLayout>
+
+<style>
+  /* highlighter — translucent stroke BEHIND the text, light sections only */
+  .hl { background: color-mix(in srgb, var(--accent) 30%, transparent); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0.08em 0.18em; border-radius: 2px; }
+
+  .web-hero { padding-top: var(--space-12); text-align: center; }
+  .web-hero__h1 { margin: var(--space-4) auto 0; max-width: 20ch; }
+  .web-hero__sub { margin: var(--space-5) auto 0; max-width: 52ch; }
+  .web-hero__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
+
+  .web-h { margin-top: var(--space-10); font-size: var(--fs-h3); }
+  .web-prose p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .web-prose h2 + p { margin-top: var(--space-5); }
+  .web-proof__copy { margin-top: var(--space-8); }
+
+  /* before/after proof */
+  .web-ba { margin: var(--space-6) 0 0; display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
+  @media (min-width: 48em) { .web-ba { grid-template-columns: 1fr 1fr; gap: var(--space-5); } }
+  .web-ba__col { display: flex; flex-direction: column; gap: var(--space-2); }
+  .web-ba__tag { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--ink-50); }
+  .web-ba__tag--after { color: var(--accent-deep); }
+  .web-ba__col img { width: 100%; height: auto; border: var(--rule-width) solid var(--line); border-radius: var(--radius-sm); background: #fff; }
+  .web-ba__col--after img { border: var(--rule-thick) solid var(--accent); }
+
+  .web-todo { font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--warn); background: color-mix(in srgb, var(--warn) 8%, transparent); border: 1px dashed var(--warn); border-radius: var(--radius-sm); padding: 0.1em 0.4em; }
+
+  /* session (dark) — left-aligned, wider measure, gold/bold emphasis, no marker */
+  .web-session__inner { max-width: 50rem; }
+  .web-session__h { font-family: var(--font-display); }
+  .web-session__inner p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--paper-70); max-width: 60ch; }
+  .web-em { color: var(--accent-strong); font-weight: var(--fw-body-bold); }
+  .web-session__cta { margin-top: var(--space-10); margin-bottom: var(--space-4); }
+  .web-sig { margin-top: var(--space-8); font-family: var(--font-display) !important; font-size: var(--fs-h4) !important; color: var(--porcelain) !important; }
+  .web-ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm) !important; color: var(--paper-50) !important; max-width: 60ch; }
+</style>

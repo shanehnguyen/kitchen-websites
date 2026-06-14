@@ -1,0 +1,379 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ReceiptStrip from '../components/ReceiptStrip.astro';
+import ClientShowcase from '../components/ClientShowcase.astro';
+import FAQ from '../components/FAQ.astro';
+import LetterBlock from '../components/LetterBlock.astro';
+import CTAButton from '../components/CTAButton.astro';
+import StickyMobileCTA from '../components/StickyMobileCTA.astro';
+import { homeFaqs } from '../data/faqs';
+import { site } from '../data/site.config';
+
+const minutes = site.callLengthMinutes;
+
+// Two big numbers under the letter CTA. Best-of from markdowns/extra-stats.md
+// (both flagged SOLID): a complete profile earns trust, the first five reviews
+// win the pick — i.e. exactly what the SEO rebuild delivers.
+const letterStats = [
+  { value: '2.7×', caption: 'more likely to be trusted with a complete Google profile' },
+  { value: '270%', caption: 'more likely to get picked once you have your first five reviews' },
+];
+
+// Closing stat bar — four best-of from markdowns/extra-stats.md (all SOLID),
+// distinct from the strip above: vetting, ready-to-buy, the AI shift, the money.
+const closingStats = [
+  { value: '97%', caption: 'read reviews before they pick a local business' },
+  { value: '88%', caption: 'of mobile local searches end in a call or visit that day' },
+  { value: '45%', caption: 'now use AI to find local pros, up from 6% a year ago' },
+  { value: '5–9%', caption: 'more revenue from a single extra star' },
+];
+
+---
+<BaseLayout
+  title="Websites & Google for Kitchen & Bath Businesses | Kitchen Websites"
+  description="Your referrals check you on Google before they call. I make sure what they find gets you the job, not the shop with 80 reviews. Book a free 30-minute strategy session."
+  heroOverlayNav={true}
+>
+  <!-- 1. HERO (type-led, one CTA → /book) -->
+  <section class="section home-hero">
+    {/* Full-screen video background (King Kong style): video (back) → dark overlay (mid) → content (front).
+        PLACEHOLDER PATH: your file is /public/video/"Video Project 3.mp4". Rename it to
+        hero-background.mp4 (or change data-src below). Spaces in the filename break the URL. */}
+    <div class="home-hero__bg" aria-hidden="true">
+      <video class="home-hero__video" muted loop playsinline preload="auto" data-src="/video/hero-background.mp4"></video>
+      <div class="home-hero__overlay"></div>
+    </div>
+    <div class="container home-hero__inner">
+      <div class="home-hero__topline">
+        <p class="eyebrow home-hero__kicker">Marketing for Kitchen &amp; Bath</p>
+        <span class="home-hero__trust">
+          <span class="home-hero__stars" role="img" aria-label="Rated 5 out of 5 stars">★★★★★</span>
+          <span class="home-hero__trust-text">15+ success stories</span>
+        </span>
+      </div>
+      {/* A/B hero alternates (Option B — the quiet calendar — is live; swap to test later):
+          Option A (leads with what he tried): "You've paid for marketing before. You got tire-kickers, a slick report, and a phone that still won't ring."
+          Option C (blunt outcome): "More kitchen & bath jobs. Without paying for leads that never call you back." */}
+      <h1 class="home-hero__h1">The work used to bring the work.</h1>
+      <p class="lede home-hero__sub">
+        Now you’re staring at the calendar wondering where the next job comes from. I get kitchen &amp; bath
+        businesses found by the homeowners already searching, and chosen over the shop down the road.
+      </p>
+    </div>
+  </section>
+
+  <!-- Big featured-video placeholder, overlapping the hero into the section below -->
+  <div class="home-reel">
+    <div class="container">
+      <div class="reel-video">
+        {/* VIDEO_PLACEHOLDER — drop the featured video embed here. */}
+        <button type="button" class="reel-video__play" aria-label="Play video"><span aria-hidden="true">▶</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. THE LETTER -->
+  <section class="section home-letter">
+    <div class="container">
+      <LetterBlock dateLabel="Updated June 13, 2026">
+        <p class="letter__salutation">Dear kitchen &amp; bath owner,</p>
+        <p>
+          You built this business on your work. Word of mouth, repeat customers, a sign in a yard here and there.
+          For years you never needed marketing.
+        </p>
+        <p class="letter__beat">The work brought the work.</p>
+        <p>
+          Then it slowed. The calendar that used to fill itself started showing gaps. And one morning you caught
+          yourself wondering where the next job was coming from.
+        </p>
+        <p class="letter__beat">So you tried to fix it.</p>
+        <p>
+          Maybe you paid Angi for “leads” that turned out to be tire-kickers and wrong numbers, the same homeowner
+          sold to four other shops at once. Maybe Houzz locked you into a year. Maybe an SEO company took $1,500 a
+          month and mailed you charts while your phone stayed dead quiet.
+        </p>
+        <p>If it felt like a robbery, it was one. The FTC fined one of those lead companies $7.2 million.</p>
+        <p class="letter__beat">But here’s what none of them told you.</p>
+        <p>
+          The customers never left. The NKBA counts more than 10 million kitchens remodeled in America every year.
+          One in ten households.
+        </p>
+        <p>The only question is whether they find you. And whether they pick you when they do.</p>
+        <p>
+          Most of the time they don’t. They find a tired version of you, parked next to a competitor who looks like
+          the safer bet. So they call him.
+        </p>
+        <p>
+          He isn’t better than you. He’s easier to say yes to. And 92% of homeowners won’t consider a shop under
+          four stars, no matter how good the work is.
+        </p>
+        <p class="letter__beat">So this isn’t you losing your touch.</p>
+        <p>
+          The homeowner just moved the first handshake to a screen. That’s the one room you’re not standing in yet.
+        </p>
+        <div class="letter__cta">
+          <CTAButton
+            href="/book"
+            label="Schedule your free strategy session"
+            derisk={`${minutes} minutes, no pitch-slap. You leave with your plan either way.`}
+            event="LetterMidToBook"
+            size="lg"
+          />
+          <div class="letter__cta-receipts"><ReceiptStrip variant="compact" items={letterStats} /></div>
+        </div>
+        <p>That room is the easiest one to walk into. And walking you into it is the whole job.</p>
+        <p>
+          I get you in front of the homeowners already looking, and I make you the obvious call. Not by selling
+          leads. Not by promising a ranking nobody can promise. I fix what she sees the second she looks you up,
+          build the site that closes her, and keep it working every month.
+        </p>
+        <p>And I do it on terms the agencies that burned you would never sign.</p>
+        <p>
+          Month to month. You own everything I build. Fire me any month and it all walks out the door with you.
+        </p>
+        <p class="letter__beat">They locked you in. I won’t.</p>
+        <p class="letter__sig">— Shane Nguyen, Kitchen Websites</p>
+      </LetterBlock>
+    </div>
+  </section>
+
+  <!-- 3. THE RECEIPTS, READ FOR HIM (interpretation, not repeated tiles — Ticket 1b) -->
+  <section class="section home-receipts">
+    <div class="container container--narrow">
+      <h2 class="home-receipts__h">This is what the research says about your buyer.</h2>
+      <ul class="home-receipts__reads" data-reveal>
+        <li>Homeowners will spend a record <strong>$524 billion</strong> on their homes this year. The money’s on your street. The only question is whose name they call.</li>
+        <li>Almost <strong>7 in 10</strong> homeowners click one of the first three names on Google. Show up fourth and <strong>you were never in it.</strong></li>
+        <li>The top name gets <strong>nearly double the clicks</strong> of the one below it. Same jobs. The only difference is who Google put first.</li>
+        <li><strong>91%</strong> read your reviews before they call. <strong>A quarter</strong> of kitchen and bath shops have none. <strong>You’re not in the room.</strong></li>
+        <li>In 2023 the FTC made HomeAdvisor pay <strong>$7.2 million</strong> for selling contractors junk leads. <strong>That’s the model I refuse to run.</strong> I don’t sell you strangers. I make the homeowner who already heard your name pick you.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2b. OUR OFFERING — get found / get chosen -->
+  <section class="section home-offering">
+    <div class="container">
+      <h2 class="home-offering__h">What’ll sell you more kitchens</h2>
+      <div class="home-offering__grid">
+        <article class="offer-card">
+          <p class="offer-card__tag">Get found</p>
+          <h3 class="offer-card__title">SEO + Google</h3>
+          <p class="offer-card__body">I rebuild your Google, work it every month, and turn every finished job into a review.</p>
+          <CTAButton href="/seo" label="See more" event="OfferingToSeo" />
+        </article>
+        <article class="offer-card">
+          <p class="offer-card__tag">Get chosen</p>
+          <h3 class="offer-card__title">Converting website</h3>
+          <p class="offer-card__body">I build the site that turns her click into a booked call.</p>
+          <CTAButton href="/websites" label="See more" event="OfferingToWebsites" />
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. THE GUARANTEE → SESSION -->
+  <section class="section home-promise">
+    <div class="container container--narrow">
+      <h2 class="home-promise__h">We beat your Google results, or we work for free.</h2>
+
+      <div class="home-promise__body">
+        <p>Day one, we write down what your Google does right now. How many homeowners find you. How many call.</p>
+        <p class="home-promise__beat">That number is the line in the sand.</p>
+        <p>Then I go to work. I rebuild your profile, run it every month, turn every job you finish into a fresh review.</p>
+        <p>Ninety days out, more homeowners find you and call than do today.</p>
+        <p class="home-promise__beat home-promise__beat--accent">Beat that number, or you stop paying and I keep going.</p>
+        <p>You see every week of it. You own all of it.</p>
+      </div>
+
+      <div class="home-promise__trust">
+        <p>There’s one promise I’ll never make you: the top spot on Google. I don’t control Google. The last guy who swore he did is why you don’t trust people like me.</p>
+        <p>I guarantee the work, the deadline, and more homeowners through your door. Anybody who guarantees the ranking is lying.</p>
+      </div>
+
+      <hr class="home-promise__rule" />
+
+      <p class="home-promise__hinge">I’ll show you exactly what’s costing you jobs, and how to fix it.</p>
+
+      <div class="home-promise__session">
+        <p>Give me {minutes} minutes. I’ll pull up your Google next to your three closest competitors and find the exact spots where homeowners are choosing them over you.</p>
+        <p>Then I hand you the fix. What to change first, what it’ll move, in what order.</p>
+        <p>You leave with the plan in writing. Run it yourself or have me do it. Either way it’s yours.</p>
+        <p>I don’t take everyone. If you’re a kitchen or bath shop already doing good work and just losing the online fight, this is the most useful half hour you’ll spend on your business this month.</p>
+      </div>
+
+      <div class="home-promise__cta">
+        <CTAButton href="/book" label={`Book your ${minutes}-minute strategy session`} event="HomePromiseToBook" size="lg" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. PROOF -->
+  <section class="section home-proof">
+    <div class="container">
+      <h2 class="home-proof__h">Be the next success story.</h2>
+    </div>
+    <div class="home-proof__showcase"><ClientShowcase /></div>
+    <div class="container">
+      <p class="home-proof__teaser">
+        <a href="/about">Why I only do kitchen &amp; bath →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- 8. FAQ -->
+  <section class="section home-faq">
+    <div class="container container--narrow">
+      <h2 class="home-faq__h">The questions a burned owner actually asks.</h2>
+      <div class="home-faq__list"><FAQ items={homeFaqs} /></div>
+    </div>
+  </section>
+
+  <!-- 9. FINAL CTA BAND — the 30-minute teardown -->
+  <section class="section section--dark home-final">
+    <div class="container container--narrow home-final__inner">
+      <h2 class="home-final__h">You’ll walk away with the exact plan to beat them.</h2>
+      <p class="home-final__body">
+        {minutes} minutes, and you leave knowing precisely what to fix, in what order, to start winning the jobs
+        going to the guy down the road. Hire me to run it or run it yourself. Kitchen and bath only.
+      </p>
+      <CTAButton href="/book" label={`Book your ${minutes}-minute strategy session`} event="FinalToBook" size="lg" />
+      <div class="home-final__receipts"><ReceiptStrip variant="compact" items={closingStats} dark={true} /></div>
+    </div>
+  </section>
+
+  <StickyMobileCTA href="/book" label={`Book the ${minutes}-minute call`} event="HomeStickyToBook" />
+</BaseLayout>
+
+<script>
+  // Lazy-init the hero background video: set the source after first paint so it
+  // never blocks render, and skip playback under reduced-motion (the dark
+  // --cabinet poster stays). Muted + playsinline lets it autoplay on mobile.
+  const vid = document.querySelector<HTMLVideoElement>('.home-hero__video');
+  if (vid && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const start = () => {
+      const src = vid.getAttribute('data-src');
+      if (src && !vid.getAttribute('src')) {
+        vid.src = src;
+        vid.play().catch(() => {});
+      }
+    };
+    const w = window as any;
+    if (typeof w.requestIdleCallback === 'function') w.requestIdleCallback(start, { timeout: 1800 });
+    else window.addEventListener('load', start);
+  }
+</script>
+
+<style>
+  /* Hero: full-bleed video background → dark overlay → centered content */
+  .home-hero { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; min-height: 100svh; display: flex; align-items: flex-start; text-align: center; padding-top: clamp(8rem, 18vh, 12rem); padding-bottom: var(--section-y); }
+  .home-hero__bg { position: absolute; inset: 0; z-index: 0; background: var(--cabinet); } /* instant dark poster while the video loads */
+  .home-hero__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  /* dark overlay ~60–80% + vignette so white text holds on any frame */
+  .home-hero__overlay {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 90% at 50% 45%, rgba(18, 16, 12, 0.45) 0%, rgba(18, 16, 12, 0.72) 70%, rgba(18, 16, 12, 0.84) 100%),
+      linear-gradient(to bottom, rgba(18, 16, 12, 0.55), rgba(18, 16, 12, 0.78));
+  }
+  .home-hero__inner { position: relative; z-index: 1; width: 100%; }
+  .home-hero__kicker { font-size: var(--fs-caption); color: var(--accent-strong); }
+  .home-hero__h1 { margin: var(--space-5) auto 0; max-width: 20ch; font-size: var(--fs-hero); color: var(--porcelain); text-shadow: 0 2px 28px rgba(0, 0, 0, 0.45); }
+  .home-hero__sub { margin: var(--space-6) auto 0; max-width: 52ch; font-size: var(--fs-lede); color: var(--paper-70); text-shadow: 0 1px 18px rgba(0, 0, 0, 0.5); }
+  /* eyebrow + trust on one centered row */
+  .home-hero__topline { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2) var(--space-4); }
+  .home-hero__trust { display: inline-flex; align-items: center; gap: var(--space-2); }
+  .home-hero__stars { color: #E9B949; letter-spacing: 2px; font-size: 1rem; line-height: 1; }
+  .home-hero__trust-text { font-family: var(--font-body); font-size: var(--fs-caption); font-weight: var(--fw-body-semi); letter-spacing: 0.02em; color: var(--porcelain); }
+  /* reduced motion: no playback, freeze on the dark poster (the --cabinet bg) */
+  @media (prefers-reduced-motion: reduce) { .home-hero__video { display: none; } }
+
+  /* Big featured-video placeholder overlapping the hero into the section below */
+  .home-reel { position: relative; z-index: 5; margin-top: clamp(-28rem, -32vh, -16rem); margin-bottom: var(--space-12); }
+  .reel-video {
+    position: relative; aspect-ratio: 16 / 9; width: 100%; max-width: 68rem; margin-inline: auto;
+    background: var(--cabinet); border: var(--rule-thick) solid var(--cabinet); border-radius: var(--radius-md);
+    box-shadow: 0 32px 60px -24px rgba(18, 16, 12, 0.55);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .reel-video::after {
+    content: "Video"; position: absolute; bottom: var(--space-3); right: var(--space-4);
+    font-family: var(--font-mono); font-size: var(--fs-small); letter-spacing: var(--tracking-caps);
+    text-transform: uppercase; color: var(--paper-50);
+  }
+  .reel-video__play {
+    width: 84px; height: 84px; border-radius: 50%;
+    border: 2px solid var(--porcelain); background: color-mix(in srgb, var(--porcelain) 12%, transparent);
+    color: var(--porcelain); font-size: 1.6rem; line-height: 1; padding-left: 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+  }
+  .reel-video__play:hover { transform: scale(1.06); background: color-mix(in srgb, var(--porcelain) 22%, transparent); }
+
+  /* light sections share the body background for one consistent white */
+
+  .home-offering { text-align: center; }
+  .home-offering__h { margin: var(--space-3) auto 0; max-width: 28ch; }
+  .home-offering__grid { margin-top: var(--space-8); display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+  @media (min-width: 48em) { .home-offering__grid { grid-template-columns: 1fr 1fr; gap: var(--space-6); } }
+  .offer-card { background: var(--bg-raised); border: var(--rule-width) solid var(--line); border-top: var(--rule-thick) solid var(--accent); border-radius: var(--radius-sm); padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-3); }
+  .offer-card__tag { font-family: var(--font-body); font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--fw-body-semi); color: var(--accent-deep); }
+  .offer-card__title { font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; font-size: var(--fs-h3); letter-spacing: -0.01em; }
+  .offer-card__body { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.6; color: var(--ink-70); }
+  .offer-card :global(.cta-block) { margin-top: auto; padding-top: var(--space-4); align-items: center; }
+
+  .home-receipts__h { margin-top: var(--space-3); max-width: 26ch; }
+  /* Receipts as scannable "slips": 2-column grid of bordered cards, the long
+     FTC one spans full width. Reads far lighter than one tall stack. */
+  .home-receipts__reads { list-style: none; margin: var(--space-8) 0 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
+  @media (min-width: 56em) { .home-receipts__reads { grid-template-columns: 1fr 1fr; gap: var(--space-5); } }
+  .home-receipts__reads li {
+    background: var(--bg-raised);
+    border-top: var(--rule-thick) solid var(--accent);
+    border: var(--rule-width) solid var(--line);
+    border-top: var(--rule-thick) solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: var(--space-5) var(--space-6);
+    font-size: var(--fs-body); line-height: 1.5; color: var(--ink);
+  }
+  @media (min-width: 56em) { .home-receipts__reads li:last-child { grid-column: 1 / -1; } }
+  .home-receipts__reads strong { color: var(--accent-deep); font-weight: var(--fw-body-bold); }
+
+  /* More centered, still left-leaning: blocks centered as columns, text left;
+     headline, hinge and CTA fully centered. */
+  .home-promise .eyebrow { text-align: center; }
+  .home-promise__h { margin: var(--space-3) auto 0; max-width: 24ch; text-align: center; }
+  .home-promise__body { margin: var(--space-8) auto 0; max-width: 56ch; }
+  .home-promise__body p { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); margin-bottom: var(--space-5); }
+  .home-promise__body p:last-child { margin-bottom: 0; }
+  .home-promise__body strong { font-weight: var(--fw-body-bold); }
+  /* short punch lines inside the body */
+  .home-promise__body .home-promise__beat { font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-h4); letter-spacing: -0.01em; line-height: 1.2; }
+  .home-promise__body .home-promise__beat--accent { color: var(--accent-deep); }
+  .home-promise__trust { margin: var(--space-8) auto 0; max-width: 56ch; padding-left: var(--space-5); border-left: var(--rule-thick) solid var(--accent); }
+  .home-promise__trust p { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.65; color: var(--ink); margin-bottom: var(--space-4); }
+  .home-promise__trust p:last-child { margin-bottom: 0; }
+  .home-promise__rule { margin: var(--space-10) auto; border: 0; border-top: var(--rule-thick) solid var(--rule); width: 5rem; }
+  /* accented standalone hinge */
+  .home-promise__hinge { text-align: center; margin: 0 auto; max-width: 32ch; font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; font-size: var(--fs-h2); letter-spacing: var(--tracking-display); line-height: var(--lh-tight); color: var(--ink); }
+  .home-promise__session { margin: var(--space-6) auto 0; max-width: 56ch; }
+  .home-promise__session p { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink-70); margin-bottom: var(--space-4); }
+  .home-promise__session p:last-child { margin-bottom: 0; }
+  .home-promise__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
+
+  /* compact two-stat strip beside the mid-letter CTA */
+  .letter__cta-receipts { margin-top: var(--space-6); max-width: 22rem; }
+
+  .home-proof__h { margin-top: var(--space-3); }
+  .home-proof__sub { margin-top: var(--space-4); max-width: 56ch; }
+  .home-proof__showcase { margin-top: var(--space-10); }
+  .home-proof__teaser { margin-top: var(--space-8); color: var(--ink-70); }
+
+  .home-faq__h { margin-top: 0; max-width: none; }
+  .home-faq__list { margin-top: var(--space-8); }
+
+  .home-final__inner { text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-6); }
+  .home-final__h { max-width: 24ch; }
+  .home-final__body { max-width: 56ch; color: var(--dark-soft); }
+  .home-final__receipts { margin-top: var(--space-6); width: 100%; }
+</style>

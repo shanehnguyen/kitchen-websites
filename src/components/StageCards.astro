@@ -1,0 +1,49 @@
+---
+/* StageCards — The Found & Chosen System: SEO → WEBSITES.
+   2 sequential cards, legitimately numbered 1/2 (the ONE place numbering is
+   allowed per spec §4), title + one sentence + link to the offer page. */
+const stages = [
+  { n: 1, name: 'SEO', tag: 'SEO', href: '/seo', kicker: 'Get found.', line: 'I rebuild your Google profile so a searching homeowner finds the real you, then I work it every month and track the one number that proves it brought you calls.' },
+  { n: 2, name: 'Websites', tag: 'Websites', href: '/websites', kicker: 'Get chosen.', line: 'I build the site that turns the homeowner who clicks into the homeowner who calls, and you see the whole thing before you pay a dollar.' },
+];
+---
+<ol class="stages">
+  {stages.map((s) => (
+    <li class="stage">
+      <a href={s.href} class="stage__link">
+        <span class="stage__no mono">{String(s.n).padStart(2, '0')}</span>
+        <span class="stage__name">{s.name}</span>
+        <span class="stage__kicker">{s.kicker}</span>
+        <span class="stage__line">{s.line}</span>
+        <span class="stage__cta" aria-hidden="true">See the {s.name} →</span>
+      </a>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .stages {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: 1fr; gap: var(--space-4);
+  }
+  @media (min-width: 48em) { .stages { grid-template-columns: repeat(2, 1fr); } }
+  .stage__link {
+    display: flex; flex-direction: column; gap: var(--space-2);
+    height: 100%;
+    padding: var(--space-6);
+    background: var(--porcelain-soft);
+    border: var(--rule-width) solid var(--rule);
+    border-top: var(--rule-thick) solid var(--brass);
+    text-decoration: none; color: var(--ink);
+    transition: transform var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
+  }
+  .stage__link:hover { transform: translateY(-3px); border-color: var(--cabinet); border-top-color: var(--brass); }
+  .stage__no { font-family: var(--font-display); font-size: var(--fs-h2); color: var(--brass); line-height: 0.9; }
+  .stage__name {
+    font-family: var(--font-display); text-transform: uppercase; font-size: var(--fs-h3);
+    letter-spacing: -0.01em; line-height: 1;
+  }
+  .stage__kicker { font-family: var(--font-body); font-weight: var(--fw-body-semi); font-size: var(--fs-caption); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--accent-deep); }
+  .stage__line { color: var(--ink-70); font-size: var(--fs-body-sm); }
+  .stage__cta { margin-top: auto; padding-top: var(--space-3); color: var(--tape); font-size: var(--fs-caption); font-weight: var(--fw-body-semi); }
+</style>

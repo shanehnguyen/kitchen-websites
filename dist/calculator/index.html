@@ -1,0 +1,79 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#F4F1EA"><script>document.documentElement.classList.add('js');</script><title>Lost Referral Calculator | Kitchen Websites</title><meta name="description" content="See what your referrals are quietly costing you when they check you on Google. Three numbers, honest math, no black box."><link rel="canonical" href="https://kitchenwebsites.com/calculator"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:site_name" content="Kitchen Websites"><meta property="og:title" content="Lost Referral Calculator"><meta property="og:description" content="See what your referrals are quietly costing you when they check you on Google. Three numbers, honest math, no black box."><meta property="og:url" content="https://kitchenwebsites.com/calculator"><meta property="og:type" content="website"><meta property="og:image" content="https://kitchenwebsites.com/assets/images/og-cover.svg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Lost Referral Calculator"><meta name="twitter:description" content="See what your referrals are quietly costing you when they check you on Google. Three numbers, honest math, no black box."><meta name="twitter:image" content="https://kitchenwebsites.com/assets/images/og-cover.svg"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><script>
+  // Unified event helper used by the islands + CTAs.
+  window.kwTrack = function (name, params) {
+    try { if (window.fbq) window.fbq('trackCustom', name, params || {}); } catch (e) {}
+    try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
+  };
+  // Preserve UTM params across same-origin nav to /book and /calculator.
+  (function () {
+    var qs = window.location.search;
+    if (!qs || qs.indexOf('utm_') === -1) return;
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="/"]');
+      if (!a) return;
+      var href = a.getAttribute('href');
+      if (/\/(book|calculator)/.test(href) && href.indexOf('utm_') === -1) {
+        a.setAttribute('href', href + (href.indexOf('?') > -1 ? '&' : '?') + qs.slice(1));
+      }
+    });
+  })();
+</script><style>.smcta[data-astro-cid-avybc3i7]{position:fixed;left:0;right:0;bottom:0;z-index:var(--z-sticky);display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--gutter);background:color-mix(in srgb,var(--cabinet) 96%,transparent);border-top:var(--rule-thick) solid var(--brass);transform:translateY(100%);transition:transform var(--duration-base) var(--ease-out)}.smcta[data-astro-cid-avybc3i7][data-show=true]{transform:translateY(0)}.smcta[data-astro-cid-avybc3i7] .btn[data-astro-cid-avybc3i7]{flex:1;justify-content:center}.smcta__close[data-astro-cid-avybc3i7]{background:transparent;border:0;color:var(--paper-70);font-size:1.5rem;line-height:1;padding:var(--space-2)}@media(min-width:56em){.smcta[data-astro-cid-avybc3i7]{display:none}}
+.calc-hero__h1[data-astro-cid-c3zj3n4r]{margin-top:var(--space-3);max-width:18ch}.calc-hero__lede[data-astro-cid-c3zj3n4r]{margin-top:var(--space-4);max-width:60ch}.calc[data-astro-cid-c3zj3n4r]{margin-top:var(--space-10);display:grid;grid-template-columns:1fr;gap:var(--space-8);align-items:start}@media(min-width:56em){.calc[data-astro-cid-c3zj3n4r]{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:var(--space-12)}}.calc__inputs[data-astro-cid-c3zj3n4r]{display:grid;gap:var(--space-5);padding:var(--space-6);background:var(--porcelain-soft);border:var(--rule-width) solid var(--rule);border-top:var(--rule-thick) solid var(--brass);border-radius:var(--radius-sm)}@media(min-width:56em){.calc__inputs[data-astro-cid-c3zj3n4r]{position:sticky;top:var(--space-8)}}.calc__result[data-astro-cid-c3zj3n4r]{border:var(--rule-thick) solid var(--cabinet);border-radius:var(--radius-sm);box-shadow:6px 6px 0 var(--rule-soft);padding:var(--space-8) var(--space-6);background:#fff}.calc__result-label[data-astro-cid-c3zj3n4r]{font-family:var(--font-mono);font-size:var(--fs-caption);text-transform:uppercase;letter-spacing:var(--tracking-caps);color:var(--ink-50)}.calc__leak[data-astro-cid-c3zj3n4r]{font-family:var(--font-display);font-size:clamp(3rem,9vw,6rem);line-height:.9;letter-spacing:-.02em;color:var(--alarm);margin-block:var(--space-2) var(--space-5)}.calc__math[data-astro-cid-c3zj3n4r]{font-size:var(--fs-body);line-height:1.6;color:var(--ink-70)}.calc__math[data-astro-cid-c3zj3n4r] strong{color:var(--ink);font-variant-numeric:tabular-nums}.calc__fallback[data-astro-cid-c3zj3n4r]{margin-top:var(--space-4);padding:var(--space-4);border-left:var(--rule-thick) solid var(--brass);background:var(--porcelain-soft);color:var(--ink-70);font-size:var(--fs-body-sm)}.calc__assumptions[data-astro-cid-c3zj3n4r]{margin-top:var(--space-5);font-size:var(--fs-caption);color:var(--ink-50)}.calc__result[data-astro-cid-c3zj3n4r] .cta-block[data-astro-cid-c3zj3n4r]{margin-top:var(--space-6)}
+</style>
+<link rel="stylesheet" href="/_astro/book.pqKMBy6O.css"></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="nav"> <div class="nav__inner"> <a class="nav__logo" href="/"> <span class="nav__logo-name">Kitchen <span>Websites</span></span> <span class="nav__logo-by">by FlipFix Digital</span> </a> <nav aria-label="Primary"> <ul class="nav__links"> <li><a href="/seo">SEO</a></li> <li><a href="/websites">Websites</a></li> <li><a href="/about">About</a></li> </ul> </nav> <a class="btn btn--primary nav__cta" href="/book">Free strategy session</a> </div> </header> <main id="main">  <section class="section calc-hero" data-astro-cid-c3zj3n4r> <div class="container" data-astro-cid-c3zj3n4r> <p class="eyebrow" data-astro-cid-c3zj3n4r>The Lost Referral Calculator</p> <h1 class="calc-hero__h1" data-astro-cid-c3zj3n4r>Your referrals are checking Google. Some of them are calling someone else.</h1> <p class="lede calc-hero__lede" data-astro-cid-c3zj3n4r>
+Three numbers off the top of your head. We’ll show you — with the math in plain English — what that leak
+        is worth in a year. We pick a deliberately low percentage; the real number is usually worse.
+</p> <div class="calc" data-astro-cid-c3zj3n4r> <form class="calc__inputs" data-calc data-astro-cid-c3zj3n4r> <div class="field" data-astro-cid-c3zj3n4r> <label for="referrals" data-astro-cid-c3zj3n4r>Referrals you get a month</label> <input id="referrals" name="referrals" type="number" inputmode="numeric" min="0" value="4" data-astro-cid-c3zj3n4r> </div> <div class="field" data-astro-cid-c3zj3n4r> <label for="jobValue" data-astro-cid-c3zj3n4r>Your average job value</label> <input id="jobValue" name="jobValue" type="number" inputmode="numeric" min="0" step="500" value="24000" data-astro-cid-c3zj3n4r> </div> <div class="field" data-astro-cid-c3zj3n4r> <label for="reviews" data-astro-cid-c3zj3n4r>Your Google review count</label> <input id="reviews" name="reviews" type="number" inputmode="numeric" min="0" value="8" data-astro-cid-c3zj3n4r> </div> </form> <div class="calc__result" data-astro-cid-c3zj3n4r> <p class="calc__result-label" data-astro-cid-c3zj3n4r>That’s roughly what you’re leaking a year:</p> <p class="calc__leak mono" data-calc-leak data-astro-cid-c3zj3n4r>$0</p> <p class="calc__math" data-calc-math data-astro-cid-c3zj3n4r></p> <p class="calc__fallback" data-calc-fallback hidden data-astro-cid-c3zj3n4r>
+Even a “small” leak is a job a year you already earned and gave away — and the businesses beating you
+            compound this every single month. The point isn’t the size. It’s that it’s happening at all.
+</p> <p class="calc__assumptions mono" data-astro-cid-c3zj3n4r>
+Conservative by design: we only count referrals who defect after checking your Google presence. No
+            invented “lead” numbers, no magic multipliers.
+</p> <div class="cta-block "> <a class="btn btn--primary btn--lg" href="/book" data-event="CalcToBook"> That’s the leak — let’s plug it <span aria-hidden="true">→</span> </a> <span class="cta-block__derisk">A free 30-minute session: where your jobs are leaking, and the fix in writing. Yours to keep.</span> </div> <script>
+    document.querySelectorAll('a[data-event]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (window.kwTrack) window.kwTrack(el.getAttribute('data-event'));
+      });
+    });
+  </script> </div> </div> </div> </section> <div class="smcta" data-smcta hidden data-astro-cid-avybc3i7> <a class="btn btn--primary" href="/book" data-smcta-link data-event="CalcStickyToBook" data-astro-cid-avybc3i7>Book a free session <span aria-hidden="true" data-astro-cid-avybc3i7>→</span></a> <button class="smcta__close" type="button" aria-label="Dismiss" data-smcta-close data-astro-cid-avybc3i7>×</button> </div>  <script>
+  (function () {
+    var bar = document.querySelector('[data-smcta]');
+    if (!bar) return;
+    if (sessionStorage.getItem('smcta-dismissed') === '1') return;
+    bar.hidden = false;
+    var shown = false;
+    function onScroll() {
+      var sc = window.scrollY || document.documentElement.scrollTop;
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      if (!shown && h > 0 && sc / h >= 0.5) { bar.setAttribute('data-show', 'true'); shown = true; }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    bar.querySelector('[data-smcta-close]').addEventListener('click', function () {
+      bar.removeAttribute('data-show');
+      sessionStorage.setItem('smcta-dismissed', '1');
+    });
+    var link = bar.querySelector('[data-smcta-link]');
+    link.addEventListener('click', function () {
+      var ev = link.getAttribute('data-event');
+      if (ev && window.kwTrack) window.kwTrack(ev);
+    });
+  })();
+</script>  </main> <footer class="footer"> <div class="footer__inner"> <div class="footer__top"> <div> <div class="footer__brand">Kitchen <span>Websites</span></div> <p style="max-width: 32ch; margin-top: var(--space-3); color: var(--paper-70);">Websites &amp; Google for kitchen &amp; bath businesses.</p> </div> <div class="footer__cols"> <div class="footer__col"> <h4>Offers</h4> <a href="/seo">Local SEO</a> <a href="/websites">See-It-First Website</a> </div> <div class="footer__col"> <h4>Company</h4> <a href="/about">About</a> <a href="/calculator">Lost Referral Calculator</a> <a href="/book">Book a call</a> </div> <div class="footer__col"> <h4>Contact</h4> <a href="mailto:shane@kitchenwebsites.com">shane@kitchenwebsites.com</a>  </div> </div> </div> <div class="footer__legal"> <span>© 2026 Kitchen Websites. Built for kitchen &amp; bath businesses.</span> <span> <a href="/privacy" style="color: var(--paper-70);">Privacy</a>
+&nbsp;·&nbsp;
+<a href="/terms" style="color: var(--paper-70);">Terms</a> </span> </div> </div> </footer> <script>
+      // Subtle fade-up on scroll + nav hairline on scroll. Respects reduced-motion.
+      (function () {
+        var nav = document.querySelector('.nav');
+        if (nav) {
+          var onScroll = function () { nav.setAttribute('data-scrolled', (window.scrollY > 8) ? 'true' : 'false'); };
+          window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+        }
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var els = document.querySelectorAll('[data-reveal]');
+        if (reduce || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+        }, { threshold: 0.12 });
+        els.forEach(function (e) { io.observe(e); });
+      })();
+    </script> </body> </html> <script type="module">const l=[{max:0,rate:.09,label:"zero reviews"},{max:5,rate:.07,label:"1–5 reviews"},{max:20,rate:.05,label:"6–20 reviews"},{max:50,rate:.03,label:"21–50 reviews"},{max:1/0,rate:.015,label:"50+ reviews"}];function v(e){return l.find(t=>e<=t.max)??l[l.length-1]}const x=6e3;function h(e){return"$"+Math.round(e).toLocaleString("en-US")}function k(e=document){const t=e.querySelector("[data-calc]");if(!t)return;const c=t.querySelector('[name="referrals"]'),s=t.querySelector('[name="jobValue"]'),i=t.querySelector('[name="reviews"]'),g=e.querySelector("[data-calc-leak]"),w=e.querySelector("[data-calc-math]"),y=e.querySelector("[data-calc-fallback]");let u=!1;function m(){const a=Math.max(0,Number(c.value)||0),r=Math.max(0,Number(s.value)||0),b=Math.max(0,Number(i.value)||0),n=v(b),f=a*12,d=f*n.rate,o=d*r;g.textContent=h(o),w.innerHTML=`Here’s exactly how we got that, no black box: <strong>${a}</strong> referrals a month is <strong>${f}</strong> a year. With <strong>${n.label}</strong>, we assume only <strong>${(n.rate*100).toFixed(1)}%</strong> of them quietly pick a better-reviewed competitor after checking you on Google — that’s <strong>${d.toFixed(1)}</strong> jobs a year at <strong>${h(r)}</strong> each. We deliberately picked a low percentage; the real number is usually worse.`,y.hidden=o>=x,!u&&a>0&&r>0&&(u=!0,window.kwTrack?.("CalcComplete",{leak:Math.round(o),reviews:b}))}[c,s,i].forEach(a=>{a.addEventListener("input",m)}),m()}k();</script> 

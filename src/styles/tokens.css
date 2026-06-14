@@ -1,0 +1,118 @@
+/* =====================================================================
+   tokens.css — Kitchen Websites design tokens
+   Editorial cream / warm-black / antique-brass. Deliberate premium
+   specialist — restraint IS the product. Brass is the ONLY accent and
+   earns its weight by being rare (eyebrows, wordmark's 2nd word, key
+   numbers, fine-print labels, secondary CTA on dark).
+   ===================================================================== */
+
+:root {
+  /* ---------- Color ---------- */
+  --bg:            #F4F1EA;   /* warm cream — primary background */
+  --bg-raised:     #FBFAF6;   /* cards, raised surfaces */
+  --ink:           #1A1814;   /* near-black warm — primary text */
+  --ink-soft:      #4A463E;   /* secondary text */
+  --line:          #E4DFD3;   /* hairline borders, dividers */
+  --dark:          #1B1F1A;   /* deep warm near-black-green — dark sections (NOT pure black) */
+  --dark-ink:      #EDEAE0;   /* text on dark */
+  --dark-soft:     rgba(237, 234, 224, 0.72); /* secondary text on dark */
+  --dark-line:     rgba(237, 234, 224, 0.16);
+  --accent:        #9E7B3D;   /* muted antique brass — large numbers / decorative */
+  --accent-strong: #B8924A;   /* hover/active brass; brass on dark */
+  --accent-deep:   #6E5424;   /* brass for SMALL text on light (AA-compliant, >6:1) */
+  --warn:          #9B3D2E;   /* semantic ONLY: a real "your loss" figure (leak total, critical score). Not a brand accent. */
+
+  /* Back-compat aliases (older component code referenced these names) */
+  --porcelain:      var(--bg);
+  --porcelain-soft: var(--bg-raised);
+  --porcelain-deep: #ECE7DB;
+  --cabinet:        var(--dark);
+  --cabinet-soft:   #262B24;
+  --ink-70:         var(--ink-soft);
+  --ink-50:         #6E695E;
+  --paper-70:       var(--dark-soft);
+  --paper-50:       rgba(237, 234, 224, 0.5);
+  --brass:          var(--accent);
+  --brass-deep:     var(--accent-deep);
+  --rule:           var(--line);
+  --rule-soft:      rgba(26, 24, 20, 0.07);
+  --rule-paper:     var(--dark-line);
+  --tape:           var(--ink);     /* links no longer blue — ink underline */
+  --alarm:          var(--warn);
+
+  /* ---------- Typography ----------
+     Display: Archivo (heavy, expanded feel via tight tracking + uppercase).
+     Body/UI: Archivo at regular weight (clean, editorial grotesque).
+     Serif:   Source Serif 4 — the LETTER + About prose ("a real person wrote this").
+     Mono:    JetBrains Mono — the "fine print, printed big" blocks. Self-hosted. */
+  --font-display: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  --font-body:    "Archivo Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif:   "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+  --font-mono:    "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", "Consolas", monospace;
+
+  /* Fluid type scale */
+  --fs-hero:    clamp(2.75rem, 6vw, 5.25rem);   /* 44 → 84 */
+  --fs-display: clamp(2.75rem, 6vw, 5.25rem);
+  --fs-h1:      clamp(2.5rem, 5vw, 4.5rem);
+  --fs-h2:      clamp(1.875rem, 4vw, 3.25rem);  /* 30 → 52 */
+  --fs-h3:      clamp(1.375rem, 1.2vw + 0.9rem, 1.875rem);
+  --fs-h4:      1.25rem;
+  --fs-lede:    clamp(1.0625rem, 0.4vw + 1rem, 1.1875rem);  /* ~17–19 */
+  --fs-bodyL:   1.1875rem;  /* 19px serif long-form */
+  --fs-body:    1.0625rem;  /* 17px */
+  --fs-caption: 0.875rem;   /* 14px */
+  --fs-mono:    0.9375rem;  /* 15px fine print */
+  --fs-small:   0.75rem;
+  --fs-eyebrow: 0.8125rem;  /* 13px */
+  --fs-stat:    clamp(2.125rem, 4vw, 3.5rem);   /* 34 → 56 */
+  --fs-receipt: clamp(2.5rem, 5vw, 3.75rem);
+
+  --lh-display: 0.95;
+  --lh-tight:   1.0;
+  --lh-snug:    1.3;
+  --lh-body:    1.6;
+
+  --tracking-display: -0.02em;
+  --tracking-caps:    0.18em;
+  --tracking-mono:    0.01em;
+
+  --fw-body-regular: 400;
+  --fw-body-medium:  500;
+  --fw-body-semi:    600;
+  --fw-body-bold:    700;
+  --fw-display:      800; /* Archivo Black-ish for headlines */
+
+  /* ---------- Spacing (4 8 12 16 24 32 48 64 96 128) ---------- */
+  --space-1: 0.25rem;  --space-2: 0.5rem;   --space-3: 0.75rem;
+  --space-4: 1rem;     --space-5: 1.25rem;  --space-6: 1.5rem;
+  --space-8: 2rem;     --space-10: 2.5rem;  --space-12: 3rem;
+  --space-16: 4rem;    --space-20: 5rem;    --space-24: 6rem;
+  --space-32: 8rem;
+
+  --section-y:    clamp(1.75rem, 3vw, 3rem);     /* 28 → 48, tightened again */
+  --section-y-sm: clamp(1.25rem, 2.2vw, 2rem);
+  /* Left/right page padding — tighter so content runs wider, equal both sides */
+  --gutter:       clamp(1rem, 2.5vw, 1.5rem);
+
+  /* ---------- Containers ---------- */
+  --container-prose:    42.5rem;  /* 680px — the letter */
+  --container-narrow:   55rem;
+  --container-standard: 70rem;    /* 1120px section grids */
+  --container-wide:     88rem;
+
+  /* ---------- Borders & radii ---------- */
+  --rule-width: 1px;
+  --rule-thick: 2px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* ---------- Motion (subtle only) ---------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 180ms;
+  --duration-base: 400ms;
+
+  /* ---------- Z-index ---------- */
+  --z-nav: 50;
+  --z-sticky: 60;
+  --z-overlay: 100;
+}

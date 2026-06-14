@@ -1,0 +1,31 @@
+{
+  "name": "FlipFix Digital",
+  "short_name": "FlipFix",
+  "description": "We build cabinet dealer sites and contractor portals. Fixed scope, dealer-owned, live in 3–5 weeks.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#F6F2EC",
+  "background_color": "#F6F2EC",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

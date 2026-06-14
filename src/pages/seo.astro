@@ -1,0 +1,186 @@
+---
+/* /seo — "SEO + Google" page. Bespoke long-form letter in the homepage voice
+   (serif body, display caps headlines, dated header, signature, highlighter
+   device on the spine lines). Reads as the page after "SEO + Google → See more"
+   on the homepage; sections 4/5/7 call back to homepage lines and go deeper.
+   The retainer is never sold cold, so there is no price/buy here, only the
+   strategy-session CTA. Stats are dossier-tier [VERIFIED] (56% Google-first,
+   72-hour window, FTC $7.2M). */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CTAButton from '../components/CTAButton.astro';
+import StickyMobileCTA from '../components/StickyMobileCTA.astro';
+import { site } from '../data/site.config';
+
+const minutes = site.callLengthMinutes;
+const bookHref = '/book';
+
+// Fine-print terms (section 6): a bold lead line + a readable explanation each,
+// so the long conditions actually read instead of being dense mono paragraphs.
+const terms = [
+  { lead: 'The clock starts when I have the keys.', body: 'Day one is the day I have access, not the day you signed. Google’s verification queue isn’t your fault or mine.' },
+  { lead: 'The clock pauses on your side.', body: 'If I’m waiting on photos or a sign-off for more than 48 hours, it stops till you send them. Your half of the job.' },
+  { lead: 'The baseline is in ink, and honest about your slow season.', body: 'Set in December it flatters me. Set in spring it buries me. So we write it down, season-adjusted, and neither of us moves it.' },
+  { lead: 'Miss it and you stop paying.', body: 'Up to three months, free, while I keep working. Still flat after that? You walk, you keep everything I built, you owe me a dollar of nothing.' },
+  { lead: 'The warranty holds if you hold up your end.', body: 'Answer leads the same day. Ask for reviews on finished jobs. No second SEO guy working behind me. Same as the warranty on your own work.' },
+];
+---
+<BaseLayout
+  title="Local SEO for Kitchen & Bath | Kitchen Websites"
+  description="I stop you losing the homeowners you already earned. One tracked number, up by day 90 or you stop paying. No ranking promises. Kitchen and bath only."
+>
+  <!-- 1 — HERO -->
+  <section class="section seo2-hero">
+    <div class="container container--narrow">
+      <p class="eyebrow">Get found · Kitchen &amp; bath only</p>
+      <h1 class="seo2-hero__h1">More homeowners calling you in 90 days, or you stop paying.</h1>
+      <p class="lede seo2-hero__sub">I won’t promise you a number-one ranking. I promise the only number that pays you: the phone ringing. Beat where you’re at today in 90 days, or you don’t owe me a cent.</p>
+      <div class="seo2-hero__cta">
+        <CTAButton href={bookHref} label="Schedule your free strategy session" event="Seo:HeroToBook" size="lg" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 2–5 — THE LETTER -->
+  <section class="section seo2-body">
+    <div class="container container--prose seo2-prose">
+      <p class="seo2-date mono">Updated June 13, 2026</p>
+
+      <h2 class="seo2-h seo2-h--soft">You read the front page. Here’s the part I sign my name to.</h2>
+      <p>The front page told you what’s wrong.</p>
+      <p>This page tells you what I do about it, what the number is, and what I’ll put in writing.</p>
+      <p>A line in the sand, a deadline, and the risk sitting on my side of the table.</p>
+
+      <h2 class="seo2-h">It’s won or lost in ten seconds.</h2>
+      <p>A neighbor gives a homeowner your name tonight.</p>
+      <p>Tomorrow they Google you before they call. <span class="hl">56% check Google before they check anything, your own site included.</span></p>
+      <p>What they find in the next ten seconds settles it.</p>
+      <p>A live profile, recent jobs, a stack of reviews from their zip code, and they call you.</p>
+      <p>A thin page and a photo from 2019, and they scroll. The next listing down has eighty reviews and a kitchen from last week.</p>
+      <p class="seo2-beat"><span class="hl">He didn’t beat your work. He beat your Google page.</span></p>
+      <p>And it’s fast. Most homeowners pick a contractor inside 72 hours of asking around.</p>
+      <p>That’s the window I work in. The screen between the handshake and the call.</p>
+
+      <h2 class="seo2-h">The one promise I won’t make.</h2>
+      <p>You saw the line on the front page. Anybody who guarantees a ranking is lying.</p>
+      <p>Here’s the whole reason, and what I hand you instead.</p>
+      <p>Every SEO guy who ever called you promised the top spot. I won’t.</p>
+      <p>Nobody owns Google’s rankings. Google says so themselves: anyone guaranteeing number one is running a scam.</p>
+      <p>The last man who swore he owned that spot is the reason you don’t trust me yet.</p>
+      <p>So I won’t guarantee the ranking. <span class="hl">I’ll guarantee something harder, and I’ll hand you the proof every month.</span></p>
+
+      <h2 class="seo2-h">One number you can count without trusting me.</h2>
+      <p>You read the deal on the front page. Ninety days, your number’s up, or you stop paying.</p>
+      <p>Here’s the number, and here’s why you can hold me to it.</p>
+      <p>Day one we write down what your Google brings you now. Calls. Direction taps. Form fills.</p>
+      <p>None of it is my word. It’s call tracking and Google’s own readout, in a report you read in two minutes.</p>
+      <p>So when the number moves, there’s nothing to argue about. The plumbing counts it, not me.</p>
+      <p>Between now and day 90, I rebuild the profile, load it with real jobs, and turn every kitchen you finish into a fresh review.</p>
+      <p class="seo2-beat"><span class="hl">You watch it climb every week. You own all of it.</span></p>
+    </div>
+  </section>
+
+  <!-- 6 — THE FINE PRINT, IN BIG TYPE -->
+  <section class="section section--sm seo2-fineprint">
+    <div class="container container--narrow">
+      <h2 class="seo2-h">My fine print is the headline.</h2>
+      <p class="seo2-fineprint__intro">
+        Your competitor buries his guarantee in eight-point legal type so you can’t pin him to it. Here’s mine,
+        where you can read it without your glasses.
+      </p>
+      <div class="seo2-terms">
+        <p class="seo2-terms__promise">The calls are up by day 90, or you stop paying.</p>
+        <ol class="seo2-terms__list">
+          {terms.map((t, i) => (
+            <li class="seo2-terms__item">
+              <span class="seo2-terms__n">{String(i + 1).padStart(2, '0')}</span>
+              <div class="seo2-terms__text">
+                <p class="seo2-terms__lead">{t.lead}</p>
+                <p class="seo2-terms__body">{t.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <p class="seo2-terms__foot">No ranking promise. A tracked number, season-adjusted and signed, that the plumbing counts for both of us.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7–8 — MODEL I WON'T RUN + TERMS -->
+  <section class="section seo2-body">
+    <div class="container container--prose seo2-prose">
+      <h2 class="seo2-h">They’ll ask me for pay-per-lead. The answer’s no.</h2>
+      <p>You read about the FTC fine on the front page. $7.2 million, for selling contractors leads who weren’t ready, weren’t buying, or weren’t even local.</p>
+      <p>Pay-per-lead is that same model in a fairer-looking costume.</p>
+      <p>It pays me to flood your phone with junk and call every buzz a win.</p>
+      <p class="seo2-beat"><span class="hl">I don’t sell you strangers. I make the homeowner who already heard your name pick you.</span></p>
+      <p>That’s why my number is real calls climbing past a line we set together, and not a meter I can run up on you.</p>
+
+      <h2 class="seo2-h">You own everything. Cancel any month.</h2>
+      <p>Month to month. Houzz locked you in for a year. I win you back every thirty days or you walk.</p>
+      <p>You own all of it. Profile, photos, reviews, site. You leave, it leaves with you.</p>
+      <p class="seo2-beat"><span class="hl">I earn next month every month. That’s the deal that keeps me honest.</span></p>
+    </div>
+  </section>
+
+  <!-- 9 — THE STRATEGY SESSION -->
+  <section class="section section--dark seo2-session">
+    <div class="container container--narrow seo2-session__inner">
+      <h2 class="seo2-session__h">See what your Google is costing you. Free, in {minutes} minutes.</h2>
+      <p>You’ll walk away knowing exactly where your jobs are going, what it’s costing you, and how to win them back. <span class="seo2-em">Written down, yours to keep, even if you never hire me.</span></p>
+      <div class="seo2-session__cta">
+        <CTAButton href={bookHref} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Seo:SessionToBook" size="lg" />
+      </div>
+      <p class="seo2-sig">— Shane Nguyen, Kitchen Websites</p>
+      <p class="seo2-ps">P.S. Worst case, you walk away with a free plan worth more than the half hour. Best case, you stop handing jobs to a worse shop. There’s no bad outcome in it.</p>
+    </div>
+  </section>
+
+  <StickyMobileCTA href={bookHref} label={`Book the ${minutes}-minute call`} event="Seo:StickyToBook" />
+</BaseLayout>
+
+<style>
+  /* highlighter device — sits behind the spine lines */
+  .hl {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 0.08em 0.18em;
+    border-radius: 2px;
+  }
+
+  /* hero */
+  .seo2-hero { padding-top: var(--space-12); text-align: center; }
+  .seo2-hero__h1 { margin: var(--space-4) auto 0; max-width: 20ch; }
+  .seo2-hero__sub { margin: var(--space-5) auto 0; max-width: 46ch; }
+  .seo2-hero__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
+
+  /* letter body */
+  .seo2-prose { }
+  .seo2-date { font-size: var(--fs-caption); color: var(--ink-50); text-transform: uppercase; letter-spacing: var(--tracking-caps); padding-bottom: var(--space-4); border-bottom: var(--rule-width) solid var(--rule); }
+  .seo2-h { margin-top: var(--space-10); font-size: var(--fs-h3); }
+  .seo2-h--soft { text-transform: none; letter-spacing: -0.01em; }
+  .seo2-prose p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .seo2-prose h2 + p { margin-top: var(--space-5); }
+  .seo2-beat { font-family: var(--font-serif); }
+
+  /* fine print — readable terms document */
+  .seo2-fineprint__intro { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.65; color: var(--ink-70); max-width: 60ch; }
+  .seo2-terms { margin-top: var(--space-6); border: var(--rule-thick) solid var(--ink); border-radius: var(--radius-sm); box-shadow: 6px 6px 0 var(--rule-soft); background: var(--bg-raised); overflow: hidden; }
+  .seo2-terms__promise { background: var(--dark); color: var(--dark-ink); font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; font-size: var(--fs-h4); letter-spacing: -0.01em; line-height: 1.1; padding: var(--space-5) var(--space-6); }
+  .seo2-terms__list { list-style: none; margin: 0; padding: 0; }
+  .seo2-terms__item { display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: start; padding: var(--space-5) var(--space-6); border-top: var(--rule-width) solid var(--line); }
+  .seo2-terms__n { font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-h3); color: var(--accent); line-height: 0.85; }
+  .seo2-terms__lead { font-family: var(--font-display); font-weight: var(--fw-display); text-transform: none; font-size: var(--fs-h4); letter-spacing: -0.005em; line-height: 1.15; color: var(--ink); }
+  .seo2-terms__body { margin-top: var(--space-2); font-family: var(--font-serif); font-size: var(--fs-body); line-height: 1.6; color: var(--ink-70); }
+  .seo2-terms__foot { padding: var(--space-5) var(--space-6); border-top: var(--rule-thick) dashed var(--line); font-family: var(--font-serif); font-style: italic; font-size: var(--fs-body-sm); color: var(--ink-50); }
+
+  /* session (dark) */
+  .seo2-session__inner { text-align: center; }
+  .seo2-session__h { font-family: var(--font-display); }
+  .seo2-session__inner p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.65; color: var(--paper-70); max-width: 56ch; margin-inline: auto; }
+  .seo2-em { color: var(--accent-strong); font-weight: var(--fw-body-bold); }
+  .seo2-session__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
+  .seo2-session__cta :global(.cta-block) { align-items: center; }
+  .seo2-sig { margin-top: var(--space-8); font-family: var(--font-display) !important; font-size: var(--fs-h4) !important; color: var(--porcelain) !important; }
+  .seo2-ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm) !important; color: var(--paper-50) !important; max-width: 56ch; }
+</style>

@@ -1,0 +1,58 @@
+---
+/* StickyMobileCTA — bottom bar, appears ≥50% scroll, content pages only.
+   Dismissible. Never on /book (spec §3). Single CTA → /book. */
+interface Props {
+  href?: string;
+  label?: string;
+  event?: string;
+}
+const { href = '/book', label = 'Book a free session', event } = Astro.props;
+---
+<div class="smcta" data-smcta hidden>
+  <a class="btn btn--primary" href={href} data-smcta-link data-event={event}>{label} <span aria-hidden="true">→</span></a>
+  <button class="smcta__close" type="button" aria-label="Dismiss" data-smcta-close>×</button>
+</div>
+
+<style>
+  .smcta {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-sticky);
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) var(--gutter);
+    background: color-mix(in srgb, var(--cabinet) 96%, transparent);
+    border-top: var(--rule-thick) solid var(--brass);
+    transform: translateY(100%);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .smcta[data-show="true"] { transform: translateY(0); }
+  .smcta .btn { flex: 1; justify-content: center; }
+  .smcta__close {
+    background: transparent; border: 0; color: var(--paper-70);
+    font-size: 1.5rem; line-height: 1; padding: var(--space-2);
+  }
+  @media (min-width: 56em) { .smcta { display: none; } }
+</style>
+
+<script is:inline>
+  (function () {
+    var bar = document.querySelector('[data-smcta]');
+    if (!bar) return;
+    if (sessionStorage.getItem('smcta-dismissed') === '1') return;
+    bar.hidden = false;
+    var shown = false;
+    function onScroll() {
+      var sc = window.scrollY || document.documentElement.scrollTop;
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      if (!shown && h > 0 && sc / h >= 0.5) { bar.setAttribute('data-show', 'true'); shown = true; }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    bar.querySelector('[data-smcta-close]').addEventListener('click', function () {
+      bar.removeAttribute('data-show');
+      sessionStorage.setItem('smcta-dismissed', '1');
+    });
+    var link = bar.querySelector('[data-smcta-link]');
+    link.addEventListener('click', function () {
+      var ev = link.getAttribute('data-event');
+      if (ev && window.kwTrack) window.kwTrack(ev);
+    });
+  })();
+</script>

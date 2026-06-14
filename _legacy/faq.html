@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F6F2EC">
+
+  <title>FAQ | FlipFix Digital</title>
+  <meta name="description" content="Frequently asked questions about FlipFix Digital. Timelines, guarantees, pricing, what you need to start, SEO during a rebuild.">
+
+  <meta property="og:site_name" content="FlipFix Digital">
+  <meta property="og:title" content="FAQ | FlipFix Digital">
+  <meta property="og:description" content="Frequently asked questions about FlipFix Digital. Timelines, guarantees, pricing, what you need to start, SEO during a rebuild.">
+  <meta property="og:url" content="https://flipfixdigital.com/faq">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://flipfixdigital.com/assets/images/og-cover.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="FAQ | FlipFix Digital">
+  <meta name="twitter:description" content="Frequently asked questions about FlipFix Digital. Timelines, guarantees, pricing, what you need to start, SEO during a rebuild.">
+  <meta name="twitter:image" content="https://flipfixdigital.com/assets/images/og-cover.svg">
+  <link rel="canonical" href="https://flipfixdigital.com/faq.html">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..600,30..100;1,9..144,400..500,30..100&family=Manrope:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+
+  <style>
+    .page-hero {
+      padding-block: var(--section-y);
+      padding-inline: var(--gutter);
+      background: var(--bg-cream);
+    }
+    .page-hero__inner {
+      max-width: var(--container-narrow);
+      margin-inline: auto;
+      text-align: center;
+    }
+    .page-hero h1 { margin-top: var(--space-4); text-wrap: balance; }
+    .page-hero .lede { margin-top: var(--space-4); max-width: 50ch; margin-inline: auto; }
+
+    .faq-page {
+      padding-block: var(--section-y);
+      padding-inline: var(--gutter);
+      background: var(--bg-cream-deep);
+    }
+    .faq-page__inner {
+      max-width: var(--container-narrow);
+      margin-inline: auto;
+    }
+    .faq-page__group { margin-bottom: var(--space-10); }
+    .faq-page__group:last-child { margin-bottom: 0; }
+    .faq-page__group-label {
+      font-family: var(--font-body);
+      font-size: var(--fs-caption);
+      letter-spacing: var(--tracking-caps);
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      font-weight: var(--fw-semibold);
+      margin: 0 0 var(--space-4);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--rule-soft);
+    }
+    .faq-list details {
+      border-top: 1px solid var(--rule);
+      padding-block: var(--space-5);
+    }
+    .faq-list details:last-of-type { border-bottom: 1px solid var(--rule); }
+    .faq-list summary {
+      list-style: none;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: var(--fw-regular);
+      color: var(--ink);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-6);
+      line-height: 1.35;
+      font-variation-settings: "opsz" 24;
+      padding-block: var(--space-2);
+      text-wrap: pretty;
+    }
+    .faq-list summary::-webkit-details-marker { display: none; }
+    .faq-list summary::after {
+      content: "+";
+      font-family: var(--font-body);
+      font-size: 1.5rem;
+      font-weight: var(--fw-regular);
+      color: var(--gold-deep);
+      line-height: 1;
+      transition: transform var(--duration-fast) var(--ease-out);
+      flex-shrink: 0;
+      margin-top: 0.25rem;
+    }
+    .faq-list details[open] summary::after { content: "\2013"; }
+    .faq-list details p {
+      margin-top: var(--space-4);
+      color: var(--ink-soft);
+      max-width: 62ch;
+      line-height: 1.6;
+    }
+    .faq-page__cta {
+      max-width: var(--container-narrow);
+      margin: var(--space-12) auto 0;
+      padding: var(--space-8);
+      background: var(--bg-cream);
+      border: 1px solid var(--rule);
+      text-align: center;
+    }
+    .faq-page__cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.375rem, 1vw + 1rem, 1.75rem);
+      font-weight: var(--fw-regular);
+      font-variation-settings: "opsz" 36;
+      color: var(--ink);
+      margin: 0 0 var(--space-4);
+      letter-spacing: -0.005em;
+    }
+    .faq-page__cta p {
+      margin: 0 0 var(--space-5);
+      color: var(--ink-soft);
+      font-size: var(--fs-body-sm);
+      max-width: 48ch;
+      margin-inline: auto;
+    }
+
+    /* The FAQ page IS the expanded answer hub; the pre-footer CTA band's
+       "Schedule intro call" prompt duplicates the inline teardown CTA above,
+       so we scope-hide it here, same pattern used on other pages. */
+    .site-footer__cta { display: none; }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-nav">
+    <div class="site-nav__utility">
+      <div class="container site-nav__utility-inner">
+        <div class="site-nav__utility-left">
+          <a href="tel:+14089088131" aria-label="Call FlipFix Digital">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            (408) 908-8131
+          </a>
+          <a href="mailto:shanehnguyen@flipfixdigital.com">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            shanehnguyen@flipfixdigital.com
+          </a>
+          <span class="site-nav__hours"><span>Available 24/7 &middot; 12-hour reply</span></span>
+        </div>
+        <div class="site-nav__utility-right" aria-label="Social links">
+          <a class="site-nav__social" href="https://www.linkedin.com/in/shanenguyen1253/" target="_blank" rel="noopener" aria-label="Shane on LinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 2h-17A1.5 1.5 0 0 0 2 3.5v17A1.5 1.5 0 0 0 3.5 22h17a1.5 1.5 0 0 0 1.5-1.5v-17A1.5 1.5 0 0 0 20.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 1 1 8.25 6.5 1.78 1.78 0 0 1 6.5 8.25zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0 0 13 14.19a.66.66 0 0 0 0 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 0 1 2.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+          </a>
+          <a class="site-nav__social" href="https://www.facebook.com/flipfixdigital/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a class="site-nav__social" href="https://flipfixdigital.com/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Google">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972a6.033 6.033 0 110-12.064c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814A9.969 9.969 0 0012.545 2C7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-0.013z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container site-nav__inner">
+      <a class="site-nav__brand" href="index.html"><img src="assets/images/mylogos/logo-no-background.png" alt=""><span class="site-nav__brand-text">Kitchen Websites<span class="site-nav__brand-sub" style="display:block;font-family:var(--font-body);font-size:0.6875rem;font-weight:400;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px;line-height:1;">by FlipFix Digital</span></span></a>
+      <nav aria-label="Primary">
+        <ul class="site-nav__links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html">Work</a></li>
+
+          <li><a href="about.html">About</a></li>
+          <li><a href="faq.html" aria-current="page">FAQ</a></li>
+
+        </ul>
+      </nav>
+      <div class="site-nav__cta">
+        <a class="btn btn-outline-gold" href="audit.html">Score my homepage →</a>
+        <a class="btn btn-primary" href="schedule.html">Schedule intro call</a>
+      </div>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav" hidden>
+      <nav aria-label="Mobile">
+        <ul class="mobile-nav__links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="work.html">Work</a></li>
+
+          <li><a href="about.html">About</a></li>
+          <li><a href="faq.html" aria-current="page">FAQ</a></li>
+
+        </ul>
+        <div class="mobile-nav__cta">
+          <a class="btn btn-outline-gold btn-lg" href="audit.html">Score my homepage →</a>
+          <a class="btn btn-primary btn-lg" href="schedule.html">Schedule intro call</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-hero">
+      <div class="page-hero__inner">
+        <p class="eyebrow" style="margin-inline: auto;">FAQ | FlipFix Digital</p>
+        <h1>Questions dealers actually ask.</h1>
+        <p class="lede">Everything I hear on intro calls and in DMs, answered in one place. Still missing something? Email <a href="mailto:shanehnguyen@flipfixdigital.com" style="color: var(--ink); text-decoration-color: var(--gold);">shanehnguyen@flipfixdigital.com</a>.</p>
+      </div>
+    </section>
+
+    <section class="faq-page">
+      <div class="faq-page__inner">
+
+        <!-- Group 1: Before you send the form -->
+        <div class="faq-page__group">
+          <p class="faq-page__group-label">Before you send the teardown form</p>
+          <div class="faq-list">
+            <details>
+              <summary>Is the teardown actually free, or is there a catch?</summary>
+              <p>Actually free. No card required, no trial, no upsell at the end. We send a recorded video and a written scope. If we&rsquo;re a fit, we talk. If not, you keep both, the teardown alone is usually worth the 48 hours.</p>
+            </details>
+
+            <details>
+              <summary>What do I need to send in the initial form?</summary>
+              <p>Your site URL and two sentences on what&rsquo;s broken. That&rsquo;s it. We don&rsquo;t need access to your platform, analytics, or anything sensitive. If we need more later to scope accurately, we&rsquo;ll ask.</p>
+            </details>
+
+            <details>
+              <summary>Should I redo my site or completely rebuild it?</summary>
+              <p>Depends on what&rsquo;s broken. If your catalog, checkout, and contractor flow are fundamentally structured wrong, patching costs more than rebuilding and you end up rebuilding anyway in 12 months. If the bones are solid and you&rsquo;re losing conversions to specific fixable leaks, a rebuild is overkill. The teardown tells you which situation you&rsquo;re in, that&rsquo;s the whole point of doing it before quoting anything.</p>
+            </details>
+
+            <details>
+              <summary>I already have a site or someone building it. Worth a teardown anyway?</summary>
+              <p>Yes, most of the dealers we review already have a site. The teardown is diagnostic, not a pitch to rebuild from scratch. You&rsquo;ll either validate what you have, find 2&ndash;3 specific leaks to fix, or decide the current setup isn&rsquo;t worth patching. All three outcomes save you money.</p>
+            </details>
+          </div>
+        </div>
+
+        <!-- Group 2: Timeline, pricing, guarantees -->
+        <div class="faq-page__group">
+          <p class="faq-page__group-label">Timeline, pricing, and guarantees</p>
+          <div class="faq-list">
+            <details>
+              <summary>How soon can my new site be live?</summary>
+              <p>Three to five weeks for the homeowner site, one to two weeks after that for the contractor portal. Your build slot is booked the day you sign, we take a small number of dealer projects at a time, so the calendar gets real fast.</p>
+            </details>
+
+            <details>
+              <summary>How do I get started?</summary>
+              <p>Send us your URL for a teardown, no call required. Within 48 hours you&rsquo;ll have a recorded walk-through of what&rsquo;s costing you sales and a fixed-price proposal. Deposit books your slot.</p>
+            </details>
+
+            <details>
+              <summary>Am I actually going to earn more from this?</summary>
+              <p>That&rsquo;s the point of the build. Your new site captures contractor signups 24/7, closes more homeowner design consults, and gives your contractors spec sheets they can turn into their own closed jobs. You stop leaving revenue on the table between 5&thinsp;pm Friday and 8&thinsp;am Monday.</p>
+            </details>
+
+            <details>
+              <summary>What guarantees do I get?</summary>
+              <p>One full round of revisions is included after launch. We&rsquo;re on call for 30 days post-launch for anything that breaks. If the site doesn&rsquo;t match the scope we agreed on, we fix it, at our cost, not yours.</p>
+            </details>
+
+            <details>
+              <summary>What if I&rsquo;m not happy with the site during the build?</summary>
+              <p>We don&rsquo;t wait until launch to find out. You see the site weekly, not at the end. The scope is fixed before you sign, the design system is yours to weigh in on, and the revision round exists so launch-day doesn&rsquo;t hide surprises.</p>
+            </details>
+          </div>
+        </div>
+
+        <!-- Group 3: After you sign / during the build -->
+        <div class="faq-page__group">
+          <p class="faq-page__group-label">Once we start building</p>
+          <div class="faq-list">
+            <details>
+              <summary>What do you need from me once we sign?</summary>
+              <p>Access to your current site, your product catalog as a CSV or admin export, any real customer photos or testimonials you already have, and one point of contact on your side who can approve decisions without a committee call.</p>
+            </details>
+
+            <details>
+              <summary>Will I lose my Google rankings in the rebuild?</summary>
+              <p>No. Every rebuild preserves SEO with proper 301 redirects, migrated metadata, structured data, and the URL patterns Google already indexes. You keep the rankings you&rsquo;ve earned, the new site just converts the traffic better.</p>
+            </details>
+          </div>
+        </div>
+
+        <!-- Final CTA card -->
+        <div class="faq-page__cta">
+          <h2>Still have questions?</h2>
+          <p>Send your URL and two sentences on what&rsquo;s broken. We&rsquo;ll answer in the teardown video.</p>
+          <a class="btn btn-primary btn-lg" href="schedule.html">Schedule intro call</a>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__cta">
+      <div class="container site-footer__cta-inner">
+        <div>
+          <h3>Ready to bring in more contractors and close more homeowners?</h3>
+          <p>Schedule a 15-minute intro call, or send your URL for a free teardown. No call required, 48-hour turnaround.</p>
+        </div>
+        <div class="site-footer__cta-actions">
+          <a class="btn btn-primary" href="schedule.html">Schedule intro call</a>
+          <a class="site-footer__cta-phone" href="tel:+14089088131">(408)&thinsp;908-8131</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="site-footer__main">
+      <div class="container site-footer__grid">
+        <div class="site-footer__brand-col">
+          <p class="site-footer__logo"><img src="assets/images/mylogos/full-logo-no-background.png" alt="FlipFix Digital, websites for cabinet dealers"></p>
+          <p class="site-footer__bio">Cabinet dealer sites. E-commerce storefronts and contractor portals, built by a specialist. Fixed scope, dealer-owned, live in 3&ndash;5 weeks.</p>
+        </div>
+
+        <nav class="site-footer__col" aria-label="Site">
+          <h4>Site</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="work.html">Work</a></li>
+
+            <li><a href="about.html">About</a></li>
+
+          </ul>
+        </nav>
+
+        <nav class="site-footer__col" aria-label="Get started">
+          <h4>Get started</h4>
+          <ul>
+            <li><a href="schedule.html">Schedule intro call</a></li>
+            <li><a href="audit.html">Free teardown audit</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+          </ul>
+        </nav>
+
+        <nav class="site-footer__col site-footer__legal-col" aria-label="Legal">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="privacy.html">Privacy</a></li>
+            <li><a href="terms.html">Terms</a></li>
+          </ul>
+          <div class="site-footer__socials" aria-label="Social links">
+            <a href="https://www.linkedin.com/in/shanenguyen1253/" target="_blank" rel="noopener" aria-label="Shane on LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 2h-17A1.5 1.5 0 0 0 2 3.5v17A1.5 1.5 0 0 0 3.5 22h17a1.5 1.5 0 0 0 1.5-1.5v-17A1.5 1.5 0 0 0 20.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 1 1 8.25 6.5 1.78 1.78 0 0 1 6.5 8.25zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0 0 13 14.19a.66.66 0 0 0 0 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 0 1 2.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/flipfixdigital/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://flipfixdigital.com/" target="_blank" rel="noopener" aria-label="FlipFix Digital on Google">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972a6.033 6.033 0 110-12.064c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814A9.969 9.969 0 0012.545 2C7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-0.013z"/></svg>
+            </a>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <div class="site-footer__legal">
+      <div class="container site-footer__legal-inner">
+        <span>&copy; 2026 FlipFix Digital. Cabinet dealer sites, nothing else.</span>
+        <div class="site-footer__legal-right">
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="sitemap.xml">Sitemap</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>

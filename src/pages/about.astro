@@ -1,0 +1,120 @@
+---
+/* /about — tightened, buyer-focused. The only question this page answers is the
+   one a burned owner actually asks: who won't screw me this time? Everything
+   about how the operation is RUN (solo, capacity, waitlist) and the long founder
+   origin is cut — the buyer doesn't care how it's run, only what it means for
+   him. Short paragraphs, Suby rhythm. The manifesto uses "they did X, I do Y"
+   contrast (the persuasion device), never "no X, no Y" negative-listing.
+   Highlighter on light sections only (never on the dark closer). One CTA: the
+   session. [ TRUE DETAIL ] = a real fact only Shane supplies — the one
+   remaining proof slot; fill it and delete the bracket. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CTAButton from '../components/CTAButton.astro';
+import StickyMobileCTA from '../components/StickyMobileCTA.astro';
+import { site } from '../data/site.config';
+
+const minutes = site.callLengthMinutes;
+const bookHref = '/book';
+---
+<BaseLayout
+  title="Why I Only Build for Kitchen & Bath | Shane Nguyen, Kitchen Websites"
+  description="I'm a marketer, which is why you shouldn't trust me yet. Watch what I refuse to do. Kitchen and bath only, the work on me before you owe a dollar."
+>
+  <!-- 1 — HERO -->
+  <section class="section ab-hero">
+    <div class="container container--narrow">
+      <p class="eyebrow">About · Kitchen &amp; bath only</p>
+      <h1 class="ab-hero__h1">I’m a marketer. Which is why you shouldn’t trust me yet.</h1>
+      <p class="lede ab-hero__sub">You’ve been burned by people who say exactly what I’m about to say. So don’t take my word for it. Watch what I refuse to do.</p>
+      <div class="ab-hero__cta">
+        <CTAButton href={bookHref} label="Schedule your free strategy session" event="About:HeroToBook" size="lg" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 2–6 — THE LETTER -->
+  <section class="section ab-body">
+    <div class="container container--prose ab-prose">
+      <h2 class="ab-h">You didn’t come here for my résumé.</h2>
+      <figure class="ab-portrait">
+        <img src="/assets/images/shane-professional-shot.jpg" alt={`${site.founder}, founder of Kitchen Websites`} width="520" height="640" loading="lazy" decoding="async" />
+        <figcaption class="mono">{site.founder} · {site.brand}</figcaption>
+      </figure>
+      <p>By now you’ve hired a few of us. The lead company. The Houzz rep. The SEO guy who mailed you charts while your phone stayed quiet.</p>
+      <p>You’re not here to find out where I went to school.</p>
+      <p class="ab-beat"><span class="hl">You’re here for one answer. Who won’t screw me this time?</span></p>
+      <p>I’ve watched the lead-gen racket rob good shops for years. So I built the opposite. Here’s what that means.</p>
+
+      <h2 class="ab-h">Four things that made you hate marketers. I won’t do any of them.</h2>
+      <p>They sold you leads. Strangers who were never going to call back. I make the homeowner who already heard your name pick you instead.</p>
+      <p>They locked you in for a year. I earn next month every month, or you walk.</p>
+      <p>They swore they owned the top of Google. Nobody does, and the guy who said so is why you’re reading this with your arms crossed.</p>
+      <p class="ab-beat"><span class="hl">They took your money up front. I put the risk on my side. You see the work before you owe me a dime.</span></p>
+
+      <h2 class="ab-h">I build for shops like yours. Nothing else.</h2>
+      <p>Dentists ask. Lawyers ask. Gyms ask. I turn all of them down.</p>
+      <p>A site that books kitchen jobs looks nothing like a dentist’s page with your logo dropped on top. I know what a homeowner checks before she trusts a remodeler, because it’s the only thing I study.</p>
+      <p class="ab-beat"><span class="hl">Get me on the phone and you won’t spend ten minutes explaining your business. I already know it.</span></p>
+
+      <h2 class="ab-h">Every promise I make puts the risk on me.</h2>
+      <p>A deadline I pay for missing. A number I don’t get paid for unless I move it.</p>
+      <p>You own all of it. The site, the profile, the photos, the reviews. You leave, it leaves with you.</p>
+      <p class="ab-beat"><span class="hl">I’d rather prove it to you than swear to it.</span></p>
+    </div>
+  </section>
+
+  <!-- 6 — PROOF -->
+  <section class="section section--sm ab-proof">
+    <div class="container container--prose ab-prose">
+      <h2 class="ab-h">Don’t take the story’s word for it.</h2>
+      <p>Look at the work, not a wall of awards. <span class="ab-todo">[ TRUE DETAIL: link two or three real kitchen &amp; bath sites you’ve built. Fill this and delete the bracket. ]</span></p>
+      <p class="ab-beat"><span class="hl">And the fastest proof costs you nothing. Thirty minutes where I show you exactly where your jobs are leaking, live. You keep the plan even if you never hire me.</span></p>
+    </div>
+  </section>
+
+  <!-- 7 — END CTA (dark; no highlighter, gold/bold emphasis) -->
+  <section class="section section--dark ab-session">
+    <div class="container container--narrow ab-session__inner">
+      <h2 class="ab-session__h">See what you’re losing. Free, in {minutes} minutes.</h2>
+      <p>In half an hour you’ll know exactly where your jobs are going online and how to win them back. <span class="ab-em">Written down, yours to keep, even if you never hire me.</span></p>
+      <div class="ab-session__cta">
+        <CTAButton href={bookHref} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="About:SessionToBook" size="lg" />
+      </div>
+      <p class="ab-sig">— Shane Nguyen, Kitchen Websites</p>
+      <p class="ab-ps">P.S. Worst case, you walk away with a free plan worth more than the half hour. Best case, you stop losing jobs you already earned.</p>
+    </div>
+  </section>
+
+  <StickyMobileCTA href={bookHref} label={`Book the ${minutes}-minute call`} event="About:StickyToBook" />
+</BaseLayout>
+
+<style>
+  .hl { background: color-mix(in srgb, var(--accent) 30%, transparent); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0.08em 0.18em; border-radius: 2px; }
+
+  .ab-hero { padding-top: var(--space-12); text-align: center; }
+  .ab-hero__h1 { margin: var(--space-4) auto 0; max-width: 20ch; }
+  .ab-hero__sub { margin: var(--space-5) auto 0; max-width: 50ch; }
+  .ab-hero__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
+
+  .ab-h { margin-top: var(--space-10); font-size: var(--fs-h3); }
+  .ab-prose p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .ab-prose h2 + p { margin-top: var(--space-5); }
+
+  /* real founder photo (not a stock team) */
+  .ab-portrait { margin: var(--space-6) 0 var(--space-2); max-width: 16rem; }
+  .ab-portrait img { width: 100%; border: var(--rule-thick) solid var(--cabinet); border-radius: var(--radius-sm); box-shadow: 6px 6px 0 var(--rule-soft); }
+  .ab-portrait figcaption { margin-top: var(--space-3); font-size: var(--fs-caption); color: var(--ink-50); text-transform: uppercase; letter-spacing: var(--tracking-caps); }
+
+  /* the one remaining proof placeholder — clearly marked, never fabricated */
+  .ab-todo { font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--warn); background: color-mix(in srgb, var(--warn) 8%, transparent); border: 1px dashed var(--warn); border-radius: var(--radius-sm); padding: 0.1em 0.4em; }
+
+  /* end CTA (dark) */
+  .ab-session__inner { text-align: center; }
+  .ab-session__h { font-family: var(--font-display); }
+  .ab-session__inner p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.65; color: var(--paper-70); max-width: 56ch; margin-inline: auto; }
+  .ab-em { color: var(--accent-strong); font-weight: var(--fw-body-bold); }
+  .ab-session__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
+  .ab-session__cta :global(.cta-block) { align-items: center; }
+  .ab-sig { margin-top: var(--space-8); font-family: var(--font-display) !important; font-size: var(--fs-h4) !important; color: var(--porcelain) !important; }
+  .ab-ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm) !important; color: var(--paper-50) !important; max-width: 56ch; margin-inline: auto; }
+</style>

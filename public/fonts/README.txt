@@ -1,0 +1,1 @@
+PLACEHOLDER: drop subset woff2 files here — saira-condensed-600.woff2, inter-variable.woff2, spline-sans-mono-500.woff2. Until then the CSS fallback stack renders (spec §3: max 2 webfonts, font-display swap, self-hosted).

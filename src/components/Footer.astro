@@ -1,0 +1,41 @@
+---
+/* Minimal footer — offers, about, book, contact, legal. No link forest (spec §2). */
+import { site } from '../data/site.config';
+const year = 2026; // build-stamped; Date is intentionally not called at module scope
+---
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__top">
+      <div>
+        <div class="footer__brand">Kitchen <span>Websites</span></div>
+        <p style="max-width: 32ch; margin-top: var(--space-3); color: var(--paper-70);">{site.tagline}</p>
+      </div>
+      <div class="footer__cols">
+        <div class="footer__col">
+          <h4>Offers</h4>
+          <a href="/seo">Local SEO</a>
+          <a href="/websites">See-It-First Website</a>
+        </div>
+        <div class="footer__col">
+          <h4>Company</h4>
+          <a href="/about">About</a>
+          <a href="/calculator">Lost Referral Calculator</a>
+          <a href="/book">Book a call</a>
+        </div>
+        <div class="footer__col">
+          <h4>Contact</h4>
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+          {site.phone && <a href={`tel:${site.phone}`}>{site.phone}</a>}
+        </div>
+      </div>
+    </div>
+    <div class="footer__legal">
+      <span>© {year} {site.brand}. Built for kitchen &amp; bath businesses.</span>
+      <span>
+        <a href="/privacy" style="color: var(--paper-70);">Privacy</a>
+        &nbsp;·&nbsp;
+        <a href="/terms" style="color: var(--paper-70);">Terms</a>
+      </span>
+    </div>
+  </div>
+</footer>

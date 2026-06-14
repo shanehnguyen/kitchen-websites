@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Cabinet Homepage Audit — Test</title>
+</head>
+<body>
+  <h1>Cabinet Homepage Audit — Test</h1>
+
+  <form id="scan-form">
+    <label for="url">URL</label>
+    <input id="url" name="url" type="url" required size="60" placeholder="https://example.com">
+    <button type="submit">Scan</button>
+  </form>
+
+  <p id="status"></p>
+  <p id="error" style="color: red;"></p>
+  <pre id="output"></pre>
+
+  <script>
+    const form = document.getElementById('scan-form');
+    const urlInput = document.getElementById('url');
+    const statusEl = document.getElementById('status');
+    const errorEl = document.getElementById('error');
+    const outputEl = document.getElementById('output');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      statusEl.textContent = 'Scanning...';
+      errorEl.textContent = '';
+      outputEl.textContent = '';
+
+      try {
+        const res = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urlInput.value }),
+        });
+        const data = await res.json();
+        statusEl.textContent = '';
+        if (!res.ok) {
+          errorEl.textContent = data.error || `HTTP ${res.status}`;
+          return;
+        }
+        outputEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        statusEl.textContent = '';
+        errorEl.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

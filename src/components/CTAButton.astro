@@ -1,0 +1,36 @@
+---
+/* CTAButton — one primary style site-wide. Label = the action's plain name.
+   Always pairs with an optional one-line de-risk microcopy slot (spec §6).
+   `event` fires window.kwTrack on click (funnel events). */
+interface Props {
+  href: string;
+  label: string;
+  variant?: 'primary' | 'ghost';
+  size?: 'md' | 'lg';
+  derisk?: string;
+  event?: string;
+  class?: string;
+}
+const { href, label, variant = 'primary', size = 'md', derisk, event, class: cls = '' } = Astro.props;
+const sizeClass = size === 'lg' ? 'btn--lg' : '';
+---
+<div class={`cta-block ${cls}`}>
+  <a
+    class={`btn btn--${variant} ${sizeClass}`}
+    href={href}
+    data-event={event}
+  >
+    {label}
+    <span aria-hidden="true">→</span>
+  </a>
+  {derisk && <span class="cta-block__derisk">{derisk}</span>}
+</div>
+{event && (
+  <script is:inline>
+    document.querySelectorAll('a[data-event]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (window.kwTrack) window.kwTrack(el.getAttribute('data-event'));
+      });
+    });
+  </script>
+)}

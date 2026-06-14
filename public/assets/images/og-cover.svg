@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Placeholder Open Graph / Twitter card image.
+  1200x630 is the spec for og:image / twitter:image (summary_large_image).
+  TODO: export a real 1200x630 JPG or PNG before deploy.
+  Some social scrapers (older Twitter, LinkedIn) do not render SVG.
+  This SVG works for development preview only.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#F6F2EC"/>
+  <rect x="80" y="470" width="72" height="2" fill="#A89060"/>
+  <text x="80" y="310" font-family="Georgia, 'Times New Roman', serif" font-size="84" font-weight="400" fill="#1A1A1A" letter-spacing="-1.5">FlipFix Digital</text>
+  <text x="80" y="410" font-family="Georgia, 'Times New Roman', serif" font-size="44" font-weight="400" fill="#6B6258" letter-spacing="-0.5">Cabinet dealer sites, built by a specialist.</text>
+  <text x="80" y="530" font-family="Manrope, system-ui, sans-serif" font-size="22" font-weight="600" fill="#A89060" letter-spacing="3" text-transform="uppercase">SHOPLINE &#xB7; SHOPIFY &#xB7; CUSTOM STACKS</text>
+</svg>

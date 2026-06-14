@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site.config';
+---
+<BaseLayout title="Terms" description="The terms for using the Kitchen Websites site and tools." noindex={true}>
+  <section class="section legal">
+    <div class="container container--prose">
+      <h1>Terms</h1>
+      <p class="legal__date mono">Last updated June 2026</p>
+      <!-- LEGAL REVIEW REQUIRED before launch. Plain-language draft only. -->
+      <p>
+        These terms cover use of the {site.brand} website and its tools (the Lost Referral Calculator, and the
+        booking and contact forms). Using the site means you’re okay with them.
+      </p>
+      <h2>The tools are estimates</h2>
+      <p>
+        The Calculator is an honest estimate built from public industry data, not a measurement of your specific
+        business. It’s meant to point you at where to look — not to guarantee an outcome.
+      </p>
+      <h2>Service terms live with each engagement</h2>
+      <p>
+        The Handshake Terms — month-to-month, you own everything, cancel any month — and every offer’s specific
+        guarantee and conditions are stated in full on each offer page and in your agreement. Those govern the
+        actual work.
+      </p>
+      <h2>Contact</h2>
+      <p>Questions: <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal h1 { font-family: var(--font-display); }
+  .legal__date { color: var(--ink-50); font-size: var(--fs-caption); margin-block: var(--space-2) var(--space-6); }
+  .legal h2 { font-family: var(--font-display); text-transform: none; font-size: var(--fs-h3); margin-top: var(--space-8); }
+  .legal p, .legal li { color: var(--ink-70); margin-top: var(--space-3); line-height: 1.6; }
+</style>

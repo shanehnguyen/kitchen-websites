@@ -1,0 +1,48 @@
+---
+/* Analytics — Meta Pixel + CAPI-ready, GA4 optional. Only emits when ids are
+   configured in site.config (placeholders => nothing renders, no console noise).
+   Event helper window.kwTrack(name, params) fires to whichever are present.
+   Funnel events: CalcComplete, LeadQualified, CallBooked. */
+import { site } from '../data/site.config';
+const { metaPixelId, ga4Id } = site.analytics;
+---
+{metaPixelId && (
+  <script is:inline define:vars={{ metaPixelId }}>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', metaPixelId); fbq('track', 'PageView');
+  </script>
+)}
+{ga4Id && (
+  <>
+    <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+    <script is:inline define:vars={{ ga4Id }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', ga4Id);
+    </script>
+  </>
+)}
+<script is:inline>
+  // Unified event helper used by the islands + CTAs.
+  window.kwTrack = function (name, params) {
+    try { if (window.fbq) window.fbq('trackCustom', name, params || {}); } catch (e) {}
+    try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
+  };
+  // Preserve UTM params across same-origin nav to /book and /calculator.
+  (function () {
+    var qs = window.location.search;
+    if (!qs || qs.indexOf('utm_') === -1) return;
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="/"]');
+      if (!a) return;
+      var href = a.getAttribute('href');
+      if (/\/(book|calculator)/.test(href) && href.indexOf('utm_') === -1) {
+        a.setAttribute('href', href + (href.indexOf('?') > -1 ? '&' : '?') + qs.slice(1));
+      }
+    });
+  })();
+</script>

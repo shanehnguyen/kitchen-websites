@@ -1,0 +1,90 @@
+---
+/* ReceiptStrip — the industry receipts as big numbers. Spec §6.
+   Variants: full (full-width band) / compact (beside CTAs).
+   All numbers read from site.config.receipts (single source of truth) and
+   render in brass; count up once on view (prefers-reduced-motion: static). */
+import { receipts as defaultReceipts, type Receipt } from '../data/site.config';
+interface Props {
+  variant?: 'full' | 'compact';
+  items?: readonly Receipt[];
+  dark?: boolean;
+}
+const { variant = 'full', items = defaultReceipts, dark = false } = Astro.props;
+---
+<div class={`receipts receipts--${variant} ${dark ? 'receipts--dark' : ''}`} data-receipts>
+  {items.map((r) => (
+    <div class="receipt">
+      <span class="receipt__value mono" data-receipt-value>{r.value}</span>
+      <span class="receipt__caption">{r.caption}</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .receipts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  @media (min-width: 40em) { .receipts--full { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64em) { .receipts--full { grid-template-columns: repeat(4, 1fr); } }
+  /* auto-fit so a 2-stat strip is 2 columns and a 4-stat strip is up to 4 */
+  .receipts--compact { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: var(--space-5) var(--space-4); }
+
+  .receipt { display: flex; flex-direction: column; gap: var(--space-2); }
+  /* Brass is the only accent — every receipt number is brass (the captions
+     carry the "your loss / their fine" meaning, not the color). */
+  .receipt__value {
+    font-family: var(--font-display);
+    font-weight: var(--fw-display);
+    font-size: var(--fs-receipt);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    font-feature-settings: "tnum";
+  }
+  .receipts--compact .receipt__value { font-size: clamp(2rem, 4vw, 2.75rem); }
+  .receipt__caption {
+    font-size: var(--fs-caption);
+    line-height: var(--lh-snug);
+    color: var(--ink-50);
+    max-width: 30ch;
+  }
+  .receipts--compact .receipt__caption { font-size: var(--fs-small); }
+  .receipts--dark .receipt__value { color: var(--accent-strong); }
+  .receipts--dark .receipt__caption { color: var(--paper-50); }
+</style>
+
+<script is:inline>
+  (function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) return;
+    function animate(el) {
+      var text = el.textContent;
+      var m = text.match(/^([^\d]*)([\d.,]+)(.*)$/);
+      if (!m) return;
+      var prefix = m[1], target = parseFloat(m[2].replace(/,/g, '')), suffix = m[3];
+      var decimals = (m[2].split('.')[1] || '').length;
+      var start = null, dur = 900;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        var val = (target * eased).toFixed(decimals);
+        el.textContent = prefix + Number(val).toLocaleString(undefined, { minimumFractionDigits: decimals }) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = text;
+      }
+      requestAnimationFrame(step);
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.querySelectorAll('[data-receipt-value]').forEach(animate);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('[data-receipts]').forEach(function (el) { io.observe(el); });
+  })();
+</script>

@@ -1,0 +1,28 @@
+---
+/* LetterBlock — 65ch measure, drop-date header, generous leading, mid-letter
+   CTA slot (spec §5 / §6). The letter copy itself (¶1–12) lives in the page
+   as intent-labeled placeholders until the copy pass lands. */
+interface Props { dateLabel?: string; }
+const { dateLabel = 'Updated June 2026' } = Astro.props;
+---
+<div class="letter">
+  <p class="letter__date mono">{dateLabel}</p>
+  <slot />
+</div>
+
+<style>
+  .letter { max-width: 65ch; margin-inline: auto; }
+  .letter__date {
+    font-size: var(--fs-caption); color: var(--ink-50);
+    text-transform: uppercase; letter-spacing: var(--tracking-caps);
+    padding-bottom: var(--space-4); margin-bottom: var(--space-6);
+    border-bottom: var(--rule-width) solid var(--rule);
+  }
+  .letter :global(p) { margin-bottom: var(--space-5); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .letter :global(.letter__salutation) { font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-h3); text-transform: none; }
+  .letter :global(.letter__turn) { font-weight: var(--fw-body-semi); }
+  /* short standalone punch lines between paragraphs */
+  .letter :global(.letter__beat) { font-family: var(--font-display); font-weight: var(--fw-display); text-transform: none; font-size: var(--fs-h4); letter-spacing: -0.01em; line-height: 1.2; color: var(--ink); }
+  .letter :global(.letter__cta) { margin-block: var(--space-8); }
+  .letter :global(.letter__sig) { margin-top: var(--space-6); font-family: var(--font-display); font-size: var(--fs-h4); text-transform: none; }
+</style>
