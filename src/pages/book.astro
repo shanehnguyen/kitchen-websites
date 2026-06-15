@@ -421,7 +421,7 @@ const DOTS = 12; // question screens 1–12
   .bk-sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }
   .bk-why { margin: var(--space-3) auto 0; font-style: italic; font-size: var(--fs-body); color: var(--ink-50); max-width: 56ch; }
 
-  .bk-input { margin: var(--space-5) auto 0; width: 100%; max-width: 32rem; font-family: var(--font-sans); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .bk-input { margin: var(--space-5) auto 0; width: 100%; max-width: 32rem; font-family: var(--font-body); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
   .bk-input:focus-visible { outline: none; border-color: var(--ink); }
   textarea.bk-input { resize: vertical; line-height: 1.5; }
   .bk-select { appearance: none; cursor: pointer; }
@@ -430,7 +430,7 @@ const DOTS = 12; // question screens 1–12
   .bk-cards { margin: var(--space-5) auto 0; display: grid; gap: var(--space-3); max-width: 32rem; }
   .bk-cards--row { grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 34em) { .bk-cards--row { grid-template-columns: repeat(4, 1fr); } .bk-cards--multi { grid-template-columns: 1fr 1fr; } }
-  .bk-card { text-align: center; font-family: var(--font-sans); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); cursor: pointer; min-height: 52px; display: flex; align-items: center; justify-content: center; transition: border-color 120ms, background 120ms, transform 120ms; }
+  .bk-card { text-align: center; font-family: var(--font-body); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); cursor: pointer; min-height: 52px; display: flex; align-items: center; justify-content: center; transition: border-color 120ms, background 120ms, transform 120ms; }
   .bk-card:hover { border-color: var(--ink-50); }
   .bk-card.is-on { border-color: var(--ink); background: var(--accent-wash, color-mix(in srgb, var(--accent) 16%, #fff)); }
 

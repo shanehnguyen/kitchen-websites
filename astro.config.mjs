@@ -7,6 +7,12 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   site: 'https://kitchenwebsites.com',
   output: 'static',
+  // The Lost Referral Calculator measured the wrong leak (referrals, not
+  // search). Retired in favor of the Google Scorecard; old links/ads land
+  // on the new tool. (Scorecard spec §9.)
+  redirects: {
+    '/calculator': '/scorecard',
+  },
   adapter: vercel({
     webAnalytics: { enabled: false }, // we wire Meta Pixel + GA4 ourselves
   }),

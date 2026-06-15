@@ -4,7 +4,7 @@
     try { if (window.fbq) window.fbq('trackCustom', name, params || {}); } catch (e) {}
     try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
   };
-  // Preserve UTM params across same-origin nav to /book and /calculator.
+  // Preserve UTM params across same-origin nav to /book and /scorecard.
   (function () {
     var qs = window.location.search;
     if (!qs || qs.indexOf('utm_') === -1) return;
@@ -12,7 +12,7 @@
       var a = e.target.closest && e.target.closest('a[href^="/"]');
       if (!a) return;
       var href = a.getAttribute('href');
-      if (/\/(book|calculator)/.test(href) && href.indexOf('utm_') === -1) {
+      if (/\/(book|scorecard)/.test(href) && href.indexOf('utm_') === -1) {
         a.setAttribute('href', href + (href.indexOf('?') > -1 ? '&' : '?') + qs.slice(1));
       }
     });
@@ -55,7 +55,7 @@
       if (ev && window.kwTrack) window.kwTrack(ev);
     });
   })();
-</script>  </main> <footer class="footer"> <div class="footer__inner"> <div class="footer__top"> <div> <div class="footer__brand">Kitchen <span>Websites</span></div> <p style="max-width: 32ch; margin-top: var(--space-3); color: var(--paper-70);">Websites &amp; Google for kitchen &amp; bath businesses.</p> </div> <div class="footer__cols"> <div class="footer__col"> <h4>Offers</h4> <a href="/seo">Local SEO</a> <a href="/websites">See-It-First Website</a> </div> <div class="footer__col"> <h4>Company</h4> <a href="/about">About</a> <a href="/calculator">Lost Referral Calculator</a> <a href="/book">Book a call</a> </div> <div class="footer__col"> <h4>Contact</h4> <a href="mailto:shane@kitchenwebsites.com">shane@kitchenwebsites.com</a>  </div> </div> </div> <div class="footer__legal"> <span>© 2026 Kitchen Websites. Built for kitchen &amp; bath businesses.</span> <span> <a href="/privacy" style="color: var(--paper-70);">Privacy</a>
+</script>  </main> <footer class="footer"> <div class="footer__inner"> <div class="footer__top"> <div> <div class="footer__brand">Kitchen <span>Websites</span></div> <p style="max-width: 32ch; margin-top: var(--space-3); color: var(--paper-70);">Websites &amp; Google for kitchen &amp; bath businesses.</p> </div> <div class="footer__cols"> <div class="footer__col"> <h4>Offers</h4> <a href="/seo">Local SEO</a> <a href="/websites">See-It-First Website</a> </div> <div class="footer__col"> <h4>Company</h4> <a href="/about">About</a> <a href="/scorecard">The Google Scorecard</a> <a href="/book">Book a call</a> </div> <div class="footer__col"> <h4>Contact</h4> <a href="mailto:shane@kitchenwebsites.com">shane@kitchenwebsites.com</a>  </div> </div> </div> <div class="footer__legal"> <span>© 2026 Kitchen Websites. Built for kitchen &amp; bath businesses.</span> <span> <a href="/privacy" style="color: var(--paper-70);">Privacy</a>
 &nbsp;·&nbsp;
 <a href="/terms" style="color: var(--paper-70);">Terms</a> </span> </div> </div> </footer> <script>
       // Subtle fade-up on scroll + nav hairline on scroll. Respects reduced-motion.

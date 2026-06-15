@@ -66,6 +66,40 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
+  // ---- Google Scorecard email gate / manual capture (/scorecard) ----
+  // The result payload IS the sales intel for nurture; store the segment
+  // (verdict band + worst dimension) with the contact so the email
+  // sequence is keyed to it. `manual:true` is the Wizard-of-Oz / API-down
+  // degrade path — Shane runs it by hand. (Scorecard spec §4, §5, §9.)
+  if (body.type === 'scorecard') {
+    const email = String(body.email || '');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ ok: false, error: 'Invalid email' });
+    }
+    const manual = !!body.manual;
+    const rows = [
+      ['Business', body.business],
+      ['City', body.city],
+      ['Verdict band', body.band],
+      ['Worst point', body.worst],
+      ['Reviews', body.reviews],
+      ['Rating', body.rating],
+      ['Top rival reviews', body.topReviews],
+      ['Email', email],
+    ]
+      .filter(([, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => `<tr><td>${esc(k)}</td><td><strong>${esc(String(v).slice(0, 500))}</strong></td></tr>`)
+      .join('');
+    await Promise.all([
+      pushToEsp({ ...body, source: manual ? 'scorecard-manual' : 'scorecard' }),
+      notifyEmail(
+        `${manual ? '✋ Manual scorecard' : '📊 Scorecard'} — ${esc(body.business || email)}`,
+        `<h2>${manual ? 'Run this one by hand' : 'New scorecard lead'}</h2><table border="1" cellpadding="6" cellspacing="0">${rows || '<tr><td>(no details)</td></tr>'}</table>`
+      ),
+    ]);
+    return res.status(200).json({ ok: true });
+  }
+
   // ---- Strategy session request (/book) ----
   // The 12-field form is the qualifier AND the sales intel. Forward every
   // field (field 8, "bug", is the line Shane reads first on the call), so
