@@ -15,8 +15,9 @@ interface Props {
   description: string;
   ogImage?: string;
   noindex?: boolean;
+  legalFooter?: boolean;
 }
-const { title, description, ogImage = '/assets/images/og-cover.svg', noindex = true } = Astro.props;
+const { title, description, ogImage = '/assets/images/og-cover.svg', noindex = true, legalFooter = true } = Astro.props;
 const canonical = new URL(Astro.url.pathname, site.url).toString();
 const fullTitle = title.includes(site.brand) ? title : `${title} | ${site.brand}`;
 const year = 2026;
@@ -45,10 +46,12 @@ const year = 2026;
     <main id="main">
       <slot />
     </main>
-    <footer class="bare-legal">
-      <span>© {year} {site.brand}</span>
-      <span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></span>
-    </footer>
+    {legalFooter && (
+      <footer class="bare-legal">
+        <span>© {year} {site.brand}</span>
+        <span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></span>
+      </footer>
+    )}
     <style>
       .bare-legal {
         max-width: var(--container-standard);

@@ -16,7 +16,7 @@ export const site = {
   // Contact — TODO confirm production values before launch
   email: 'shane@kitchenwebsites.com',
   phone: '', // PLACEHOLDER: add display phone
-  bookingUrl: 'https://calendly.com/kitchenwebsites/30min', // PLACEHOLDER: real Calendly
+  bookingUrl: 'https://calendly.com/shanehnguyen/cabinet-dealers',
 
   // Call length — single source of truth. Every CTA label + /book read this.
   callLengthMinutes: 30,

@@ -11,6 +11,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CTAButton from '../components/CTAButton.astro';
 import StickyMobileCTA from '../components/StickyMobileCTA.astro';
+import ClientShowcase from '../components/ClientShowcase.astro';
 import { site } from '../data/site.config';
 
 const minutes = site.callLengthMinutes;
@@ -74,25 +75,12 @@ const bookHref = '/book';
     </div>
   </section>
 
-  <!-- 8 — DON'T TAKE MY WORD. LOOK. -->
+  <!-- 8 — PROOF: the portfolio marquee (same as the homepage) -->
   <section class="section section--sm web-proof">
     <div class="container container--narrow">
-      <h2 class="web-h">Don’t take my word. Look.</h2>
-      <figure class="web-ba">
-        <div class="web-ba__col">
-          <span class="web-ba__tag mono">Before</span>
-          <img src="/assets/images/beforevsafter/beforeimage.png" alt="A kitchen & bath site before the rebuild" loading="lazy" decoding="async" width="1828" height="961" />
-        </div>
-        <div class="web-ba__col web-ba__col--after">
-          <span class="web-ba__tag web-ba__tag--after mono">After</span>
-          <img src="/assets/images/beforevsafter/afterimage.png" alt="The same business after a See-It-First rebuild by Kitchen Websites" loading="lazy" decoding="async" width="1897" height="1022" />
-        </div>
-      </figure>
-      <div class="web-prose web-proof__copy">
-        <p>I build for kitchen and bath shops and nothing else. So the homepage I draw you comes out looking like a man who’s stood in a showroom built it, because one did. <span class="web-todo">[ TRUE DETAIL: link two or three real kitchen &amp; bath sites you’ve built, and one real owner’s sentence with a real name and shop ]</span></p>
-        <p>You don’t have to take that on faith. <span class="hl">You’ll see your own homepage before you decide a single thing.</span></p>
-      </div>
+      <h2 class="web-h">A few I’ve built.</h2>
     </div>
+    <div class="web-proof__showcase"><ClientShowcase /></div>
   </section>
 
   <!-- 9 — THE STRATEGY SESSION (dark; no highlighter, left-aligned wider) -->
@@ -123,18 +111,8 @@ const bookHref = '/book';
   .web-h { margin-top: var(--space-10); font-size: var(--fs-h3); }
   .web-prose p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
   .web-prose h2 + p { margin-top: var(--space-5); }
-  .web-proof__copy { margin-top: var(--space-8); }
-
-  /* before/after proof */
-  .web-ba { margin: var(--space-6) 0 0; display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
-  @media (min-width: 48em) { .web-ba { grid-template-columns: 1fr 1fr; gap: var(--space-5); } }
-  .web-ba__col { display: flex; flex-direction: column; gap: var(--space-2); }
-  .web-ba__tag { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--ink-50); }
-  .web-ba__tag--after { color: var(--accent-deep); }
-  .web-ba__col img { width: 100%; height: auto; border: var(--rule-width) solid var(--line); border-radius: var(--radius-sm); background: #fff; }
-  .web-ba__col--after img { border: var(--rule-thick) solid var(--accent); }
-
-  .web-todo { font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--warn); background: color-mix(in srgb, var(--warn) 8%, transparent); border: 1px dashed var(--warn); border-radius: var(--radius-sm); padding: 0.1em 0.4em; }
+  /* portfolio marquee (reused from the homepage proof) */
+  .web-proof__showcase { margin-top: var(--space-8); }
 
   /* session (dark) — left-aligned, wider measure, gold/bold emphasis, no marker */
   .web-session__inner { max-width: 50rem; }

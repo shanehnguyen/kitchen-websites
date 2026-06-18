@@ -1,34 +1,43 @@
 import { config as loadEnv } from 'dotenv';
 loadEnv({ path: new URL('../.env.local', import.meta.url) });
 
-import { Resend } from 'resend';
-
 /* =====================================================================
-   /api/score-submit — lead capture for the Referral Capture Score.
-   Two payload types:
-     (default) email gate after Q10  → { firstName, email, business, score,
-       segment, urgent, answers[] }. The answers ARE the sales intel
-       (HVCO-Funnel-Plan) — forwarded whole.
-     type: 'grader' → competitor head-to-head request from the results page.
-   Posture mirrors the existing api/send.js: Resend notify + honeypot.
-   ESP webhook (MailerLite/Brevo) is wired via env when the account exists;
-   until then the lead still lands in Shane's inbox so nothing is lost.
+   /api/score-submit — lead capture for the Scorecard + booking funnel.
+   Email delivery uses WEB3FORMS (web3forms.com): POST the fields with an
+   access_key and it emails the inbox tied to that key. No Resend, no SMTP.
+   Set WEB3FORMS_ACCESS_KEY in env. (If unset, capture no-ops gracefully so
+   the front-end never blocks.)
+   ESP webhook (MailerLite/Brevo) is still wired via ESP_WEBHOOK_URL when set.
    ===================================================================== */
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const TO = process.env.LEAD_NOTIFY_TO || 'shane@kitchenwebsites.com';
-const FROM = process.env.LEAD_NOTIFY_FROM || 'Kitchen Websites <onboarding@resend.dev>';
-const ESP_WEBHOOK = process.env.ESP_WEBHOOK_URL || ''; // MailerLite/Brevo inbound webhook
+const WEB3FORMS_KEY = process.env.WEB3FORMS_ACCESS_KEY || '';
+const ESP_WEBHOOK = process.env.ESP_WEBHOOK_URL || '';
 
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Drop empty values and cap field length so the email stays clean.
+function clean(obj) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined || v === null || v === '') continue;
+    out[k] = String(v).slice(0, 2000);
+  }
+  return out;
+}
 
-async function notifyEmail(subject, html) {
-  if (!resend) return;
+async function notify(subject, fields) {
+  if (!WEB3FORMS_KEY) return;
   try {
-    await resend.emails.send({ from: FROM, to: TO, subject, html });
+    await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        from_name: 'Kitchen Websites',
+        subject,
+        ...clean(fields),
+      }),
+    });
   } catch (err) {
-    console.warn('score-submit notify failed:', err.message);
+    console.warn('web3forms notify failed:', err.message);
   }
 }
 
@@ -53,109 +62,76 @@ export default async function handler(req, res) {
 
   const body = req.body || {};
 
-  // ---- Grader head-to-head request (results page CTA 1) ----
+  // ---- Grader head-to-head request ----
   if (body.type === 'grader') {
     const competitor = String(body.competitor || '').slice(0, 300);
     if (!competitor.trim()) return res.status(400).json({ ok: false, error: 'Missing competitor' });
-    await notifyEmail(
-      `🔎 Grader request (score ${esc(body.score)}, ${esc(body.segment)})`,
-      `<p><strong>Competitor:</strong> ${esc(competitor)}</p>
-       <p>Score: ${esc(body.score)} · Segment: ${esc(body.segment)}</p>
-       <p>Run the head-to-head teardown within 24 hours.</p>`
-    );
+    await notify('🔎 Grader request', {
+      Competitor: competitor,
+      Score: body.score,
+      Segment: body.segment,
+    });
     return res.status(200).json({ ok: true });
   }
 
   // ---- Google Scorecard email gate / manual capture (/scorecard) ----
-  // The result payload IS the sales intel for nurture; store the segment
-  // (verdict band + worst dimension) with the contact so the email
-  // sequence is keyed to it. `manual:true` is the Wizard-of-Oz / API-down
-  // degrade path — Shane runs it by hand. (Scorecard spec §4, §5, §9.)
   if (body.type === 'scorecard') {
     const email = String(body.email || '');
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ ok: false, error: 'Invalid email' });
     }
     const manual = !!body.manual;
-    const rows = [
-      ['Business', body.business],
-      ['City', body.city],
-      ['Verdict band', body.band],
-      ['Worst point', body.worst],
-      ['Reviews', body.reviews],
-      ['Rating', body.rating],
-      ['Top rival reviews', body.topReviews],
-      ['Email', email],
-    ]
-      .filter(([, v]) => v !== undefined && v !== null && v !== '')
-      .map(([k, v]) => `<tr><td>${esc(k)}</td><td><strong>${esc(String(v).slice(0, 500))}</strong></td></tr>`)
-      .join('');
     await Promise.all([
       pushToEsp({ ...body, source: manual ? 'scorecard-manual' : 'scorecard' }),
-      notifyEmail(
-        `${manual ? '✋ Manual scorecard' : '📊 Scorecard'} — ${esc(body.business || email)}`,
-        `<h2>${manual ? 'Run this one by hand' : 'New scorecard lead'}</h2><table border="1" cellpadding="6" cellspacing="0">${rows || '<tr><td>(no details)</td></tr>'}</table>`
-      ),
+      notify(`${manual ? '✋ Manual scorecard' : '📊 Scorecard'} — ${body.business || email}`, {
+        Lead: manual ? 'Run this one by hand' : 'New scorecard lead',
+        Business: body.business,
+        City: body.city,
+        'Verdict band': body.band,
+        'Worst point': body.worst,
+        Reviews: body.reviews,
+        Rating: body.rating,
+        'Top rival reviews': body.topReviews,
+        'First name': body.firstName,
+        email, // Web3Forms uses this as reply-to
+      }),
     ]);
     return res.status(200).json({ ok: true });
   }
 
   // ---- Strategy session request (/book) ----
-  // The 12-field form is the qualifier AND the sales intel. Forward every
-  // field (field 8, "bug", is the line Shane reads first on the call), so
-  // nothing the owner typed is dropped. Labels mirror the form's field names.
   if (body.type === 'booking') {
     const labels = {
       name: 'Name', shop: 'Shop', website: 'Website', customers: 'Customer mix',
       jobs: 'Jobs / month', sources: 'Job sources', shopDesc: 'Shop / job value',
       burned: 'Been burned?', bug: 'Biggest gripe (read first)', route: 'Handle it / DIY',
-      timeline: 'Timeline', attribution: 'First heard via', phone: 'Phone', email: 'Email',
+      timeline: 'Timeline', attribution: 'First heard via', phone: 'Phone',
       showup: 'Show-up commit', from: 'Came from',
     };
-    const rows = Object.keys(labels)
-      .filter((k) => body[k])
-      .map((k) => `<tr><td>${esc(labels[k])}</td><td><strong>${esc(String(body[k]).slice(0, 2000))}</strong></td></tr>`)
-      .join('');
+    const fields = {};
+    for (const [k, label] of Object.entries(labels)) {
+      if (body[k]) fields[label] = body[k];
+    }
+    if (body.email) fields.email = body.email; // reply-to
     await Promise.all([
       pushToEsp({ ...body, source: 'book-session' }),
-      notifyEmail(
-        `📅 Session request — ${esc(body.shop || body.name || 'new owner')}${body.from === 'score' ? ' (from Score)' : ''}`,
-        `<h2>New ${esc(body.name || '')} session</h2><table border="1" cellpadding="6" cellspacing="0">${rows || '<tr><td>(no answers)</td></tr>'}</table>`
-      ),
+      notify(`📅 Session request — ${body.shop || body.name || 'new owner'}`, fields),
     ]);
     return res.status(200).json({ ok: true });
   }
 
-  // ---- Email gate (Q10 → results) ----
+  // ---- Generic email gate (legacy) ----
   const { firstName, email, business, score, segment, urgent, answers } = body;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
     return res.status(400).json({ ok: false, error: 'Invalid email' });
   }
-
-  const answerRows = Array.isArray(answers)
-    ? answers.map((a) => `<tr><td>${esc(a.q)}</td><td><strong>${esc(a.a)}</strong></td></tr>`).join('')
-    : '';
-
-  const lead = {
-    firstName: String(firstName || '').slice(0, 120),
-    email: String(email).slice(0, 200),
-    business: String(business || '').slice(0, 200),
-    score,
-    segment,
-    urgent: !!urgent,
-    answers,
-    source: 'referral-capture-score',
-  };
-
+  const fields = { Name: firstName, email, Business: business, Score: score, Segment: segment, Urgent: urgent ? 'YES' : '' };
+  if (Array.isArray(answers)) {
+    answers.forEach((a, i) => { if (a && a.q) fields[`Q${i + 1}: ${String(a.q).slice(0, 50)}`] = a.a; });
+  }
   await Promise.all([
-    pushToEsp(lead),
-    notifyEmail(
-      `${urgent ? '🚨 URGENT ' : ''}New Score lead — ${esc(business)} (${esc(score)}/100, ${esc(segment)})`,
-      `<h2>${esc(firstName)} — ${esc(business)}</h2>
-       <p>Email: ${esc(email)}<br/>Score: ${esc(score)}/100 · Segment: ${esc(segment)}${urgent ? ' · <strong>URGENT</strong>' : ''}</p>
-       <table border="1" cellpadding="6" cellspacing="0">${answerRows}</table>`
-    ),
+    pushToEsp({ firstName, email, business, score, segment, urgent: !!urgent, answers, source: 'lead' }),
+    notify(`${urgent ? '🚨 URGENT ' : ''}New lead — ${business || email}`, fields),
   ]);
-
   return res.status(200).json({ ok: true });
 }

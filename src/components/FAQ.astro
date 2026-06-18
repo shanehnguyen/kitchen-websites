@@ -10,7 +10,7 @@ const schema = {
   mainEntity: items.map((f) => ({
     '@type': 'Question',
     name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a },
+    acceptedAnswer: { '@type': 'Answer', text: Array.isArray(f.a) ? f.a.join(' ') : f.a },
   })),
 };
 ---
@@ -21,7 +21,9 @@ const schema = {
         <span>{f.q}</span>
         <span class="faq__icon" aria-hidden="true"></span>
       </summary>
-      <div class="faq__a"><p>{f.a}</p></div>
+      <div class="faq__a">
+        {Array.isArray(f.a) ? f.a.map((line) => <p>{line}</p>) : <p>{f.a}</p>}
+      </div>
     </details>
   ))}
 </div>
@@ -45,5 +47,6 @@ const schema = {
   .faq__icon::after { left: 7px; top: 0; width: 2px; height: 16px; }
   .faq__item[open] .faq__icon::after { opacity: 0; }
   .faq__a { padding-bottom: var(--space-5); max-width: 65ch; }
-  .faq__a p { color: var(--ink-70); }
+  .faq__a p { color: var(--ink-70); line-height: 1.6; }
+  .faq__a p + p { margin-top: var(--space-3); }
 </style>

@@ -174,6 +174,7 @@ const DOTS = 12; // question screens 1–12
                 <p class="bk-cal__meta mono"><span>🕧 {minutes} min</span><span>📞 Phone call</span></p>
                 <p class="bk-cal__copy">Claim your free, no-obligation {minutes}-minute strategy session. Straight talk, a real plan, and a clear next step. Pick whatever time works.</p>
                 <p class="bk-cal__ps">P.S. Nothing on the calendar that works for you? <a href={`mailto:${site.email}`}>Reach me here.</a></p>
+                <a class="bk-cal__direct" href={site.bookingUrl} target="_blank" rel="noopener">Open the calendar in a new tab →</a>
               </div>
               <div class="bk-cal__widget" data-calendly></div>
             </div>
@@ -453,6 +454,7 @@ const DOTS = 12; // question screens 1–12
   .bk-cal__meta { margin-top: var(--space-4); display: flex; gap: var(--space-5); font-size: var(--fs-body-sm); color: var(--ink-70); }
   .bk-cal__copy { margin-top: var(--space-5); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
   .bk-cal__ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm); color: var(--ink-50); }
+  .bk-cal__direct { display: inline-block; margin-top: var(--space-4); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--accent-deep); }
   .bk-cal__widget { min-width: 0; min-height: 660px; }
 
   /* confirmation */
