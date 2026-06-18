@@ -107,36 +107,35 @@ const closingStats = [
   </div>
 </section>
 
-<!-- 3. THE RECEIPTS, READ FOR HIM -->
-<section class="section home-receipts">
-  <div class="container container--narrow">
-    <h2 class="home-receipts__h">This is what the research says about your buyer.</h2>
-    <ul class="home-receipts__reads" data-reveal>
-      <li>Homeowners will spend a record <strong>$524 billion</strong> on their homes this year. The money’s on your street. The only question is whose name they call.</li>
-      <li>Almost <strong>7 in 10</strong> homeowners click one of the first three names on Google. Show up fourth and <strong>you were never in it.</strong></li>
-      <li>The top name gets <strong>nearly double the clicks</strong> of the one below it. Same jobs. The only difference is who Google put first.</li>
-      <li><strong>91%</strong> read your reviews before they call. <strong>A quarter</strong> of kitchen and bath shops have none. <strong>You’re not in the room.</strong></li>
-      <li>In 2023 the FTC made HomeAdvisor pay <strong>$7.2 million</strong> for selling contractors junk leads. <strong>That’s the model I refuse to run.</strong> I don’t sell you strangers. I make the homeowner who already heard your name pick you.</li>
-    </ul>
+<!-- PROOF (moved above the receipts) -->
+<section class="section home-proof">
+  <div class="container">
+    <h2 class="home-proof__h">Be the next success story.</h2>
+  </div>
+  <div class="home-proof__showcase"><ClientShowcase /></div>
+  <div class="container">
+    <p class="home-proof__teaser">
+      <a href="/about">Why I only do kitchen &amp; bath →</a>
+    </p>
   </div>
 </section>
 
-<!-- 2b. OUR OFFERING — get found / get chosen -->
+<!-- OUR OFFERING — get found / get chosen (above the guarantee) -->
 <section class="section home-offering">
   <div class="container">
-    <h2 class="home-offering__h">What’ll sell you more kitchens</h2>
+    <h2 class="home-offering__h">What exactly I do to sell you more kitchens</h2>
     <div class="home-offering__grid">
       <article class="offer-card">
         <p class="offer-card__tag">Get found</p>
         <h3 class="offer-card__title">SEO + Google</h3>
         <p class="offer-card__body">I rebuild your Google, work it every month, and turn every finished job into a review.</p>
-        <CTAButton href="/seo" label="See more" event="OfferingToSeo" />
+        <CTAButton href="/seo" label="Read more" event="OfferingToSeo" />
       </article>
       <article class="offer-card">
         <p class="offer-card__tag">Get chosen</p>
         <h3 class="offer-card__title">Converting website</h3>
         <p class="offer-card__body">I build the site that turns her click into a booked call.</p>
-        <CTAButton href="/websites" label="See more" event="OfferingToWebsites" />
+        <CTAButton href="/websites" label="Read more" event="OfferingToWebsites" />
       </article>
     </div>
   </div>
@@ -149,16 +148,13 @@ const closingStats = [
 
     <div class="home-promise__body">
       <p class="home-promise__beat">Read that again.</p>
-      <p>Nobody who ever took your money said it out loud.</p>
-      <p>Day one, we write down where you stand. How many homeowners find you. How many call. Signed, dated, in plain sight.</p>
+      <p>Day one, we write down your numbers. How many calls, how many homeowners find you.</p>
       <p>Then I go to work. You watch every week of it.</p>
-      <p>Day ninety, same number.</p>
-      <p class="home-promise__beat home-promise__beat--accent">More than the day I started, or you stop paying and I keep going.</p>
-      <p>Same hours, nothing on the invoice, until it moves.</p>
+      <p class="home-promise__beat home-promise__beat--accent">Ninety days in, more homeowners are calling you than the day we started. If they’re not, you stop paying and I keep working.</p>
+      <p>Same hours, nothing on the invoice, until that number moves.</p>
       <p>Still flat three months later? We shake hands and you keep all of it. The profile, the reviews, the work. Yours.</p>
-      <p>Your profile’s been leaking jobs you already earned. The fixes aren’t a secret, they’re the basics nobody did for you. That’s why I can promise this.</p>
       <p>Picture the calendar ninety days out. The gaps filled. The phone going off while you’re on a job, because they find you first now, not the guy three streets over.</p>
-      <p class="home-promise__beat">That isn’t a chart. It’s a number you can deposit.</p>
+      <p class="home-promise__beat">And in ninety days, this offer will be a number you can deposit.</p>
       <p>If it isn’t, I haven’t earned a dollar. And I don’t stop until it is.</p>
     </div>
 
@@ -177,19 +173,6 @@ const closingStats = [
     <div class="home-promise__cta">
       <CTAButton href="/book" label={`Book your ${minutes}-minute strategy session`} event="HomePromiseToBook" size="lg" />
     </div>
-  </div>
-</section>
-
-<!-- 7. PROOF -->
-<section class="section home-proof">
-  <div class="container">
-    <h2 class="home-proof__h">Be the next success story.</h2>
-  </div>
-  <div class="home-proof__showcase"><ClientShowcase /></div>
-  <div class="container">
-    <p class="home-proof__teaser">
-      <a href="/about">Why I only do kitchen &amp; bath →</a>
-    </p>
   </div>
 </section>
 
