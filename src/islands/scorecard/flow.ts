@@ -399,7 +399,7 @@ export function init() {
     // else the business name), and name their city. Never guessed.
     const greetName = firstName || me.name;
     const cityPhrase = p.city ? `a homeowner in ${p.city}` : 'a homeowner near you';
-    const eyebrow = firstName ? `${firstName}, your scorecard` : `${me.name} — your scorecard`;
+    const eyebrow = firstName ? `${firstName}, your scorecard` : `${me.name}, your scorecard`;
     const intro = `${greetName}, here’s what ${cityPhrase} sees when she checks you against the shops next to you.`;
 
     // competitor comparison table (his row distinguished, losing numbers in --alarm)

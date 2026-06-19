@@ -47,10 +47,9 @@ export const homeFaqs: Faq[] = [
   {
     q: 'How much does it cost?',
     a: [
-      'Depends what you need, and you’ll know the number before you commit to anything.',
-      'The website is a flat quote, $3,500 to $6,000, and you see the homepage before you pay for the build. Ongoing Google work runs $997 a month, month to month.',
-      'One kitchen is $20,000 to $30,000 to you. Win back a single homeowner you’d have lost, and it’s already paid for itself.',
-      'We’ll talk real numbers on the call.',
+      '$750 a month for the whole plan. Your Google rebuilt and run every month, your site built in, the ninety-day guarantee behind all of it. Month to month, and you own everything.',
+      'Want a website on its own instead? That’s $1,500 for the standard build, or $4,500 fully custom, and you see your homepage before you pay a dollar of it.',
+      'One kitchen runs your customer twenty, thirty grand. Win back a single homeowner you’d have lost, and it’s paid for itself. We’ll talk real numbers on the call.',
     ],
   },
   {

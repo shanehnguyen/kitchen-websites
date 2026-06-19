@@ -102,11 +102,9 @@ export default async function handler(req, res) {
   // ---- Strategy session request (/book) ----
   if (body.type === 'booking') {
     const labels = {
-      name: 'Name', shop: 'Shop', website: 'Website', customers: 'Customer mix',
-      jobs: 'Jobs / month', sources: 'Job sources', shopDesc: 'Shop / job value',
-      burned: 'Been burned?', bug: 'Biggest gripe (read first)', route: 'Handle it / DIY',
-      timeline: 'Timeline', attribution: 'First heard via', phone: 'Phone',
-      showup: 'Show-up commit', from: 'Came from',
+      name: 'Name', phone: 'Phone', business: 'Business & city',
+      customers: 'Customer mix', jobs: 'Jobs / month',
+      bug: 'Biggest gripe (read first)', from: 'Came from',
     };
     const fields = {};
     for (const [k, label] of Object.entries(labels)) {
@@ -115,7 +113,7 @@ export default async function handler(req, res) {
     if (body.email) fields.email = body.email; // reply-to
     await Promise.all([
       pushToEsp({ ...body, source: 'book-session' }),
-      notify(`📅 Session request — ${body.shop || body.name || 'new owner'}`, fields),
+      notify(`📅 Session request — ${body.business || body.name || 'new owner'}`, fields),
     ]);
     return res.status(200).json({ ok: true });
   }

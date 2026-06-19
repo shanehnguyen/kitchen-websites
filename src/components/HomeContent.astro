@@ -120,26 +120,35 @@ const closingStats = [
   </div>
 </section>
 
-<!-- OUR OFFERING — get found / get chosen (above the guarantee) -->
+<!-- OUR OFFERING — one plan, plain text (above the guarantee) -->
 <section class="section home-offering">
   <div class="container">
-    <h2 class="home-offering__h">What exactly I do to sell you more kitchens</h2>
-    <div class="home-offering__grid">
-      <article class="offer-card">
-        <p class="offer-card__tag">Get found</p>
-        <h3 class="offer-card__title">SEO + Google</h3>
-        <p class="offer-card__body">I rebuild your Google, work it every month, and turn every finished job into a review.</p>
-        <CTAButton href="/seo" label="Read more" event="OfferingToSeo" />
-      </article>
-      <article class="offer-card">
-        <p class="offer-card__tag">Get chosen</p>
-        <h3 class="offer-card__title">Converting website</h3>
-        <p class="offer-card__body">I build the site that turns her click into a booked call.</p>
-        <CTAButton href="/websites" label="Read more" event="OfferingToWebsites" />
-      </article>
+    <div class="offer-plan">
+      <h2 class="offer-plan__name">Done For You</h2>
+      <p class="offer-plan__price">$750/month</p>
+      <div class="offer-plan__body">
+        <p class="offer-plan__lead">Everything in one package:</p>
+        <ul class="offer-plan__list">
+          <li>A website built to convert. <s>$1,500</s> included.</li>
+          <li>Your Google rebuilt and run every month.</li>
+          <li>Local SEO so you rise above the shop two towns over.</li>
+          <li>A steady stream of new five-star reviews.</li>
+          <li>Set up for AI search, a name ChatGPT gives her.</li>
+        </ul>
+        <p>All of it working for you every month. You own every piece.</p>
+      </div>
+      <div class="offer-plan__cta">
+        <CTAButton href="/done-for-you" label="See how Done For You works" event="OfferingToDoneForYou" size="lg" />
+        <p class="offer-plan__alt">Want a website on its own instead? <a href="/websites">Start here →</a></p>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- bridge line: sits between the offer and the guarantee -->
+<div class="home-bridge">
+  <p>And I back the whole plan with one promise.</p>
+</div>
 
 <!-- 4. THE GUARANTEE → SESSION -->
 <section class="section home-promise">
@@ -239,7 +248,7 @@ const closingStats = [
   @media (prefers-reduced-motion: reduce) { .home-hero__video { display: none; } }
 
   /* Big featured-video placeholder overlapping the hero into the section below */
-  .home-reel { position: relative; z-index: 5; margin-top: clamp(-28rem, -32vh, -16rem); margin-bottom: var(--space-12); }
+  .home-reel { position: relative; z-index: 5; margin-top: clamp(-26rem, -30vh, -14rem); margin-bottom: var(--space-12); }
   /* no hero above it (scorecard): sit flush at the top instead of overlapping */
   .home-reel--flush { margin-top: var(--space-10); }
   .reel-video {
@@ -261,7 +270,8 @@ const closingStats = [
     transition: transform var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
   }
   .reel-video__play:hover { transform: scale(1.06); background: color-mix(in srgb, var(--porcelain) 22%, transparent); }
-  .home-reel__cta { margin-top: var(--space-6); display: flex; justify-content: center; }
+  /* pushed well below the video so people watch before they click */
+  .home-reel__cta { margin-top: var(--space-24); display: flex; justify-content: center; }
 
   .home-offering { text-align: center; }
   .home-offering__h { margin: var(--space-3) auto 0; max-width: 28ch; }
@@ -272,6 +282,27 @@ const closingStats = [
   .offer-card__title { font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; font-size: var(--fs-h3); letter-spacing: -0.01em; }
   .offer-card__body { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.6; color: var(--ink-70); }
   .offer-card :global(.cta-block) { margin-top: auto; padding-top: var(--space-4); align-items: center; }
+
+  /* one-plan offer — plain text, no box, "Done For You · $750/month" as the top line */
+  .offer-plan { max-width: 65ch; margin-inline: auto; }   /* same measure as the dear-kitchen letter */
+  .offer-plan__name { font-size: var(--fs-h2); }           /* display + uppercase inherited from base h2 — matches the other section headings */
+  .offer-plan__price { margin-top: var(--space-2); font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-h4); color: var(--accent-deep); }
+  .offer-plan__body { margin-top: var(--space-5); }
+  .offer-plan__body p { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .offer-plan__body p + p { margin-top: var(--space-4); }
+  .offer-plan__lead { font-weight: var(--fw-body-semi); }
+  .offer-plan__list { list-style: none; padding: 0; margin: var(--space-4) 0 var(--space-5); display: grid; gap: var(--space-3); }
+  .offer-plan__list li { position: relative; padding-left: var(--space-6); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.5; color: var(--ink); }
+  .offer-plan__list li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 14px; height: 2px; background: var(--accent); }
+  .offer-plan__list s { color: var(--ink-50); text-decoration-thickness: 1px; }
+  .offer-plan__cta { margin-top: var(--space-6); display: flex; flex-direction: column; align-items: center; }
+  .offer-plan__cta :global(.cta-block) { align-items: center; }
+  .offer-plan__alt { margin-top: var(--space-4); font-size: var(--fs-body-sm); color: var(--ink-50); }
+  .offer-plan__alt a { color: var(--ink); font-weight: var(--fw-body-semi); }
+
+  /* bridge line between the offer and the guarantee */
+  .home-bridge { max-width: var(--container-narrow); margin-inline: auto; padding: 0 var(--gutter); text-align: center; }
+  .home-bridge p { max-width: 42ch; margin: var(--space-8) auto; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); }
 
   .home-receipts__h { margin-top: var(--space-3); max-width: 26ch; }
   .home-receipts__reads { list-style: none; margin: var(--space-8) 0 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
@@ -289,7 +320,7 @@ const closingStats = [
 
   .home-promise .eyebrow { text-align: center; }
   .home-promise__h { margin: var(--space-3) auto 0; max-width: 24ch; text-align: center; }
-  .home-promise__body { margin: var(--space-8) auto 0; max-width: 56ch; }
+  .home-promise__body { margin: var(--space-8) auto 0; max-width: 65ch; }
   .home-promise__body p { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); margin-bottom: var(--space-5); }
   .home-promise__body p:last-child { margin-bottom: 0; }
   .home-promise__body strong { font-weight: var(--fw-body-bold); }
@@ -300,7 +331,7 @@ const closingStats = [
   .home-promise__trust p:last-child { margin-bottom: 0; }
   .home-promise__rule { margin: var(--space-10) auto; border: 0; border-top: var(--rule-thick) solid var(--rule); width: 5rem; }
   .home-promise__hinge { text-align: center; margin: 0 auto; max-width: 32ch; font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; font-size: var(--fs-h2); letter-spacing: var(--tracking-display); line-height: var(--lh-tight); color: var(--ink); }
-  .home-promise__session { margin: var(--space-6) auto 0; max-width: 56ch; }
+  .home-promise__session { margin: var(--space-6) auto 0; max-width: 65ch; }
   .home-promise__session p { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink-70); margin-bottom: var(--space-4); }
   .home-promise__session p:last-child { margin-bottom: 0; }
   .home-promise__cta { margin-top: var(--space-8); display: flex; justify-content: center; }

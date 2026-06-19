@@ -10,7 +10,7 @@ const $=[{placeId:"demo-place",primary:"Demo Kitchen & Bath Co.",secondary:"DEMO
       <p class="sc-grade__value">${o(e.value)}</p>
       <p class="sc-grade__why">${o(e.why)}</p>
       ${e.fix?`<p class="sc-grade__fix"><span class="sc-grade__fixlabel">The fix:</span> ${o(e.fix)}</p>`:""}
-    </li>`;function q(){const e=a.querySelector("[data-result-host]");if(!e||!r)return;const t=r,s=t.profile,l=s.name,P=t.city?`a homeowner in ${t.city}`:"a homeowner near you",O=`${s.name} — your scorecard`,G=`${l}, here’s what ${P} sees when she checks you against the shops next to you.`,Y=t.top&&s.reviews!==null&&s.reviews<t.top.reviews?" sc-num--alarm":"",R=s.rating!==null&&s.rating>0&&s.rating<4?" sc-num--alarm":"",f=[];f.push(`<tr class="sc-table__me">
+    </li>`;function q(){const e=a.querySelector("[data-result-host]");if(!e||!r)return;const t=r,s=t.profile,l=s.name,P=t.city?`a homeowner in ${t.city}`:"a homeowner near you",O=`${s.name}, your scorecard`,G=`${l}, here’s what ${P} sees when she checks you against the shops next to you.`,Y=t.top&&s.reviews!==null&&s.reviews<t.top.reviews?" sc-num--alarm":"",R=s.rating!==null&&s.rating>0&&s.rating<4?" sc-num--alarm":"",f=[];f.push(`<tr class="sc-table__me">
         <th scope="row">${o(s.name)} <span class="sc-table__tag">you</span></th>
         <td class="sc-num${Y}">${s.reviews??"—"}</td>
         <td class="sc-num${R}">${s.rating?s.rating.toFixed(1):"—"}</td>

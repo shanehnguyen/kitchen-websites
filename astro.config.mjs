@@ -12,6 +12,8 @@ export default defineConfig({
   // on the new tool. (Scorecard spec §9.)
   redirects: {
     '/calculator': '/scorecard',
+    '/seo': '/done-for-you',
+    '/get-found': '/done-for-you',
   },
   adapter: vercel({
     webAnalytics: { enabled: false }, // we wire Meta Pixel + GA4 ourselves
