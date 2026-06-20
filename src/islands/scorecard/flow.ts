@@ -12,6 +12,18 @@ import { site } from '../../data/site.config';
 type Rival = { name: string; reviews: number; rating: number };
 type AuditItem = { id: string; label: string; status: 'fail' | 'warn'; value: string; why: string; fix: string };
 type WebsiteItem = { label: string; status: 'fail' | 'warn'; value: string; why: string; fix?: string };
+type Rankings = {
+  term: string;
+  city: string | null;
+  rank: number | null;
+  inPack: boolean | null;
+  above: string[];
+  gridPct: number | null;
+  cells: (number | null)[] | null;
+  rankStatus: 'pass' | 'warn' | 'fail';
+  gridStatus: 'pass' | 'warn' | 'fail' | null;
+  why: string;
+};
 type Payload = {
   ok?: boolean;
   degraded?: boolean;
@@ -21,6 +33,7 @@ type Payload = {
   competitors: Rival[];
   verdict: { key: string; headline: string; sub: string };
   hook: string;
+  rankings?: Rankings | null;
   audit: AuditItem[];
   passing: string[];
   website: { url: string; items: WebsiteItem[]; passing: string[] } | null;
@@ -61,7 +74,19 @@ const MOCK_PAYLOAD: Payload = {
     { name: 'Summit Bath & Kitchen', reviews: 61, rating: 4.6 },
   ],
   verdict: { key: 'losing', headline: 'You’re in the game, and losing the comparison.', sub: 'You show up. But next to the shop Google puts beside you, a La Mirada homeowner has a reason to pick them. Here’s exactly where.' },
-  hook: 'You’re at 7. Granite Peak Kitchens, the shop Google puts right above you in La Mirada, has 142.',
+  hook: 'You have 7 Google reviews. Granite Peak Kitchens, the shop Google puts right above you in La Mirada, has 142.',
+  rankings: {
+    term: 'kitchen remodeler La Mirada',
+    city: 'La Mirada',
+    rank: 7,
+    inPack: true,
+    above: ['Granite Peak Kitchens', 'Hearth & Home Remodelers', 'Summit Bath & Kitchen'],
+    gridPct: 22,
+    cells: [0, 0, 0, 0, 2, 0, 3, 0, 0],
+    rankStatus: 'fail',
+    gridStatus: 'warn',
+    why: 'When a La Mirada homeowner searches “kitchen remodeler La Mirada”, Google shows three shops on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners in La Mirada, and it runs on autopilot once you win it.',
+  },
   audit: [
     { id: 'rev', label: 'Review count', status: 'fail', value: 'You’re at 7. Granite Peak Kitchens, the shop Google puts right above you, has 142.', why: 'When a La Mirada homeowner compares the two of you, that gap is the whole decision.', fix: 'Ask your last ten happy customers for a review, with a direct link. Then keep a steady trickle going.' },
     { id: 'star', label: 'Star rating', status: 'fail', value: 'You’re sitting at 3.9. Granite Peak’s at 4.8.', why: 'Most homeowners never read a word under four stars. They just scroll to the shop that’s over it.', fix: 'Reply to every review, the rough ones first, and ask happy customers until the average climbs.' },
@@ -389,6 +414,45 @@ export function init() {
       ${it.fix ? `<p class="sc-grade__fix"><span class="sc-grade__fixlabel">The fix:</span> ${esc(it.fix)}</p>` : ''}
     </li>`;
 
+  // Rankings section — its own visual: a 3×3 map grid + the headline numbers.
+  const renderRankings = (r: Rankings) => {
+    const cells = r.cells || [];
+    const grid = cells.length === 9
+      ? `<div class="sc-grid" role="img" aria-label="Map coverage: where you rank across ${esc(r.city || 'your area')}">
+          ${cells.map((c, i) => {
+            const cls = c === null ? 'sc-grid__cell--nodata' : c > 0 ? 'sc-grid__cell--in' : 'sc-grid__cell--out';
+            const txt = c === null ? '' : c > 0 ? `#${c}` : '✕';
+            const center = i === 4 ? ' sc-grid__cell--center' : '';
+            return `<span class="sc-grid__cell ${cls}${center}">${txt}</span>`;
+          }).join('')}
+        </div>`
+      : '';
+    const rankNum = r.rank == null ? 'Not in<br>top 3' : `#${r.rank}`;
+    const stats = `
+      <div class="sc-rank__stats">
+        <div class="sc-rank__stat sc-rank__stat--${r.rankStatus}">
+          <span class="sc-rank__num">${rankNum}</span>
+          <span class="sc-rank__cap">your spot for “${esc(r.term)}”</span>
+        </div>
+        ${r.gridPct != null ? `<div class="sc-rank__stat sc-rank__stat--${r.gridStatus}">
+          <span class="sc-rank__num">${r.gridPct}%</span>
+          <span class="sc-rank__cap">of the map where you’re in the top 3</span>
+        </div>` : ''}
+      </div>`;
+    return `
+      <section class="sc-section sc-rank">
+        <p class="eyebrow sc-eyebrow">Where homeowners look first</p>
+        <h3 class="sc-section__h">Your rank on the Google map</h3>
+        <p class="sc-section__sub">${esc(r.why)}</p>
+        <div class="sc-rank__panel">
+          ${grid}
+          ${stats}
+        </div>
+        ${grid ? `<p class="sc-grid__legend"><span class="sc-grid__key sc-grid__key--in"></span> top 3 here&nbsp;&nbsp;<span class="sc-grid__key sc-grid__key--out"></span> not in the top 3 &nbsp;·&nbsp; each square is a spot around ${esc(r.city || 'your area')}</p>` : ''}
+        ${r.above.length ? `<p class="sc-rank__above"><span class="sc-rank__abovelabel">Ahead of you on the map:</span> ${esc(r.above.join(', '))}.</p>` : ''}
+      </section>`;
+  };
+
   function renderResult() {
     const host = root!.querySelector<HTMLElement>('[data-result-host]');
     if (!host || !payload) return;
@@ -480,6 +544,7 @@ export function init() {
         <p class="sc-verdict__sub">${esc(intro)}</p>
       </div>
       ${table ? `<section class="sc-section"><p class="eyebrow sc-eyebrow">Where you stand</p>${table}</section>` : ''}
+      ${p.rankings ? renderRankings(p.rankings) : ''}
       <section class="sc-section">
         <p class="eyebrow sc-eyebrow">The audit</p>
         <h3 class="sc-section__h">Your Google Business Profile, graded</h3>

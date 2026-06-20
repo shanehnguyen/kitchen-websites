@@ -249,24 +249,27 @@ async function fetchGeogrid(keyword, lat, lng, placeId, myName) {
   if (!dfsAuth) return null;
   try {
     const step = 0.025; // ~2.7km between points
-    const offsets = [-step, 0, step];
+    const rowOffsets = [step, 0, -step]; // north → south (so cell order is map-oriented, north up)
+    const colOffsets = [-step, 0, step]; // west → east
     const points = [];
-    for (const dy of offsets) for (const dx of offsets) points.push([lat + dy, lng + dx]);
+    for (const dy of rowOffsets) for (const dx of colOffsets) points.push([lat + dy, lng + dx]);
     const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const myKey = norm(myName);
-    const results = await Promise.all(points.map(async ([plat, plng]) => {
+    // cells: top-3 rank at each point (1,2,3) or 0 if not in top 3, null if the call failed
+    const cells = await Promise.all(points.map(async ([plat, plng]) => {
       try {
         const task = await dfsPost('serp/google/maps/live/advanced', {
           keyword, location_coordinate: `${plat},${plng},14z`, language_code: 'en', device: 'mobile',
         });
         const items = (firstResultItems(task) || []).filter((it) => it && it.title).slice(0, 3);
-        return items.some((it) => (placeId && it.place_id === placeId) || (myKey && norm(it.title) === myKey));
+        const idx = items.findIndex((it) => (placeId && it.place_id === placeId) || (myKey && norm(it.title) === myKey));
+        return idx === -1 ? 0 : idx + 1;
       } catch { return null; }
     }));
-    const valid = results.filter((r) => r !== null);
+    const valid = cells.filter((c) => c !== null);
     if (!valid.length) return null;
-    const inTop3 = valid.filter(Boolean).length;
-    return { pct: Math.round((inTop3 / valid.length) * 100), points: valid.length };
+    const inTop3 = valid.filter((c) => c > 0).length;
+    return { pct: Math.round((inTop3 / valid.length) * 100), points: valid.length, cells };
   } catch (err) {
     console.warn('geogrid failed:', err.message);
     return null;
@@ -320,7 +323,7 @@ async function fetchWebsite(domain) {
   const out = {
     url, loads: null, https: null, viewport: null, perf: null,
     h1: null, phoneAboveFold: null, cta: null, reviews: null, photos: null, footerYear: null,
-    quoteForm: null, gallery: null, serviceArea: null, financing: null,
+    quoteForm: null, gallery: null, serviceArea: null,
     // SEO foundations + trust + content
     title: null, metaDesc: null, schemaLocalBusiness: null, altCoverage: null,
     trustBadges: null, sitePhones: null, blogExists: null, servicePages: null,
@@ -383,8 +386,6 @@ async function fetchWebsite(domain) {
         || /gallery|portfolio/i.test(classBlob);
       // names the towns / area served
       out.serviceArea = /areas?\s+we\s+serve|service\s+areas?|proudly\s+serving|serving\s+(the\s+)?[A-Z]/i.test(bodyText);
-      // financing mentioned
-      out.financing = /financ/i.test(bodyText);
 
       // --- SEO foundations ---
       // title tag (verbatim)
@@ -614,21 +615,6 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     }
   }
 
-  // 13/16. Local pack rank for the primary term (★ marquee)
-  if (localRank) {
-    if (localRank.rank && localRank.rank <= 3) pass(`Top 3 for “${primaryTerm}”`);
-    else if (localRank.rank) {
-      add({ id: 'rank', label: 'Local rank', status: localRank.rank <= 10 ? 'warn' : 'fail', sev: 1, value: `For “${primaryTerm}” you sit at #${localRank.rank} on the map.`, why: 'The top three get most of the calls. Below that, she scrolls right past you.', fix: 'Your profile and your site both feed this. Tightening the categories, reviews, and on-page basics is how you climb.' });
-      if (localRank.above && localRank.above.length) add({ id: 'outrank', label: 'Who outranks you', status: 'warn', sev: 2, value: `Above you ${inCity}: ${localRank.above.slice(0, 3).join(', ')}.`, why: 'These are the shops taking the calls you should be getting.', fix: 'Close the review, category, and link gaps on this page and you move up on them.' });
-    } else {
-      add({ id: 'rank', label: 'Local rank', status: 'fail', sev: 1, value: `You don’t show up in the map pack for “${primaryTerm}.”`, why: `Homeowners ${inCity} searching the most obvious term never see you at all.`, fix: 'This is the whole game. Profile, reviews, and on-page signals are how you get into the pack.' });
-    }
-  }
-  // 15. Geogrid visibility (★ marquee)
-  if (geogrid && typeof geogrid.pct === 'number') {
-    if (geogrid.pct >= 60) pass(`Top 3 across ${geogrid.pct}% of the map`);
-    else add({ id: 'geogrid', label: 'Map coverage', status: geogrid.pct < 20 ? 'fail' : 'warn', sev: 1, value: `Across ${city || 'your area'} you land in the top three in only ${geogrid.pct}% of the map.`, why: `In most of your own town, ${cityHomeowner} searching right now never sees you.`, fix: 'Map coverage grows as your profile strength and local signals grow. It’s the clearest picture of where you stand.' });
-  }
   // 39. Referring domains vs rival (★ marquee, authority)
   if (typeof myDomains === 'number') {
     if (typeof rivalDomains === 'number' && rivalDomains > 0) {
@@ -708,11 +694,8 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       if (website.gallery === false) wadd('Gallery of your work', 'warn', 'No gallery or portfolio of your projects.', 'A kitchen is bought with the eyes. With nowhere to show your finished work, she can’t picture hers.', 'Add a gallery of your finished kitchens and baths, with before-and-afters.');
       else if (website.gallery === true) wpass.push('Gallery of work');
       // Service area named
-      if (website.serviceArea === false) wadd('Service area', 'warn', 'Your site never says the towns you serve.', 'She wants to know you work in her area, and Google ranks pages higher when they say where they work.', 'List the towns and areas you serve, in plain text on the page.');
+      if (website.serviceArea === false) wadd('Service area', 'warn', 'Your site never says the towns you serve.', 'Google ranks local pages on the towns they name in their text. With none on the page, you don’t show up when a homeowner adds her town to the search.', 'List the towns and areas you serve, in plain text on the page.');
       else if (website.serviceArea === true) wpass.push('Service area listed');
-      // Financing (opportunity)
-      if (website.financing === false) wadd('Financing', 'warn', 'No mention of financing.', 'A twenty-thousand-dollar kitchen feels lighter in monthly payments. The shop that offers it wins the homeowner on the fence.', 'If you offer financing, say so up front. If you don’t, a financing partner is easy to add.');
-      else if (website.financing === true) wpass.push('Financing offered');
 
       // Trust badges (licensed, insured, NKBA, BBB, warranty)
       if (typeof website.trustBadges === 'number') {
@@ -768,6 +751,26 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
 
   const math = `One kitchen ${inCity} runs a homeowner $20,000 to $30,000. Win back one you’d have lost to a sharper-looking shop, and every fix on this page has already paid for itself.`;
 
+  // Rankings — its own section with a map visual on the frontend.
+  let rankings = null;
+  if (localRank || (geogrid && Array.isArray(geogrid.cells))) {
+    const rank = localRank?.rank ?? null;
+    const pct = geogrid && typeof geogrid.pct === 'number' ? geogrid.pct : null;
+    rankings = {
+      term: primaryTerm,
+      city: city || null,
+      rank,                                   // your position in the map pack, or null if not in it
+      inPack: localRank ? rank != null : null,
+      above: (localRank?.above || []).slice(0, 3),
+      gridPct: pct,                           // % of the map where you're top 3
+      cells: geogrid?.cells || null,          // 9 values: 1/2/3 = your rank there, 0 = not top 3, null = no data
+      rankStatus: rank == null ? 'fail' : rank <= 3 ? 'pass' : rank <= 10 ? 'warn' : 'fail',
+      gridStatus: pct == null ? null : pct >= 60 ? 'pass' : pct >= 20 ? 'warn' : 'fail',
+      // why it matters, spelled out
+      why: `When ${cityHomeowner} searches “${primaryTerm}”, Google shows three shops on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners ${inCity}, and it runs on autopilot once you win it.`,
+    };
+  }
+
   return {
     profile: { name: m.name, reviews, rating },
     city: city || null,
@@ -775,6 +778,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     competitors: competitors.slice(0, 3),
     verdict,
     hook,
+    rankings,
     audit: items,
     passing,
     website: websiteSection,
