@@ -100,6 +100,7 @@ const bookHref = '/book';
         </article>
       </div>
       <p class="web-tiers__note">Most shops start with Standard. Choose Custom if you’re a high-end shop and your site needs to show it right away.</p>
+      <div class="web-tiers__cta"><CTAButton href={bookHref} label="Book your free website strategy session" event="Web:TiersToBook" size="lg" /></div>
     </div>
   </section>
 
@@ -111,6 +112,19 @@ const bookHref = '/book';
       <p>Done For You is the full package. It includes this same website, plus your Google rebuilt and run every month, a steady stream of reviews, AI search, and the guarantee that more homeowners call or I work for free.</p>
       <p>One package, $750 a month, and you own all of it.</p>
       <div class="web-cta"><CTAButton href="/done-for-you" label="See everything Done For You includes" event="WebToDoneForYou" /></div>
+    </div>
+  </section>
+
+  <!-- 9 — FREE WEBSITE AUDIT (dark) -->
+  <section class="section section--dark web-session">
+    <div class="container container--narrow web-session__inner">
+      <h2 class="web-session__h">See what your website is costing you. Free, in {minutes} minutes.</h2>
+      <p>I’ll show you exactly where homeowners land and leave, and what to fix first. <span class="web-em">Yours to keep, even if you never hire me.</span></p>
+      <div class="web-session__cta">
+        <CTAButton href={bookHref} label={`Book your free ${minutes}-minute website audit`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Web:SessionToBook" size="lg" />
+      </div>
+      <p class="web-sig">— Shane Nguyen, Kitchen Websites</p>
+      <p class="web-ps">P.S. Worst case, you walk away with a free teardown of where your site leaks. Best case, you stop losing jobs to your competitor.</p>
     </div>
   </section>
 
@@ -146,4 +160,14 @@ const bookHref = '/book';
   .tier__list li { position: relative; padding-left: var(--space-5); font-size: var(--fs-body-sm); line-height: 1.5; color: var(--ink); }
   .tier__list li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 12px; height: 2px; background: var(--accent); }
   .web-tiers__note { margin: var(--space-8) auto 0; max-width: 60ch; text-align: center; font-family: var(--font-serif); font-size: var(--fs-body); line-height: 1.6; color: var(--ink-70); }
+  .web-tiers__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
+
+  /* free website audit (dark) — left-aligned, gold/bold emphasis, no marker */
+  .web-session__inner { max-width: 50rem; }
+  .web-session__h { font-family: var(--font-display); }
+  .web-session__inner p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--paper-70); max-width: 60ch; }
+  .web-em { color: var(--accent-strong); font-weight: var(--fw-body-bold); }
+  .web-session__cta { margin-top: var(--space-10); margin-bottom: var(--space-4); }
+  .web-sig { margin-top: var(--space-8); font-family: var(--font-display) !important; font-size: var(--fs-h4) !important; color: var(--porcelain) !important; }
+  .web-ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm) !important; color: var(--paper-50) !important; max-width: 60ch; }
 </style>
