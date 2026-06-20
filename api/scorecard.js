@@ -40,12 +40,17 @@ const DFS_PASSWORD = process.env.DATAFORSEO_PASSWORD || '';
 const PAGESPEED_KEY = process.env.PAGESPEED_API_KEY || '';
 const CACHE_TTL_SECONDS = 60 * 60 * 24; // 24h
 
+// Cache kill switch. While testing, set to false so every lookup hits the live
+// APIs fresh (no stale results). Flip back to true for production to save calls.
+const CACHE_ENABLED = false;
+
 const dfsAuth = DFS_LOGIN && DFS_PASSWORD
   ? 'Basic ' + Buffer.from(`${DFS_LOGIN}:${DFS_PASSWORD}`).toString('base64')
   : '';
 
 let redisClient = null;
 function getRedis() {
+  if (!CACHE_ENABLED) return null;
   if (redisClient) return redisClient;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
