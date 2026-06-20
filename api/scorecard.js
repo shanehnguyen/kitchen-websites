@@ -59,14 +59,27 @@ function getRedis() {
   return redisClient;
 }
 
-// A dumb comparison (Home Depot as a "rival") trips the scam filter.
+// A dumb comparison (Home Depot as a "rival") trips the scam filter. We exclude
+// big-box stores, national chains, and wholesale/distributor/supply outfits so
+// the rival a homeowner actually weighs you against is another local shop.
 const EXCLUDE = [
+  // big-box / national retail
   /home\s*depot/i, /lowe'?s/i, /\bikea\b/i, /menards/i, /costco/i, /sam'?s club/i,
   /wayfair/i, /floor\s*&?\s*decor/i, /the tile shop/i, /best\s*buy/i, /walmart/i,
-  /amazon/i, /\bhd supply\b/i, /ferguson/i, /build\.com/i,
-  /wholesale/i, /distribut/i, /\bsupply co\b/i, /liquidat/i, /\boutlet\b/i,
+  /amazon/i, /\bhd supply\b/i, /ferguson/i, /build\.com/i, /\b84\s*lumber\b/i,
+  /builders?\s*(surplus|first\s*source|firstsource)/i, /pro\s*source/i,
+  /cabinets?\s*to\s*go/i, /habitat|restore/i, /\bcostco\b/i,
+  // wholesale / distribution / supply / clearance signals
+  /wholesale/i, /distribut/i, /\bsupply\b/i, /liquidat/i, /\boutlet\b/i,
+  /\bwarehouse\b/i, /superstore/i, /clearance/i, /\bdepot\b/i, /surplus/i,
+  /\bimporter?s?\b/i, /manufactur/i,
 ];
 const isExcluded = (name) => EXCLUDE.some((re) => re.test(name || ''));
+
+// No local kitchen & bath remodeler has thousands of reviews. A count this high
+// is a chain, big-box, or distributor that slipped the name filter — drop it so
+// the comparison stays believable and motivating, not crushing.
+const MAX_PLAUSIBLE_REVIEWS = 1500;
 
 // ---------- Google Places: confirm name + coordinates (identify bridge) ----------
 async function placeDetails(placeId, sessionToken) {
@@ -158,7 +171,12 @@ async function fetchReviewsMeta(name, lat, lng) {
           .filter(Boolean)
           .sort()
           .pop();
-        return { newest, total: items.length, responded: withResp.length };
+        const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+        const added90 = items.filter((it) => {
+          const d = Date.parse(typeof it.timestamp === 'number' ? it.timestamp * 1000 : it.timestamp);
+          return !Number.isNaN(d) && d >= cutoff;
+        }).length;
+        return { newest, total: items.length, responded: withResp.length, added90 };
       }
     }
     return null;
@@ -197,6 +215,98 @@ async function fetchPostsMeta(name, lat, lng) {
   }
 }
 
+// ---------- DataForSEO SERP: local-pack rank (Maps) ----------
+// Returns { rank, above } where rank is our position in the Maps pack (1-based)
+// or null if not found, and above is the names ranked ahead of us.
+async function fetchLocalRank(keyword, lat, lng, placeId, myName) {
+  if (!dfsAuth) return null;
+  try {
+    const task = await dfsPost('serp/google/maps/live/advanced', {
+      keyword,
+      location_coordinate: `${lat},${lng},14z`,
+      language_code: 'en',
+      device: 'mobile',
+    });
+    const items = (firstResultItems(task) || []).filter((it) => it && (it.type === 'maps_search' || it.title));
+    if (!items.length) return null;
+    const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const myKey = norm(myName);
+    let rank = null;
+    items.forEach((it, idx) => {
+      if (rank) return;
+      if ((placeId && it.place_id === placeId) || (myKey && norm(it.title) === myKey)) rank = idx + 1;
+    });
+    const above = items.slice(0, rank ? rank - 1 : 3).map((it) => it.title).filter(Boolean);
+    return { rank, above, found: items.length };
+  } catch (err) {
+    console.warn('local rank failed:', err.message);
+    return null;
+  }
+}
+
+// Geogrid: sample a 3x3 grid around the shop, count points where we land top 3.
+async function fetchGeogrid(keyword, lat, lng, placeId, myName) {
+  if (!dfsAuth) return null;
+  try {
+    const step = 0.025; // ~2.7km between points
+    const offsets = [-step, 0, step];
+    const points = [];
+    for (const dy of offsets) for (const dx of offsets) points.push([lat + dy, lng + dx]);
+    const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const myKey = norm(myName);
+    const results = await Promise.all(points.map(async ([plat, plng]) => {
+      try {
+        const task = await dfsPost('serp/google/maps/live/advanced', {
+          keyword, location_coordinate: `${plat},${plng},14z`, language_code: 'en', device: 'mobile',
+        });
+        const items = (firstResultItems(task) || []).filter((it) => it && it.title).slice(0, 3);
+        return items.some((it) => (placeId && it.place_id === placeId) || (myKey && norm(it.title) === myKey));
+      } catch { return null; }
+    }));
+    const valid = results.filter((r) => r !== null);
+    if (!valid.length) return null;
+    const inTop3 = valid.filter(Boolean).length;
+    return { pct: Math.round((inTop3 / valid.length) * 100), points: valid.length };
+  } catch (err) {
+    console.warn('geogrid failed:', err.message);
+    return null;
+  }
+}
+
+// ---------- DataForSEO Backlinks: referring domains ----------
+async function fetchReferringDomains(domain) {
+  if (!dfsAuth || !domain) return null;
+  try {
+    const task = await dfsPost('backlinks/summary/live', { target: domain, internal_list_limit: 1, backlinks_status_type: 'live' });
+    const r = task?.result?.[0];
+    return typeof r?.referring_domains === 'number' ? r.referring_domains : null;
+  } catch (err) {
+    console.warn('backlinks failed:', err.message);
+    return null;
+  }
+}
+
+// ---------- DataForSEO Labs: organic keywords ranked ----------
+async function fetchOrganicKeywords(domain, lat, lng) {
+  if (!dfsAuth || !domain) return null;
+  try {
+    const task = await dfsPost('dataforseo_labs/google/domain_rank_overview/live', {
+      target: domain, location_coordinate: `${lat},${lng}`, language_code: 'en',
+    });
+    const metrics = task?.result?.[0]?.items?.[0]?.metrics?.organic;
+    return typeof metrics?.count === 'number' ? metrics.count : null;
+  } catch (err) {
+    console.warn('organic keywords failed:', err.message);
+    return null;
+  }
+}
+
+// Normalize a domain for API targets + cache keys: strip protocol/www/slash.
+function normDomain(d) {
+  if (!d) return null;
+  return String(d).replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/.*$/, '').toLowerCase() || null;
+}
+
 // ---------- Website check: real server-side HTML parse + PageSpeed ----------
 // Every signal is presence/absence the parser can be SURE of, fetched from the
 // live homepage. Anything it can't determine stays null and is omitted later
@@ -210,6 +320,10 @@ async function fetchWebsite(domain) {
   const out = {
     url, loads: null, https: null, viewport: null, perf: null,
     h1: null, phoneAboveFold: null, cta: null, reviews: null, photos: null, footerYear: null,
+    quoteForm: null, gallery: null, serviceArea: null, financing: null,
+    // SEO foundations + trust + content
+    title: null, metaDesc: null, schemaLocalBusiness: null, altCoverage: null,
+    trustBadges: null, sitePhones: null, blogExists: null, servicePages: null,
   };
   try {
     const controller = new AbortController();
@@ -258,6 +372,70 @@ async function fetchWebsite(domain) {
       const footerTxt = ($('footer').text() || '') + ' ' + $('body').text().slice(-1800);
       const years = (footerTxt.match(/20\d{2}/g) || []).map((y) => parseInt(y, 10)).filter((y) => y >= 2000 && y <= 2100);
       out.footerYear = years.length ? Math.max(...years) : null;
+
+      const bodyText = $('body').text();
+      const linkText = $('a').map((_, el) => $(el).text()).get().join(' · ');
+
+      // a quote/contact form: a <form> with at least two real inputs
+      out.quoteForm = $('form').filter((_, el) => $(el).find('input, textarea').length >= 2).length > 0;
+      // a gallery / portfolio of finished work
+      out.gallery = /gallery|portfolio|our work|projects|before\s*&?\s*after/i.test(linkText)
+        || /gallery|portfolio/i.test(classBlob);
+      // names the towns / area served
+      out.serviceArea = /areas?\s+we\s+serve|service\s+areas?|proudly\s+serving|serving\s+(the\s+)?[A-Z]/i.test(bodyText);
+      // financing mentioned
+      out.financing = /financ/i.test(bodyText);
+
+      // --- SEO foundations ---
+      // title tag (verbatim)
+      out.title = $('title').first().text().replace(/\s+/g, ' ').trim() || null;
+      // meta description
+      out.metaDesc = ($('meta[name="description"]').attr('content') || '').replace(/\s+/g, ' ').trim() || null;
+      // LocalBusiness (or subtype) schema in any ld+json block
+      out.schemaLocalBusiness = /"@type"\s*:\s*"(LocalBusiness|HomeAndConstructionBusiness|GeneralContractor|Plumber|RoofingContractor|Electrician|HVACBusiness|Contractor)"/i.test(ld);
+      // image alt-text coverage on meaningful images
+      {
+        let imgs = 0, withAlt = 0;
+        $('img').each((_, el) => {
+          const src = ($(el).attr('src') || $(el).attr('data-src') || '').trim();
+          if (!src) return;
+          const probe = `${src} ${$(el).attr('class') || ''}`;
+          if (IMG_JUNK.test(probe)) return;
+          imgs += 1;
+          if (($(el).attr('alt') || '').trim()) withAlt += 1;
+        });
+        out.altCoverage = imgs > 0 ? Math.round((withAlt / imgs) * 100) : null;
+      }
+
+      // --- trust badges ---
+      {
+        const trustBlob = `${bodyText} ${$('img').map((_, el) => `${$(el).attr('alt') || ''} ${$(el).attr('src') || ''}`).get().join(' ')}`;
+        const badges = new Set();
+        if (/licensed|license\s*#|lic\.?\s*#/i.test(trustBlob)) badges.add('licensed');
+        if (/insured|insurance|bonded/i.test(trustBlob)) badges.add('insured');
+        if (/\bnkba\b|national kitchen|kitchen\s*&?\s*bath association/i.test(trustBlob)) badges.add('NKBA');
+        if (/\bbbb\b|better business bureau/i.test(trustBlob)) badges.add('BBB');
+        if (/warranty|guarantee[d]?/i.test(trustBlob)) badges.add('warranty');
+        out.trustBadges = badges.size;
+      }
+
+      // --- NAP: phone numbers on the site (digits only, for GBP match) ---
+      {
+        const tels = $('a[href^="tel:"]').map((_, el) => ($(el).attr('href') || '').replace(/[^\d]/g, '')).get();
+        const textNums = (bodyText.match(/\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g) || []).map((n) => n.replace(/[^\d]/g, ''));
+        out.sitePhones = [...new Set([...tels, ...textNums].map((n) => n.replace(/^1(?=\d{10}$)/, '')).filter((n) => n.length === 10))];
+      }
+
+      // --- content / blog ---
+      out.blogExists = /\b(blog|articles?|news|tips|guides?|resources?)\b/i.test(linkText);
+      // service pages per trade: distinct trade words that appear as their own nav link
+      {
+        const trades = ['kitchen', 'bath', 'cabinet', 'countertop'];
+        const navLinks = $('nav a, header a').map((_, el) => $(el).text().toLowerCase()).get();
+        const hit = new Set();
+        trades.forEach((t) => { if (navLinks.some((l) => l.includes(t))) hit.add(t); });
+        out.servicePages = hit.size;
+      }
     }
   } catch (err) {
     out.loads = false;
@@ -302,7 +480,7 @@ const RELEVANT_ATTRS = [
 // city, or their trade — then the stakes, then the fix. Shane's voice: short
 // sentences, direct "you," empathy plus sting. City is woven where known and
 // gracefully softened to "near you" when it isn't (never faked).
-function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city) {
+function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city, extras = {}) {
   const m = merged;
   const reviews = num(m.reviews);
   const rating = num(m.rating);
@@ -310,6 +488,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
   const cityHomeowner = city ? `a ${city} homeowner` : 'a homeowner near you';
   const CityHomeowner = city ? `A ${city} homeowner` : 'A homeowner near you';
   const rivalName = top ? top.name : 'the shop above you';
+  const { localRank = null, geogrid = null, myDomains = null, rivalDomains = null, myKeywords = null, rivalKeywords = null, primaryTerm = '' } = extras;
 
   // verdict + hook
   let verdict;
@@ -322,8 +501,8 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     verdict = { key: 'losing', headline: 'You’re in the game, and losing the comparison.', sub: `You show up. But next to the shop Google puts beside you, ${cityHomeowner} has a reason to pick them. Here’s exactly where.` };
   }
   let hook;
-  if (top && reviews !== null) hook = `You’re at ${reviews}. ${rivalName}, the shop Google puts right above you ${inCity}, has ${top.reviews}.`;
-  else if (rating !== null && rating < 4) hook = `You’re sitting at ${rating.toFixed(1)} stars, under the line most homeowners use to rule a shop out.`;
+  if (top && reviews !== null) hook = `You have ${reviews} Google reviews. ${rivalName}, the shop Google puts right above you ${inCity}, has ${top.reviews}.`;
+  else if (rating !== null && rating < 4) hook = `Your Google rating is ${rating.toFixed(1)} stars, under the line most homeowners use to rule a shop out.`;
   else hook = `Here’s what ${cityHomeowner} sees when she checks your Google, graded.`;
 
   const items = []; // {id,label,status,value,why,fix,sev}
@@ -343,21 +522,42 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     if (rel.length >= 2) pass(`${rel.length} relevant secondary categories`);
     else add({ id: 'cat2', label: 'Secondary categories', status: 'warn', sev: 3, value: rel.length ? `Only ${rel.length} relevant one.` : 'You’ve got none set.', why: `Each one is another search you could win ${inCity}, and most shops leave them empty. That’s an opening.`, fix: 'Add the ones that fit: Bathroom remodeler, Cabinet maker, Countertop store, Tile contractor.' });
   }
+  // 5. Services menu (omit when unknown)
+  if (num(m.servicesCount) !== null) {
+    const sc = num(m.servicesCount);
+    if (sc >= 5) pass(`${sc} services listed`);
+    else add({ id: 'services', label: 'Services menu', status: sc === 0 ? 'fail' : 'warn', sev: sc === 0 ? 2 : 4, value: sc === 0 ? 'You’ve got no services listed on your profile.' : `Only ${sc} service${sc === 1 ? '' : 's'} listed.`, why: `Each service is another way ${cityHomeowner} finds you on Maps. An empty menu is searches you never show up for.`, fix: 'List your services: kitchen remodel, bath remodel, cabinets, countertops, tile, and the rest.' });
+  }
+  // 6. Business name clean (keyword/city padding is a guideline violation + suspension risk)
+  if (str(m.name)) {
+    const nm = m.name;
+    const padded = city && new RegExp(city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(nm)
+      ? true
+      : (nm.match(/\b(kitchen|bath|cabinet|countertop|remodel|remodeling|renovation|contractor)\b/gi) || []).length >= 2;
+    if (!padded) pass('Clean business name');
+    else add({ id: 'name', label: 'Business name', status: 'warn', sev: 3, value: `Your listed name reads “${nm}.”`, why: 'Padding the name with keywords or your city breaks Google’s rules. They can suspend the whole listing for it, and rivals report shops that do it.', fix: 'Set the name to your real signage, nothing more. Let the categories and services do the keyword work.' });
+  }
   // 3. Review count vs the named top rival
   if (reviews !== null && top) {
     if (reviews >= top.reviews) pass(`Review count (${reviews})`);
     else {
       const wide = reviews < top.reviews * 0.6;
-      add({ id: 'rev', label: 'Review count', status: wide ? 'fail' : 'warn', sev: wide ? 1 : 3, value: `You’re at ${reviews}. ${top.name}, the shop Google puts right above you, has ${top.reviews}.`, why: `When ${cityHomeowner} compares the two of you, that gap is the whole decision.`, fix: 'Ask your last ten happy customers for a review, with a direct link. Then keep a steady trickle going.' });
+      add({ id: 'rev', label: 'Review count', status: wide ? 'fail' : 'warn', sev: wide ? 1 : 3, value: `You have ${reviews} Google reviews. ${top.name}, the shop Google puts right above you, has ${top.reviews}.`, why: `When ${cityHomeowner} compares the two of you, that gap is the whole decision.`, fix: 'Ask your last ten happy customers for a review, with a direct link. Then keep a steady trickle going.' });
     }
+  }
+  // 9. Review velocity — reviews added in the last 90 days (cadence number)
+  if (reviewsMeta && typeof reviewsMeta.added90 === 'number') {
+    const v = reviewsMeta.added90;
+    if (v >= 6) pass(`${v} reviews in 90 days`);
+    else add({ id: 'velocity', label: 'Review velocity', status: v === 0 ? 'fail' : 'warn', sev: v === 0 ? 1 : 3, value: v === 0 ? 'You haven’t added a single review in 90 days.' : `You added ${v} review${v === 1 ? '' : 's'} in the last 90 days.`, why: `The shops climbing past you ${inCity} pull in a fresh review most weeks. That gap grows every week you wait.`, fix: 'Ask for a review after every finished job, with a direct link, so they come in steadily.' });
   }
   // 4. Star rating vs the 4.0 cliff
   if (rating !== null && rating > 0) {
     if (rating >= 4.3) pass(`${rating.toFixed(1)} star rating`);
     else {
       const under = rating < 4.0;
-      const rivalStar = top && top.rating ? ` ${top.name}’s at ${top.rating.toFixed(1)}.` : '';
-      add({ id: 'star', label: 'Star rating', status: under ? 'fail' : 'warn', sev: under ? 1 : 3, value: `You’re sitting at ${rating.toFixed(1)}.${rivalStar}`, why: under ? 'Most homeowners never read a word under four stars. They just scroll to the shop that’s over it.' : 'You’re right on the four-star line homeowners filter by, with no cushion under you.', fix: 'Reply to every review, the rough ones first, and ask happy customers until the average climbs.' });
+      const rivalStar = top && top.rating ? ` ${top.name} is at ${top.rating.toFixed(1)} stars.` : '';
+      add({ id: 'star', label: 'Star rating', status: under ? 'fail' : 'warn', sev: under ? 1 : 3, value: `Your Google rating is ${rating.toFixed(1)} stars.${rivalStar}`, why: under ? 'Most homeowners never read a word under four stars. They just scroll to the shop that’s over it.' : 'You’re right on the four-star line homeowners filter by, with no cushion under you.', fix: 'Reply to every review, the rough ones first, and ask happy customers until the average climbs.' });
     }
   }
   // 5. Review recency
@@ -414,6 +614,40 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     }
   }
 
+  // 13/16. Local pack rank for the primary term (★ marquee)
+  if (localRank) {
+    if (localRank.rank && localRank.rank <= 3) pass(`Top 3 for “${primaryTerm}”`);
+    else if (localRank.rank) {
+      add({ id: 'rank', label: 'Local rank', status: localRank.rank <= 10 ? 'warn' : 'fail', sev: 1, value: `For “${primaryTerm}” you sit at #${localRank.rank} on the map.`, why: 'The top three get most of the calls. Below that, she scrolls right past you.', fix: 'Your profile and your site both feed this. Tightening the categories, reviews, and on-page basics is how you climb.' });
+      if (localRank.above && localRank.above.length) add({ id: 'outrank', label: 'Who outranks you', status: 'warn', sev: 2, value: `Above you ${inCity}: ${localRank.above.slice(0, 3).join(', ')}.`, why: 'These are the shops taking the calls you should be getting.', fix: 'Close the review, category, and link gaps on this page and you move up on them.' });
+    } else {
+      add({ id: 'rank', label: 'Local rank', status: 'fail', sev: 1, value: `You don’t show up in the map pack for “${primaryTerm}.”`, why: `Homeowners ${inCity} searching the most obvious term never see you at all.`, fix: 'This is the whole game. Profile, reviews, and on-page signals are how you get into the pack.' });
+    }
+  }
+  // 15. Geogrid visibility (★ marquee)
+  if (geogrid && typeof geogrid.pct === 'number') {
+    if (geogrid.pct >= 60) pass(`Top 3 across ${geogrid.pct}% of the map`);
+    else add({ id: 'geogrid', label: 'Map coverage', status: geogrid.pct < 20 ? 'fail' : 'warn', sev: 1, value: `Across ${city || 'your area'} you land in the top three in only ${geogrid.pct}% of the map.`, why: `In most of your own town, ${cityHomeowner} searching right now never sees you.`, fix: 'Map coverage grows as your profile strength and local signals grow. It’s the clearest picture of where you stand.' });
+  }
+  // 39. Referring domains vs rival (★ marquee, authority)
+  if (typeof myDomains === 'number') {
+    if (typeof rivalDomains === 'number' && rivalDomains > 0) {
+      if (myDomains >= rivalDomains) pass(`${myDomains} sites link to you`);
+      else add({ id: 'backlinks', label: 'Sites linking to you', status: myDomains < rivalDomains * 0.4 ? 'fail' : 'warn', sev: 1, value: `${rivalDomains} websites link to ${rivalName}. ${myDomains} link to you.`, why: 'Google reads links like votes. Right now you’re losing the vote, and it holds your ranking down.', fix: 'Local directories, suppliers, and partners linking to you all count. It builds over time, and it’s part of the plan.' });
+    } else if (myDomains === 0) {
+      add({ id: 'backlinks', label: 'Sites linking to you', status: 'fail', sev: 2, value: 'No other websites link to yours.', why: 'Google reads links like votes, and you have none. That quietly caps how high you can rank.', fix: 'Get listed in local directories and trade sites, and earn links from suppliers and partners.' });
+    }
+  }
+  // 40. Organic keywords vs rival (★ marquee, authority)
+  if (typeof myKeywords === 'number') {
+    if (typeof rivalKeywords === 'number' && rivalKeywords > 0) {
+      if (myKeywords >= rivalKeywords) pass(`Ranking for ${myKeywords} searches`);
+      else add({ id: 'organic', label: 'Searches you show up for', status: myKeywords < rivalKeywords * 0.4 ? 'fail' : 'warn', sev: 1, value: `Your site shows up in Google for ${myKeywords} searches. ${rivalName} shows up for ${rivalKeywords}.`, why: 'Every search you’re missing is a homeowner finding them instead of you.', fix: 'Service pages, a blog, and the on-page basics on this list are how that number climbs.' });
+    } else if (myKeywords === 0) {
+      add({ id: 'organic', label: 'Searches you show up for', status: 'fail', sev: 2, value: 'Your site barely shows up in Google search at all.', why: 'Outside the map, homeowners searching for your work never find you.', fix: 'Build out service pages and content around what homeowners actually search.' });
+    }
+  }
+
   // worst-first: fail before warn, then by severity
   const rank = { fail: 0, warn: 1 };
   items.sort((a, b) => (rank[a.status] - rank[b.status]) || (a.sev - b.sev));
@@ -466,6 +700,63 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       if (website.h1) {
         if (STRONG_CATS.test(website.h1)) wpass.push('Headline names your trade');
         else wadd('What your site opens with', 'warn', website.h1, 'Your site opens with words that don’t say what you do. She cares what you build for her before who you are.', 'Open with the outcome: the kitchens and baths you build for homeowners like her.');
+      }
+      // A quote / contact form
+      if (website.quoteForm === false) wadd('Quote form', 'warn', 'No quote or contact form on the page.', 'Plenty of homeowners will type before they’ll call. With no form, you lose every one of them after hours.', 'Add a short “Get a free quote” form to the homepage.');
+      else if (website.quoteForm === true) wpass.push('Quote form');
+      // A gallery of finished work
+      if (website.gallery === false) wadd('Gallery of your work', 'warn', 'No gallery or portfolio of your projects.', 'A kitchen is bought with the eyes. With nowhere to show your finished work, she can’t picture hers.', 'Add a gallery of your finished kitchens and baths, with before-and-afters.');
+      else if (website.gallery === true) wpass.push('Gallery of work');
+      // Service area named
+      if (website.serviceArea === false) wadd('Service area', 'warn', 'Your site never says the towns you serve.', 'She wants to know you work in her area, and Google ranks pages higher when they say where they work.', 'List the towns and areas you serve, in plain text on the page.');
+      else if (website.serviceArea === true) wpass.push('Service area listed');
+      // Financing (opportunity)
+      if (website.financing === false) wadd('Financing', 'warn', 'No mention of financing.', 'A twenty-thousand-dollar kitchen feels lighter in monthly payments. The shop that offers it wins the homeowner on the fence.', 'If you offer financing, say so up front. If you don’t, a financing partner is easy to add.');
+      else if (website.financing === true) wpass.push('Financing offered');
+
+      // Trust badges (licensed, insured, NKBA, BBB, warranty)
+      if (typeof website.trustBadges === 'number') {
+        if (website.trustBadges >= 2) wpass.push('Trust badges shown');
+        else wadd('Trust signals', website.trustBadges === 0 ? 'fail' : 'warn', website.trustBadges === 0 ? 'Nothing on the page says licensed, insured, or guaranteed.' : 'Only one trust signal on the page.', 'She’s handing a stranger thirty grand and the keys to her house. With nothing that says you’re safe to hire, she hesitates.', 'Show licensed, insured, any associations like NKBA, and your warranty, up front.');
+      }
+      // Title tag
+      if (website.title !== null) {
+        const t = website.title;
+        const hasCity = city ? new RegExp(city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(t) : false;
+        if (STRONG_CATS.test(t) && (hasCity || !city)) wpass.push('Title tag set');
+        else wadd('Title tag', 'warn', `Your page title reads “${t.slice(0, 70)}.”`, 'The title is the blue line she clicks in Google. If it doesn’t say your trade and your town, it doesn’t pull the click.', 'Make it your trade plus your city, like “Kitchen Remodeler in ' + (city || 'Your Town') + '.”');
+      } else {
+        wadd('Title tag', 'fail', 'Your homepage has no title tag.', 'Google shows a blank or the bare domain in search. It looks broken and it kills the click.', 'Add a title: your trade plus your city.');
+      }
+      // Meta description
+      if (website.metaDesc !== null) {
+        const len = website.metaDesc.length;
+        if (len >= 120 && len <= 160) wpass.push('Meta description set');
+        else wadd('Meta description', 'warn', len < 120 ? 'Your search description is short.' : 'Your search description runs long and gets cut off.', 'It’s the pitch under your link in Google. A weak one loses the click to the shop with a sharper one.', 'Write 120 to 160 characters on what you do, where, and why to call you.');
+      } else {
+        wadd('Meta description', 'warn', 'No search description set.', 'Google grabs a random scrap of your page instead of a pitch. It rarely sells the click.', 'Write 120 to 160 characters on your trade, your area, and your offer.');
+      }
+      // LocalBusiness schema (★ marquee)
+      if (website.schemaLocalBusiness === true) wpass.push('LocalBusiness schema');
+      else if (website.schemaLocalBusiness === false) wadd('Local schema', 'warn', 'Your site is missing the code that tells Google what you do and where you are.', 'It’s behind-the-scenes code Google leans on to rank local shops. The ones above you have it.', 'Add LocalBusiness schema with your name, address, phone, and services.');
+      // NAP consistency (phone on site vs GBP)
+      if (Array.isArray(website.sitePhones) && website.sitePhones.length && str(m.phone)) {
+        const gbp = m.phone.replace(/[^\d]/g, '').replace(/^1(?=\d{10}$)/, '');
+        if (website.sitePhones.includes(gbp)) wpass.push('Phone matches Google');
+        else wadd('Phone matches Google', 'warn', 'The phone number on your site doesn’t match your Google listing.', 'When Google sees two different numbers, it trusts you less and quietly ranks you lower.', 'Use the exact same phone number on your site, your Google profile, and every directory.');
+      }
+      // Image alt text
+      if (typeof website.altCoverage === 'number') {
+        if (website.altCoverage >= 80) wpass.push('Image alt text');
+        else wadd('Image alt text', website.altCoverage === 0 ? 'fail' : 'warn', website.altCoverage === 0 ? 'None of your photos have alt text.' : `Only ${website.altCoverage}% of your photos have alt text.`, 'Alt text is how Google reads your photos, and how you show up in image search. Blank means invisible there.', 'Describe each photo in plain words, like “white shaker kitchen remodel in ' + (city || 'your town') + '.”');
+      }
+      // Blog section
+      if (website.blogExists === true) wpass.push('Blog / articles');
+      else if (website.blogExists === false) wadd('Blog', 'warn', 'No blog or articles on the site.', 'A site that never publishes reads to Google like a shop that’s gone quiet. The ones beating you post most months.', 'Add a simple blog and post a finished project or a homeowner question now and then.');
+      // Service pages per trade
+      if (typeof website.servicePages === 'number') {
+        if (website.servicePages >= 3) wpass.push('Separate service pages');
+        else wadd('Service pages', 'warn', website.servicePages === 0 ? 'One catch-all page for everything you do.' : `Only ${website.servicePages} of your trades has its own page.`, 'Google ranks a dedicated kitchen page over a buried mention. One page for everything wins none of those searches.', 'Give kitchens, baths, cabinets, and countertops each their own page.');
       }
     }
 
@@ -527,6 +818,13 @@ function mergeProfile(places, info) {
     domain,
     book_online_url: str(info?.book_online_url),
     hoursSet,
+    // services menu count (DataForSEO fields vary; try the common shapes, omit if absent)
+    servicesCount: (() => {
+      const lists = info?.price_list?.items || info?.services || info?.service_items || info?.work_categories;
+      if (Array.isArray(lists)) return lists.length;
+      if (Array.isArray(info?.price_list)) return info.price_list.length;
+      return null;
+    })(),
   };
 }
 
@@ -571,8 +869,8 @@ export default async function handler(req, res) {
   const competitors = (rawCompetitors || [])
     .filter((c) => !isExcluded(c.title))
     .filter((c) => str(c.title) && str(c.title).toLowerCase() !== (merged.name || '').toLowerCase())
-    .map((c) => ({ name: c.title, reviews: num(c.rating?.votes_count) ?? 0, rating: num(c.rating?.value) ?? 0 }))
-    .filter((c) => c.reviews > 0)
+    .map((c) => ({ name: c.title, reviews: num(c.rating?.votes_count) ?? 0, rating: num(c.rating?.value) ?? 0, domain: normDomain(str(c.url) || str(c.domain)) }))
+    .filter((c) => c.reviews > 0 && c.reviews <= MAX_PLAUSIBLE_REVIEWS)
     .sort((a, b) => b.reviews - a.reviews)
     .slice(0, 3);
   const top = competitors[0] || null;
@@ -584,7 +882,23 @@ export default async function handler(req, res) {
   }
 
   const city = extractCity(places, info);
-  const payload = analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city);
+
+  // Rankings + authority (paid DataForSEO; run live while testing — cache/limits off).
+  const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
+  const myDom = normDomain(merged.domain);
+  const rivalDom = top?.domain || null;
+  const [localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords] = await Promise.all([
+    fetchLocalRank(primaryTerm, lat, lng, placeId, merged.name),
+    fetchGeogrid(primaryTerm, lat, lng, placeId, merged.name),
+    myDom ? fetchReferringDomains(myDom) : Promise.resolve(null),
+    rivalDom ? fetchReferringDomains(rivalDom) : Promise.resolve(null),
+    myDom ? fetchOrganicKeywords(myDom, lat, lng) : Promise.resolve(null),
+    rivalDom ? fetchOrganicKeywords(rivalDom, lat, lng) : Promise.resolve(null),
+  ]);
+
+  const payload = analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city, {
+    localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords, primaryTerm,
+  });
 
   if (redis) {
     try { await redis.set(cacheKey, payload, { ex: CACHE_TTL_SECONDS }); }
