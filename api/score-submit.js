@@ -102,7 +102,7 @@ export default async function handler(req, res) {
   // ---- Strategy session request (/book) ----
   if (body.type === 'booking') {
     const labels = {
-      name: 'Name', phone: 'Phone', business: 'Business & city',
+      name: 'Name', phone: 'Phone', website: 'Website / business & city',
       customers: 'Customer mix', jobs: 'Jobs / month',
       bug: 'Biggest gripe (read first)', from: 'Came from',
     };
@@ -113,7 +113,7 @@ export default async function handler(req, res) {
     if (body.email) fields.email = body.email; // reply-to
     await Promise.all([
       pushToEsp({ ...body, source: 'book-session' }),
-      notify(`📅 Session request — ${body.business || body.name || 'new owner'}`, fields),
+      notify(`📅 Session request — ${body.website || body.name || 'new owner'}`, fields),
     ]);
     return res.status(200).json({ ok: true });
   }

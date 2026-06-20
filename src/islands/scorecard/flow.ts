@@ -35,7 +35,7 @@ const minutes = site.callLengthMinutes;
 // calls. No keys, no /api, no servers, no fetch timing to break. Click through
 // the whole flow locally exactly as designed.
 // FLIP TO false once GOOGLE_PLACES_API_KEY + DATAFORSEO_LOGIN/PASSWORD are set.
-const DEMO_MODE: boolean = true;
+const DEMO_MODE: boolean = false;
 // Flip to true to PREVIEW the "no website linked" empty state of the website
 // section (the whole section collapses to a single bridge finding).
 const DEMO_NO_WEBSITE: boolean = false;

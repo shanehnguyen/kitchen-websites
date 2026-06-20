@@ -53,8 +53,8 @@ const DOTS = 4; // question screens 1–4
                 <input class="bk-input" name="email" type="email" autocomplete="email" placeholder="you@email.com" required />
               </label>
               <label class="bk-field">
-                <span class="bk-label">What’s your business name and city?</span>
-                <input class="bk-input" name="business" type="text" placeholder="Shop name, city" required />
+                <span class="bk-label">What’s your website? No site yet? Just your business name and city.</span>
+                <input class="bk-input" name="website" type="text" placeholder="yoursite.com — or shop name, city" required />
               </label>
             </div>
             <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
@@ -235,7 +235,7 @@ const DOTS = 4; // question screens 1–4
         name: first,
         email: answers.email,
         phone: answers.mobile,
-        business: answers.business,
+        website: answers.website,
         customers: answers.customers,
         jobs: answers.jobs,
         bug: answers.obstacle,
