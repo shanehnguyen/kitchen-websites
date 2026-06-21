@@ -42,7 +42,19 @@ const CACHE_TTL_SECONDS = 60 * 60 * 24; // 24h
 
 // Cache kill switch. While testing, set to false so every lookup hits the live
 // APIs fresh (no stale results). Flip back to true for production to save calls.
-const CACHE_ENABLED = false;
+const CACHE_ENABLED = true;
+
+// ---- Spend guardrails (so a flood of traffic can't run up the DataForSEO bill) ----
+// The expensive layer (geogrid 25 calls, backlinks, organic, rank) only fires when
+// BOTH the daily ceiling and the per-IP limits allow it. Over the line, the audit
+// still renders from the cheap profile + website checks — it just skips the costly
+// rankings/authority depth. Never hard-errors, never blocks the page.
+const SPEND_GUARD = true;
+const DAILY_AUDIT_BUDGET = 25;      // ~$/day ceiling for the EXPENSIVE depth layer
+const MAX_AUDITS_PER_DAY = 400;     // hard cap on TOTAL paid audits/day (cheap incl.) — the real kill switch
+const EST_AUDIT_COST = 0.16;        // rough $ per full audit, used to tally the day
+const IP_AUDITS_PER_HOUR = 6;
+const IP_AUDITS_PER_DAY = 25;
 
 const dfsAuth = DFS_LOGIN && DFS_PASSWORD
   ? 'Basic ' + Buffer.from(`${DFS_LOGIN}:${DFS_PASSWORD}`).toString('base64')
@@ -50,13 +62,61 @@ const dfsAuth = DFS_LOGIN && DFS_PASSWORD
 
 let redisClient = null;
 function getRedis() {
-  if (!CACHE_ENABLED) return null;
   if (redisClient) return redisClient;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return null;
   redisClient = new Redis({ url, token });
   return redisClient;
+}
+
+const todayKey = () => new Date().toISOString().slice(0, 10);
+const clientIp = (req) => String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+  || req.headers['x-real-ip'] || req.socket?.remoteAddress || '';
+
+// One gate for ALL paid work. paidOk=false blocks the whole audit (zero paid calls,
+// returns degraded → manual capture). expensiveOk=false runs the cheap audit but
+// skips the costly depth layer (geogrid/backlinks/organic/rank).
+async function auditGate(redis, ip) {
+  if (!SPEND_GUARD || !redis) return { paidOk: true, expensiveOk: true, reason: '' };
+  try {
+    const day = todayKey();
+    const hourK = `rl:${ip}:${day}:${new Date().getUTCHours()}`;
+    const dayK = `rl:${ip}:${day}`;
+    const [countRaw, spentRaw, ipH, ipD] = await Promise.all([
+      redis.get(`audits:${day}`),
+      redis.get(`spend:${day}`),
+      ip ? redis.get(hourK) : Promise.resolve(0),
+      ip ? redis.get(dayK) : Promise.resolve(0),
+    ]);
+    const count = Number(countRaw) || 0;
+    const spent = Number(spentRaw) || 0;
+    const ipBlocked = (Number(ipH) || 0) >= IP_AUDITS_PER_HOUR || (Number(ipD) || 0) >= IP_AUDITS_PER_DAY;
+    const countBlocked = count >= MAX_AUDITS_PER_DAY;
+    const paidOk = !ipBlocked && !countBlocked;
+    const expensiveOk = paidOk && spent < DAILY_AUDIT_BUDGET;
+    const reason = ipBlocked ? 'ip-limit' : countBlocked ? 'daily-count' : (!expensiveOk ? 'daily-budget' : '');
+    return { paidOk, expensiveOk, reason };
+  } catch { return { paidOk: true, expensiveOk: true, reason: '' }; }
+}
+
+// Tally a completed paid audit (best-effort). Counts every audit; only adds $ when
+// the expensive layer actually ran.
+async function recordAudit(redis, ip, ranExpensive) {
+  if (!SPEND_GUARD || !redis) return;
+  try {
+    const day = todayKey();
+    await redis.incr(`audits:${day}`); await redis.expire(`audits:${day}`, 60 * 60 * 48);
+    if (ranExpensive) { await redis.incrbyfloat(`spend:${day}`, EST_AUDIT_COST); await redis.expire(`spend:${day}`, 60 * 60 * 48); }
+    if (ip) {
+      const hourK = `rl:${ip}:${day}:${new Date().getUTCHours()}`;
+      const dayK = `rl:${ip}:${day}`;
+      await Promise.all([
+        redis.incr(hourK), redis.expire(hourK, 3600),
+        redis.incr(dayK), redis.expire(dayK, 60 * 60 * 48),
+      ]);
+    }
+  } catch { /* metering is best-effort, never block the audit */ }
 }
 
 // A dumb comparison (Home Depot as a "rival") trips the scam filter. We exclude
@@ -244,15 +304,23 @@ async function fetchLocalRank(keyword, lat, lng, placeId, myName) {
   }
 }
 
-// Geogrid: sample a 3x3 grid around the shop, count points where we land top 3.
+// Geogrid resolution. 3 = 9 SERP calls (~$0.018/audit). 5 = 25 calls (~$0.05).
+const GEOGRID_N = 5;
+
+// Geogrid: sample an N×N grid around the shop, count points where we land top 3.
 async function fetchGeogrid(keyword, lat, lng, placeId, myName) {
   if (!dfsAuth) return null;
   try {
-    const step = 0.025; // ~2.7km between points
-    const rowOffsets = [step, 0, -step]; // north → south (so cell order is map-oriented, north up)
-    const colOffsets = [-step, 0, step]; // west → east
+    const N = GEOGRID_N;
+    const span = 0.05;            // total north-south / east-west span (~5.5km), constant across N
+    const step = span / (N - 1);
+    const half = (N - 1) / 2;
     const points = [];
-    for (const dy of rowOffsets) for (const dx of colOffsets) points.push([lat + dy, lng + dx]);
+    for (let r = 0; r < N; r++) {        // rows: north (top) → south (bottom)
+      for (let c = 0; c < N; c++) {      // cols: west (left) → east (right)
+        points.push([lat + (half - r) * step, lng + (c - half) * step]);
+      }
+    }
     const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const myKey = norm(myName);
     // cells: top-3 rank at each point (1,2,3) or 0 if not in top 3, null if the call failed
@@ -269,7 +337,7 @@ async function fetchGeogrid(keyword, lat, lng, placeId, myName) {
     const valid = cells.filter((c) => c !== null);
     if (!valid.length) return null;
     const inTop3 = valid.filter((c) => c > 0).length;
-    return { pct: Math.round((inTop3 / valid.length) * 100), points: valid.length, cells };
+    return { pct: Math.round((inTop3 / valid.length) * 100), points: valid.length, cells, n: N };
   } catch (err) {
     console.warn('geogrid failed:', err.message);
     return null;
@@ -763,7 +831,9 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       inPack: localRank ? rank != null : null,
       above: (localRank?.above || []).slice(0, 3),
       gridPct: pct,                           // % of the map where you're top 3
-      cells: geogrid?.cells || null,          // 9 values: 1/2/3 = your rank there, 0 = not top 3, null = no data
+      cells: geogrid?.cells || null,          // N×N values: 1/2/3 = your rank there, 0 = not top 3, null = no data
+      gridN: geogrid?.n || null,              // grid resolution (3 or 5)
+      mapUrl: null,                           // set by the handler (proxied static map)
       rankStatus: rank == null ? 'fail' : rank <= 3 ? 'pass' : rank <= 10 ? 'warn' : 'fail',
       gridStatus: pct == null ? null : pct >= 60 ? 'pass' : pct >= 20 ? 'warn' : 'fail',
       // why it matters, spelled out
@@ -842,12 +912,22 @@ export default async function handler(req, res) {
   if (!PLACES_KEY) return res.status(200).json({ ok: true, degraded: true });
 
   const redis = getRedis();
+  const ip = clientIp(req);
   const cacheKey = `scorecard:v2:${placeId}`;
-  if (redis) {
+  // Cache hit → serve free, fire zero paid calls.
+  if (redis && CACHE_ENABLED) {
     try {
       const cached = await redis.get(cacheKey);
       if (cached) return res.status(200).json({ ok: true, cached: true, ...cached });
     } catch (err) { console.warn('cache read failed:', err.message); }
+  }
+
+  // Spend gate — checked BEFORE any paid call. Over the per-IP or daily-count limit:
+  // no paid calls at all, fall back to manual capture. Never run up the bill.
+  const gate = await auditGate(redis, ip);
+  if (!gate.paidOk) {
+    console.warn('audit blocked by spend guard:', gate.reason);
+    return res.status(200).json({ ok: true, degraded: true, limited: true });
   }
 
   // Confirm name + coordinates (identify bridge)
@@ -886,25 +966,39 @@ export default async function handler(req, res) {
   }
 
   const city = extractCity(places, info);
-
-  // Rankings + authority (paid DataForSEO; run live while testing — cache/limits off).
   const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
-  const myDom = normDomain(merged.domain);
-  const rivalDom = top?.domain || null;
-  const [localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords] = await Promise.all([
-    fetchLocalRank(primaryTerm, lat, lng, placeId, merged.name),
-    fetchGeogrid(primaryTerm, lat, lng, placeId, merged.name),
-    myDom ? fetchReferringDomains(myDom) : Promise.resolve(null),
-    rivalDom ? fetchReferringDomains(rivalDom) : Promise.resolve(null),
-    myDom ? fetchOrganicKeywords(myDom, lat, lng) : Promise.resolve(null),
-    rivalDom ? fetchOrganicKeywords(rivalDom, lat, lng) : Promise.resolve(null),
-  ]);
+
+  // EXPENSIVE depth layer (geogrid 25 calls, backlinks, organic, rank). Gated by the
+  // daily budget + per-IP limits so a flood of traffic can't run up the bill. Over the
+  // line, these stay null and the audit still renders from the cheap checks.
+  let localRank = null, geogrid = null, myDomains = null, rivalDomains = null, myKeywords = null, rivalKeywords = null;
+  if (gate.expensiveOk) {
+    const myDom = normDomain(merged.domain);
+    const rivalDom = top?.domain || null;
+    [localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords] = await Promise.all([
+      fetchLocalRank(primaryTerm, lat, lng, placeId, merged.name),
+      fetchGeogrid(primaryTerm, lat, lng, placeId, merged.name),
+      myDom ? fetchReferringDomains(myDom) : Promise.resolve(null),
+      rivalDom ? fetchReferringDomains(rivalDom) : Promise.resolve(null),
+      myDom ? fetchOrganicKeywords(myDom, lat, lng) : Promise.resolve(null),
+      rivalDom ? fetchOrganicKeywords(rivalDom, lat, lng) : Promise.resolve(null),
+    ]);
+  } else {
+    console.warn('expensive depth skipped:', gate.reason);
+  }
+  // tally this audit against the day + IP (count always, $ only if the depth layer ran)
+  await recordAudit(redis, ip, gate.expensiveOk);
 
   const payload = analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city, {
     localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords, primaryTerm,
   });
 
-  if (redis) {
+  // Attach a proxied static-map background for the rankings visual (key stays server-side).
+  if (payload.rankings) {
+    payload.rankings.mapUrl = `/api/staticmap?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`;
+  }
+
+  if (redis && CACHE_ENABLED) {
     try { await redis.set(cacheKey, payload, { ex: CACHE_TTL_SECONDS }); }
     catch (err) { console.warn('cache write failed:', err.message); }
   }

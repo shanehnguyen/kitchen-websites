@@ -94,7 +94,7 @@ const minutes = 30;
           </div>
           <label class="sc-consent">
             <input type="checkbox" name="consent" required />
-            <span>Send me my scorecard and the occasional useful follow-up. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener">Privacy</a>.</span>
+            <span>Follow up with me about my Google, and the occasional useful tip. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener">Privacy</a>.</span>
           </label>
           <div class="honeypot" aria-hidden="true">
             <label for="sc-company">Company (leave blank)</label>
@@ -121,7 +121,7 @@ const minutes = 30;
     <section class="sc-screen" data-sc-screen="manual" hidden>
       <div class="sc-wrap">
         <h2 class="sc-h" data-focus tabindex="-1">Tell me your shop and I’ll run it by hand.</h2>
-        <p class="sc-sub">I’ll pull your Google myself and email your scorecard within a few hours. No bot, just me.</p>
+        <p class="sc-sub">Leave your details and I’ll pull your Google myself, then follow up personally. No bot, just me.</p>
         <form class="sc-form" data-manual-form novalidate>
           <div class="field">
             <label for="sc-m-business">Business name</label>
@@ -137,7 +137,7 @@ const minutes = 30;
           </div>
           <label class="sc-consent">
             <input type="checkbox" name="consent" required />
-            <span>Send me my scorecard and the occasional useful follow-up. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener">Privacy</a>.</span>
+            <span>Follow up with me about my Google, and the occasional useful tip. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener">Privacy</a>.</span>
           </label>
           <div class="honeypot" aria-hidden="true">
             <label for="sc-m-company">Company (leave blank)</label>
@@ -153,7 +153,7 @@ const minutes = 30;
     <section class="sc-screen" data-sc-screen="manualDone" hidden>
       <div class="sc-wrap">
         <h2 class="sc-h" data-focus tabindex="-1">Got it. I’ll run it by hand.</h2>
-        <p class="sc-sub">Your scorecard lands in your inbox within a few hours. If it’s as lopsided as most, the fastest fix is {minutes} minutes on a call.</p>
+        <p class="sc-sub">I’ll dig into your Google myself and follow up. If it’s as lopsided as most, the fastest way to see what’s costing you jobs is {minutes} minutes on a call.</p>
         <a class="btn btn--primary btn--lg" href="/book">Book the {minutes}-minute call <span aria-hidden="true">→</span></a>
       </div>
     </section>
@@ -278,29 +278,68 @@ const minutes = 30;
   .sc-doing { margin-top: var(--space-5); font-size: var(--fs-body-sm); color: var(--ink-70); line-height: 1.55; }
   .sc-doing__label { font-weight: var(--fw-body-bold); color: var(--ink); }
 
-  /* ---- Rankings section: the map-grid visual ---- */
-  .sc-rank__panel { margin-top: var(--space-6); display: grid; grid-template-columns: 1fr; gap: var(--space-6); align-items: center; }
-  @media (min-width: 40em) { .sc-rank__panel { grid-template-columns: auto 1fr; gap: var(--space-8); } }
-  /* the 3x3 geogrid */
-  .sc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 17rem; margin-inline: auto; aspect-ratio: 1 / 1; padding: 10px; background: var(--bg-raised); border: var(--rule-width) solid var(--line); border-radius: var(--radius-md); }
-  .sc-grid__cell { display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-family: var(--font-display); font-size: var(--fs-body); font-weight: var(--fw-display); color: #fff; min-height: 0; }
-  .sc-grid__cell--in { background: var(--ok, #2e7d4f); }
-  .sc-grid__cell--out { background: var(--alarm); }
-  .sc-grid__cell--nodata { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--ink-50); }
-  .sc-grid__cell--center { outline: 3px solid var(--ink); outline-offset: -3px; }
-  .sc-grid__legend { margin-top: var(--space-4); font-size: var(--fs-caption); color: var(--ink-50); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-  .sc-grid__key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; }
-  .sc-grid__key--in { background: var(--ok, #2e7d4f); }
-  .sc-grid__key--out { background: var(--alarm); }
-  /* the headline rank numbers */
-  .sc-rank__stats { display: grid; gap: var(--space-4); }
-  .sc-rank__stat { padding: var(--space-4) var(--space-5); border-radius: var(--radius-md); border-left: var(--rule-thick) solid var(--line); background: var(--bg-raised); }
+  /* copy-link / share button in the result header */
+  .sc-share { margin-top: var(--space-5); display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-body); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--ink); background: var(--bg-raised); border: var(--rule-width) solid var(--line); border-radius: 999px; padding: var(--space-2) var(--space-4); cursor: pointer; transition: border-color 120ms, background 120ms; }
+  .sc-share:hover { border-color: var(--ink-50); background: var(--bg); }
+  .sc-share::before { content: "🔗"; }
+
+  /* ---- Rankings section: the big map visual ---- */
+  /* real Google static map streams in as the background; the faux street-grid is
+     the fallback when the map image isn't available. Rank pins sit on top. */
+  .sc-map {
+    position: relative; margin: var(--space-6) auto 0; width: 100%; max-width: 40rem;
+    aspect-ratio: 1 / 1; border-radius: var(--radius-md); overflow: hidden;
+    border: var(--rule-width) solid var(--line); background-color: #eef0ec;
+    background-image:
+      radial-gradient(60% 45% at 72% 28%, color-mix(in srgb, #2e7d4f 16%, transparent) 0%, transparent 60%),
+      radial-gradient(50% 40% at 22% 78%, color-mix(in srgb, #4a90d9 12%, transparent) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent 0 38px, color-mix(in srgb, var(--ink) 7%, transparent) 38px 40px),
+      repeating-linear-gradient(90deg, transparent 0 38px, color-mix(in srgb, var(--ink) 7%, transparent) 38px 40px);
+  }
+  /* faux "main roads" — only on the fallback (hidden once a real map loads) */
+  .sc-map::before, .sc-map::after { content: ""; position: absolute; background: color-mix(in srgb, var(--ink) 12%, transparent); z-index: 1; }
+  .sc-map::before { left: 0; right: 0; top: 56%; height: 7px; transform: rotate(-4deg); }
+  .sc-map::after { top: 0; bottom: 0; left: 34%; width: 7px; transform: rotate(3deg); }
+  .sc-map--real { background-image: none; } /* inline style supplies the real map image */
+  .sc-map--real::before, .sc-map--real::after { display: none; }
+
+  .sc-map__grid { position: absolute; inset: 6%; display: grid; place-items: center; z-index: 2; container-type: inline-size; }
+  .sc-map__tag { position: absolute; left: 10px; bottom: 8px; z-index: 3; font-family: var(--font-body); font-size: var(--fs-caption); font-weight: var(--fw-body-semi); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--ink); background: color-mix(in srgb, #fff 82%, transparent); padding: 2px 8px; border-radius: 999px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+
+  /* rank pins — teardrop map markers, sized to the grid via container units */
+  .sc-pin {
+    position: relative;
+    width: calc(100cqw / var(--n) * 0.66); height: calc(100cqw / var(--n) * 0.66);
+    border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.92);
+  }
+  .sc-pin__n { transform: rotate(45deg); font-family: var(--font-display); font-weight: var(--fw-display); font-size: calc(100cqw / var(--n) * 0.26); color: #fff; line-height: 1; }
+  .sc-pin--in { background: var(--ok, #2e7d4f); }
+  .sc-pin--out { background: var(--alarm); }
+  .sc-pin--nodata { background: #9aa0a6; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  .sc-pin--nodata .sc-pin__n { color: rgba(255,255,255,0.85); }
+  /* your shop: a bigger, dark, ringed marker that sits above the rest */
+  .sc-pin--you { width: calc(100cqw / var(--n) * 0.82); height: calc(100cqw / var(--n) * 0.82); background: var(--ink); border: 3px solid #fff; outline: 3px solid var(--accent); outline-offset: 1px; z-index: 4; }
+  .sc-pin--you .sc-pin__n { font-size: 0; }
+  .sc-pin--you::after { content: "★"; position: absolute; transform: rotate(45deg); color: var(--accent); font-size: calc(100cqw / var(--n) * 0.34); line-height: 1; }
+
+  .sc-map__legend { margin-top: var(--space-4); font-size: var(--fs-caption); color: var(--ink-50); display: flex; align-items: center; flex-wrap: wrap; gap: 6px; line-height: 1.5; }
+  .sc-map__key { display: inline-block; width: 13px; height: 13px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); vertical-align: middle; }
+  .sc-map__key--in { background: var(--ok, #2e7d4f); }
+  .sc-map__key--out { background: var(--alarm); }
+  .sc-map__key--you { background: var(--ink); outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* the headline rank numbers, side by side under the map */
+  .sc-rank__stats { margin-top: var(--space-6); display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
+  @media (min-width: 34em) { .sc-rank__stats { grid-template-columns: 1fr 1fr; } }
+  .sc-rank__stat { padding: var(--space-5) var(--space-6); border-radius: var(--radius-md); border-left: var(--rule-thick) solid var(--line); background: var(--bg-raised); }
   .sc-rank__stat--fail { border-left-color: var(--alarm); }
   .sc-rank__stat--warn { border-left-color: var(--accent); }
   .sc-rank__stat--pass { border-left-color: var(--ok, #2e7d4f); }
-  .sc-rank__num { display: block; font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-h2); line-height: 1; color: var(--ink); }
+  .sc-rank__num { display: block; font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-h1); line-height: 1; color: var(--ink); }
   .sc-rank__stat--fail .sc-rank__num { color: var(--alarm); }
-  .sc-rank__cap { display: block; margin-top: var(--space-2); font-size: var(--fs-body-sm); color: var(--ink-70); }
+  .sc-rank__cap { display: block; margin-top: var(--space-3); font-size: var(--fs-body-sm); color: var(--ink-70); }
   .sc-rank__above { margin-top: var(--space-5); font-size: var(--fs-body-sm); color: var(--ink-70); line-height: 1.55; }
   .sc-rank__abovelabel { font-weight: var(--fw-body-bold); color: var(--ink); }
 

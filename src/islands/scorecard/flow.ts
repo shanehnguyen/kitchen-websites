@@ -20,6 +20,8 @@ type Rankings = {
   above: string[];
   gridPct: number | null;
   cells: (number | null)[] | null;
+  gridN: number | null;
+  mapUrl: string | null;
   rankStatus: 'pass' | 'warn' | 'fail';
   gridStatus: 'pass' | 'warn' | 'fail' | null;
   why: string;
@@ -81,8 +83,16 @@ const MOCK_PAYLOAD: Payload = {
     rank: 7,
     inPack: true,
     above: ['Granite Peak Kitchens', 'Hearth & Home Remodelers', 'Summit Bath & Kitchen'],
-    gridPct: 22,
-    cells: [0, 0, 0, 0, 2, 0, 3, 0, 0],
+    gridPct: 24,
+    cells: [
+      0, 0, 0, 0, 0,
+      0, 0, 3, 0, 0,
+      0, 2, 1, 2, 0,
+      0, 0, 3, 0, 0,
+      0, 0, 0, 0, 0,
+    ],
+    gridN: 5,
+    mapUrl: null,
     rankStatus: 'fail',
     gridStatus: 'warn',
     why: 'When a La Mirada homeowner searches “kitchen remodeler La Mirada”, Google shows three shops on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners in La Mirada, and it runs on autopilot once you win it.',
@@ -327,8 +337,41 @@ export function init() {
       console.error('[scorecard] result render failed:', err);
     }
     show('result');
+    // make the result shareable: stamp the business into the URL so the link reopens it
+    if (!DEMO_MODE && chosen.placeId) {
+      try { history.replaceState(null, '', `#b=${encodeURIComponent(chosen.placeId)}`); } catch { /* noop */ }
+    }
     track('ScorecardResult', { band: payload?.segment?.band, demo: DEMO_MODE });
   }
+
+  // Shared-link path: a link like /scorecard#b=<placeId> reopens that scorecard
+  // straight to the full result (no gate — the original visitor already gave email).
+  // Cached server-side, so a shared open is fast and effectively free within the TTL.
+  async function runSharedResult(placeId: string) {
+    chosen = { placeId, name: '' };
+    show('loading');
+    try {
+      const r = await fetch('/api/scorecard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ placeId }),
+      });
+      const data = (await r.json()) as Payload;
+      if (!data.ok || data.degraded || !data.profile) { show('start'); return; }
+      payload = data;
+      try { renderResult(); } catch (err) { console.error('[scorecard] shared render failed:', err); }
+      show('result');
+      track('ScorecardSharedOpen', { band: data.segment?.band });
+    } catch { show('start'); }
+  }
+
+  // copy-link button inside the rendered result (delegated; result is innerHTML)
+  root.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-share]');
+    if (!btn) return;
+    const done = (msg: string) => { const o = btn.textContent || ''; btn.textContent = msg; window.setTimeout(() => { btn.textContent = o; }, 2000); };
+    navigator.clipboard?.writeText(location.href).then(() => done('Link copied ✓')).catch(() => done('Copy failed'));
+  });
 
   // ---------------- EMAIL GATE ----------------
   const gateForm = root.querySelector<HTMLFormElement>('[data-gate-form]');
@@ -414,20 +457,29 @@ export function init() {
       ${it.fix ? `<p class="sc-grade__fix"><span class="sc-grade__fixlabel">The fix:</span> ${esc(it.fix)}</p>` : ''}
     </li>`;
 
-  // Rankings section — its own visual: a 3×3 map grid + the headline numbers.
+  // Rankings section — its own visual: a big map with rank pins + headline numbers.
   const renderRankings = (r: Rankings) => {
     const cells = r.cells || [];
-    const grid = cells.length === 9
-      ? `<div class="sc-grid" role="img" aria-label="Map coverage: where you rank across ${esc(r.city || 'your area')}">
-          ${cells.map((c, i) => {
-            const cls = c === null ? 'sc-grid__cell--nodata' : c > 0 ? 'sc-grid__cell--in' : 'sc-grid__cell--out';
-            const txt = c === null ? '' : c > 0 ? `#${c}` : '✕';
-            const center = i === 4 ? ' sc-grid__cell--center' : '';
-            return `<span class="sc-grid__cell ${cls}${center}">${txt}</span>`;
-          }).join('')}
+    const n = r.gridN || (cells.length === 25 ? 5 : 3);
+    const place = esc(r.city || 'your area');
+    const center = Math.floor((n * n) / 2); // middle cell = the shop
+    const bg = r.mapUrl
+      ? `style="background-image:url('${esc(r.mapUrl)}');background-size:cover;background-position:center;"`
+      : '';
+    const map = cells.length === n * n
+      ? `<div class="sc-map${r.mapUrl ? ' sc-map--real' : ''}" ${bg} role="img" aria-label="Map coverage: where you rank across ${place}">
+          <div class="sc-map__grid" style="--n:${n};grid-template-columns:repeat(${n},1fr);grid-template-rows:repeat(${n},1fr);">
+            ${cells.map((c, i) => {
+              const state = c === null ? 'nodata' : c > 0 ? 'in' : 'out';
+              const txt = c === null ? '?' : c > 0 ? String(c) : '✕';
+              const you = i === center ? ' sc-pin--you' : '';
+              return `<span class="sc-pin sc-pin--${state}${you}"><span class="sc-pin__n">${txt}</span></span>`;
+            }).join('')}
+          </div>
+          <span class="sc-map__tag">${place}</span>
         </div>`
       : '';
-    const rankNum = r.rank == null ? 'Not in<br>top 3' : `#${r.rank}`;
+    const rankNum = r.rank == null ? 'Not in top&nbsp;3' : `#${r.rank}`;
     const stats = `
       <div class="sc-rank__stats">
         <div class="sc-rank__stat sc-rank__stat--${r.rankStatus}">
@@ -444,11 +496,9 @@ export function init() {
         <p class="eyebrow sc-eyebrow">Where homeowners look first</p>
         <h3 class="sc-section__h">Your rank on the Google map</h3>
         <p class="sc-section__sub">${esc(r.why)}</p>
-        <div class="sc-rank__panel">
-          ${grid}
-          ${stats}
-        </div>
-        ${grid ? `<p class="sc-grid__legend"><span class="sc-grid__key sc-grid__key--in"></span> top 3 here&nbsp;&nbsp;<span class="sc-grid__key sc-grid__key--out"></span> not in the top 3 &nbsp;·&nbsp; each square is a spot around ${esc(r.city || 'your area')}</p>` : ''}
+        ${map}
+        ${map ? `<p class="sc-map__legend"><span class="sc-map__key sc-map__key--in"></span> You’re top 3 here&nbsp;&nbsp;<span class="sc-map__key sc-map__key--out"></span> You’re not&nbsp;&nbsp;<span class="sc-map__key sc-map__key--you"></span> Your shop &nbsp;·&nbsp; each pin is a spot homeowners search from around ${place}</p>` : ''}
+        ${stats}
         ${r.above.length ? `<p class="sc-rank__above"><span class="sc-rank__abovelabel">Ahead of you on the map:</span> ${esc(r.above.join(', '))}.</p>` : ''}
       </section>`;
   };
@@ -542,6 +592,7 @@ export function init() {
         <p class="sc-verdict__eyebrow eyebrow">${esc(eyebrow)}</p>
         <h2 class="sc-verdict__h" data-focus tabindex="-1">${esc(p.verdict.headline)}</h2>
         <p class="sc-verdict__sub">${esc(intro)}</p>
+        ${(!DEMO_MODE && chosen.placeId) ? `<button type="button" class="sc-share" data-share>Copy link to this scorecard</button>` : ''}
       </div>
       ${table ? `<section class="sc-section"><p class="eyebrow sc-eyebrow">Where you stand</p>${table}</section>` : ''}
       ${p.rankings ? renderRankings(p.rankings) : ''}
@@ -564,5 +615,13 @@ export function init() {
   }
 
   dlog('ready · DEV_MOCK =', DEV_MOCK);
-  show('start');
+  // shared / deep link: /scorecard#b=<placeId> (or ?b=<placeId>) reopens the result
+  const sharedId = (() => {
+    try {
+      return new URLSearchParams(location.hash.replace(/^#/, '')).get('b')
+        || new URLSearchParams(location.search).get('b') || '';
+    } catch { return ''; }
+  })();
+  if (sharedId && !DEMO_MODE) { dlog('shared link → result', sharedId); void runSharedResult(sharedId); }
+  else show('start');
 }
