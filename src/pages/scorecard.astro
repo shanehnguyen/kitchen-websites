@@ -316,7 +316,9 @@ const minutes = 30;
   }
   .sc-pin__n { transform: rotate(45deg); font-family: var(--font-display); font-weight: var(--fw-display); font-size: calc(100cqw / var(--n) * 0.26); color: #fff; line-height: 1; }
   .sc-pin--in { background: var(--ok, #2e7d4f); }
-  .sc-pin--out { background: var(--alarm); }
+  .sc-pin--mid { background: #e0a417; }
+  .sc-pin--low { background: var(--alarm); }
+  .sc-pin--out { background: #5b6066; }
   .sc-pin--nodata { background: #9aa0a6; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
   .sc-pin--nodata .sc-pin__n { color: rgba(255,255,255,0.85); }
   /* your shop: a bigger, dark, ringed marker that sits above the rest */
@@ -327,7 +329,9 @@ const minutes = 30;
   .sc-map__legend { margin-top: var(--space-4); font-size: var(--fs-caption); color: var(--ink-50); display: flex; align-items: center; flex-wrap: wrap; gap: 6px; line-height: 1.5; }
   .sc-map__key { display: inline-block; width: 13px; height: 13px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); vertical-align: middle; }
   .sc-map__key--in { background: var(--ok, #2e7d4f); }
-  .sc-map__key--out { background: var(--alarm); }
+  .sc-map__key--mid { background: #e0a417; }
+  .sc-map__key--low { background: var(--alarm); }
+  .sc-map__key--out { background: #5b6066; }
   .sc-map__key--you { background: var(--ink); outline: 2px solid var(--accent); outline-offset: 1px; }
 
   /* the headline rank numbers, side by side under the map */

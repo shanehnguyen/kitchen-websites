@@ -329,14 +329,14 @@ async function fetchGeogrid(keyword, lat, lng, placeId, myName) {
         const task = await dfsPost('serp/google/maps/live/advanced', {
           keyword, location_coordinate: `${plat},${plng},14z`, language_code: 'en', device: 'mobile',
         });
-        const items = (firstResultItems(task) || []).filter((it) => it && it.title).slice(0, 3);
+        const items = (firstResultItems(task) || []).filter((it) => it && it.title);
         const idx = items.findIndex((it) => (placeId && it.place_id === placeId) || (myKey && norm(it.title) === myKey));
-        return idx === -1 ? 0 : idx + 1;
+        return idx === -1 ? 0 : idx + 1;   // your real rank at this point, 0 = not found at all
       } catch { return null; }
     }));
     const valid = cells.filter((c) => c !== null);
     if (!valid.length) return null;
-    const inTop3 = valid.filter((c) => c > 0).length;
+    const inTop3 = valid.filter((c) => c > 0 && c <= 3).length;
     return { pct: Math.round((inTop3 / valid.length) * 100), points: valid.length, cells, n: N };
   } catch (err) {
     console.warn('geogrid failed:', err.message);
@@ -345,8 +345,11 @@ async function fetchGeogrid(keyword, lat, lng, placeId, myName) {
 }
 
 // ---------- DataForSEO Backlinks: referring domains ----------
+// OFF: the Backlinks API needs a separate DataForSEO subscription. Flip to true
+// once that's activated and the #39 referring-domains finding lights up.
+const BACKLINKS_ENABLED = false;
 async function fetchReferringDomains(domain) {
-  if (!dfsAuth || !domain) return null;
+  if (!BACKLINKS_ENABLED || !dfsAuth || !domain) return null;
   try {
     const task = await dfsPost('backlinks/summary/live', { target: domain, internal_list_limit: 1, backlinks_status_type: 'live' });
     const r = task?.result?.[0];
@@ -358,11 +361,13 @@ async function fetchReferringDomains(domain) {
 }
 
 // ---------- DataForSEO Labs: organic keywords ranked ----------
-async function fetchOrganicKeywords(domain, lat, lng) {
+// Labs needs a location_code (numeric), NOT a coordinate. 2840 = United States.
+const LABS_LOCATION_CODE = 2840;
+async function fetchOrganicKeywords(domain) {
   if (!dfsAuth || !domain) return null;
   try {
     const task = await dfsPost('dataforseo_labs/google/domain_rank_overview/live', {
-      target: domain, location_coordinate: `${lat},${lng}`, language_code: 'en',
+      target: domain, location_code: LABS_LOCATION_CODE, language_code: 'en',
     });
     const metrics = task?.result?.[0]?.items?.[0]?.metrics?.organic;
     return typeof metrics?.count === 'number' ? metrics.count : null;
@@ -980,8 +985,8 @@ export default async function handler(req, res) {
       fetchGeogrid(primaryTerm, lat, lng, placeId, merged.name),
       myDom ? fetchReferringDomains(myDom) : Promise.resolve(null),
       rivalDom ? fetchReferringDomains(rivalDom) : Promise.resolve(null),
-      myDom ? fetchOrganicKeywords(myDom, lat, lng) : Promise.resolve(null),
-      rivalDom ? fetchOrganicKeywords(rivalDom, lat, lng) : Promise.resolve(null),
+      myDom ? fetchOrganicKeywords(myDom) : Promise.resolve(null),
+      rivalDom ? fetchOrganicKeywords(rivalDom) : Promise.resolve(null),
     ]);
   } else {
     console.warn('expensive depth skipped:', gate.reason);

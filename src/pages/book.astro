@@ -243,16 +243,17 @@ const DOTS = 4; // question screens 1–4
       const params = new URLSearchParams(window.location.search);
       if (params.get('from')) payload.from = params.get('from');
 
-      if (status) { status.hidden = false; status.textContent = 'One moment…'; }
-      try {
-        await fetch('/api/score-submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      } catch { /* never block the calendar on a failed capture */ }
+      // Fire the lead capture in the BACKGROUND — never await it, so a slow or
+      // cold-starting API can't stall the jump to the calendar. The booking is
+      // what matters; the capture is best-effort and Calendly confirms the rest.
+      fetch('/api/score-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => { /* best-effort */ });
       (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
-      show(i + 1); // → Calendly calendar
+      show(i + 1); // → Calendly calendar, immediately
     });
 
     // ---- Calendly inline embed (loaded lazily on the calendar screen) ----

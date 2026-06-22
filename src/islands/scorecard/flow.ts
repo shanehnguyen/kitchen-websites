@@ -83,17 +83,17 @@ const MOCK_PAYLOAD: Payload = {
     rank: 7,
     inPack: true,
     above: ['Granite Peak Kitchens', 'Hearth & Home Remodelers', 'Summit Bath & Kitchen'],
-    gridPct: 24,
+    gridPct: 20,
     cells: [
-      0, 0, 0, 0, 0,
-      0, 0, 3, 0, 0,
-      0, 2, 1, 2, 0,
-      0, 0, 3, 0, 0,
-      0, 0, 0, 0, 0,
+      0,  0, 12,  0,  0,
+      0,  8,  5,  9,  0,
+     15,  3,  1,  3, 14,
+      0,  6,  2,  7,  0,
+      0,  0, 11,  0,  0,
     ],
     gridN: 5,
     mapUrl: null,
-    rankStatus: 'fail',
+    rankStatus: 'warn',
     gridStatus: 'warn',
     why: 'When a La Mirada homeowner searches “kitchen remodeler La Mirada”, Google shows three shops on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners in La Mirada, and it runs on autopilot once you win it.',
   },
@@ -470,8 +470,8 @@ export function init() {
       ? `<div class="sc-map${r.mapUrl ? ' sc-map--real' : ''}" ${bg} role="img" aria-label="Map coverage: where you rank across ${place}">
           <div class="sc-map__grid" style="--n:${n};grid-template-columns:repeat(${n},1fr);grid-template-rows:repeat(${n},1fr);">
             ${cells.map((c, i) => {
-              const state = c === null ? 'nodata' : c > 0 ? 'in' : 'out';
-              const txt = c === null ? '?' : c > 0 ? String(c) : '✕';
+              const state = c === null ? 'nodata' : c === 0 ? 'out' : c <= 3 ? 'in' : c <= 10 ? 'mid' : 'low';
+              const txt = c === null ? '?' : c === 0 ? '✕' : (c > 20 ? '20+' : String(c));
               const you = i === center ? ' sc-pin--you' : '';
               return `<span class="sc-pin sc-pin--${state}${you}"><span class="sc-pin__n">${txt}</span></span>`;
             }).join('')}
@@ -497,7 +497,7 @@ export function init() {
         <h3 class="sc-section__h">Your rank on the Google map</h3>
         <p class="sc-section__sub">${esc(r.why)}</p>
         ${map}
-        ${map ? `<p class="sc-map__legend"><span class="sc-map__key sc-map__key--in"></span> You’re top 3 here&nbsp;&nbsp;<span class="sc-map__key sc-map__key--out"></span> You’re not&nbsp;&nbsp;<span class="sc-map__key sc-map__key--you"></span> Your shop &nbsp;·&nbsp; each pin is a spot homeowners search from around ${place}</p>` : ''}
+        ${map ? `<p class="sc-map__legend"><span class="sc-map__key sc-map__key--in"></span> Top 3&nbsp;&nbsp;<span class="sc-map__key sc-map__key--mid"></span> 4–10&nbsp;&nbsp;<span class="sc-map__key sc-map__key--low"></span> 11+&nbsp;&nbsp;<span class="sc-map__key sc-map__key--out"></span> Not ranking&nbsp;&nbsp;<span class="sc-map__key sc-map__key--you"></span> Your shop &nbsp;·&nbsp; each pin is your rank where a homeowner searches from around ${place}</p>` : ''}
         ${stats}
         ${r.above.length ? `<p class="sc-rank__above"><span class="sc-rank__abovelabel">Ahead of you on the map:</span> ${esc(r.above.join(', '))}.</p>` : ''}
       </section>`;
