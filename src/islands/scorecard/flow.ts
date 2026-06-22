@@ -403,45 +403,45 @@ export function init() {
     if (!data.get('consent')) { fail(manualStatus, 'Please tick the box so I can send it.'); return; }
     if (manualStatus) { manualStatus.hidden = false; manualStatus.textContent = 'Sending…'; }
     if (!DEMO_MODE) {
-      try {
-        await fetch('/api/score-submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'scorecard',
-            manual: true,
-            email: mEmail,
-            business,
-            city: String(data.get('city') || '').trim(),
-          }),
-        });
-      } catch { /* still confirm; the lead is the point */ }
+      w3submit(`✋ Manual scorecard — ${business}`, {
+        email: mEmail,
+        Business: business,
+        City: String(data.get('city') || '').trim(),
+        Lead: 'Run this one by hand',
+      });
     }
     track('ScorecardEmail', { via: 'manual' });
     show('manualDone');
   });
 
-  async function capture(manual: boolean) {
-    if (DEMO_MODE || !payload) return;   // demo: don't POST anywhere
-    try {
-      await fetch('/api/score-submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'scorecard',
-          manual,
-          email,
-          firstName,
-          business: payload.profile.name,
-          city: payload.city,
-          band: payload.segment.band,
-          worst: payload.segment.worst,
-          reviews: payload.profile.reviews,
-          rating: payload.profile.rating,
-          topReviews: payload.top?.reviews ?? '',
-        }),
-      });
-    } catch { /* the result still renders; capture is best-effort */ }
+  // Web3Forms submits CLIENT-SIDE only (the free plan blocks server POSTs), so
+  // the browser posts straight to web3forms. Fire-and-forget; never blocks UI.
+  function w3submit(subject: string, fields: Record<string, unknown>) {
+    // FormData (no JSON content-type) keeps it a CORS "simple request" — no
+    // preflight, which web3forms blocks. This is web3forms' intended client path.
+    const fd = new FormData();
+    fd.append('access_key', site.web3formsKey);
+    fd.append('from_name', 'Kitchen Websites');
+    fd.append('subject', subject);
+    for (const [k, v] of Object.entries(fields)) {
+      if (v !== undefined && v !== null && v !== '') fd.append(k, String(v));
+    }
+    fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
+  }
+
+  function capture(manual: boolean) {
+    if (DEMO_MODE || !payload) return;   // demo: don't send anywhere
+    w3submit(`${manual ? '✋ Manual scorecard' : '📊 Scorecard'} — ${payload.profile.name}`, {
+      email,
+      'First name': firstName,
+      Business: payload.profile.name,
+      City: payload.city,
+      Verdict: payload.segment.band,
+      'Worst point': payload.segment.worst,
+      Reviews: payload.profile.reviews,
+      Rating: payload.profile.rating,
+      'Top rival reviews': payload.top?.reviews ?? '',
+    });
   }
 
   // ---------------- RESULT ----------------

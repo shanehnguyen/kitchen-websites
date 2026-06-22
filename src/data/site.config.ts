@@ -21,6 +21,11 @@ export const site = {
   // Call length — single source of truth. Every CTA label + /book read this.
   callLengthMinutes: 30,
 
+  // Web3Forms access key. PUBLIC by design — it lives in the client-side form
+  // submission (Web3Forms blocks server-side POSTs on the free plan). Abuse is
+  // limited by domain + spam settings in the Web3Forms dashboard.
+  web3formsKey: '5dcc1132-3dba-43aa-8df8-9b2a841e2bec',
+
   // Capacity (LOAD-BEARING — must be true; Godfather-Offer-System caps)
   capacity: {
     seo: { open: 10, total: 10, label: 'SEO seats' },

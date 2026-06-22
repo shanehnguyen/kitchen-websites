@@ -230,28 +230,24 @@ const DOTS = 4; // question screens 1–4
       if ((form.querySelector<HTMLInputElement>('[name=company]')?.value || '').trim()) return; // honeypot
 
       const first = (answers.name as string) || '';
-      const payload: Record<string, unknown> = {
-        type: 'booking',
-        name: first,
-        email: answers.email,
-        phone: answers.mobile,
-        website: answers.website,
-        customers: answers.customers,
-        jobs: answers.jobs,
-        bug: answers.obstacle,
-      };
       const params = new URLSearchParams(window.location.search);
-      if (params.get('from')) payload.from = params.get('from');
+      // FormData, not JSON — keeps it a CORS "simple request" (no preflight, which
+      // web3forms blocks). This is web3forms' intended client-side submission path.
+      const fd = new FormData();
+      fd.append('access_key', site.web3formsKey);
+      fd.append('from_name', 'Kitchen Websites');
+      fd.append('subject', `📅 Session request — ${answers.website || first || 'new owner'}`);
+      fd.append('Name', first);
+      fd.append('email', String(answers.email || ''));
+      fd.append('Phone', String(answers.mobile || ''));
+      fd.append('Website / business & city', String(answers.website || ''));
+      fd.append('Customer mix', String(answers.customers || ''));
+      fd.append('Jobs / month', String(answers.jobs || ''));
+      fd.append('Biggest gripe', String(answers.obstacle || ''));
+      if (params.get('from')) fd.append('Came from', String(params.get('from')));
 
-      // Fire the lead capture in the BACKGROUND — never await it, so a slow or
-      // cold-starting API can't stall the jump to the calendar. The booking is
-      // what matters; the capture is best-effort and Calendly confirms the rest.
-      fetch('/api/score-submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
-      }).catch(() => { /* best-effort */ });
+      // Fire in the background — never await — so it can't stall the jump to the calendar.
+      fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
       (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
       show(i + 1); // → Calendly calendar, immediately
     });
