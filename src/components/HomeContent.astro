@@ -59,6 +59,7 @@ const closingStats = [
 <div class:list={['home-reel', { 'home-reel--flush': !hero }]}>
   <div class="container">
     <div class="reel-video">
+      <video class="reel-video__media" playsinline preload="metadata" data-src="/video/kitchenwebsites-video1.mp4"></video>
       <button type="button" class="reel-video__play" aria-label="Play video"><span aria-hidden="true">▶</span></button>
     </div>
     <div class="home-reel__cta">
@@ -220,6 +221,21 @@ const closingStats = [
     if (typeof w.requestIdleCallback === 'function') w.requestIdleCallback(start, { timeout: 1800 });
     else window.addEventListener('load', start);
   }
+
+  // Featured reel: click-to-play. Load the source on first click so it never
+  // costs anyone a download until they ask for it, then hand off to native controls.
+  const reel = document.querySelector<HTMLElement>('.reel-video');
+  const reelVid = reel?.querySelector<HTMLVideoElement>('.reel-video__media');
+  const reelBtn = reel?.querySelector<HTMLButtonElement>('.reel-video__play');
+  if (reel && reelVid && reelBtn) {
+    reelBtn.addEventListener('click', () => {
+      const src = reelVid.getAttribute('data-src');
+      if (src && !reelVid.getAttribute('src')) reelVid.src = src;
+      reelVid.controls = true;
+      reel.classList.add('is-playing');
+      reelVid.play().catch(() => {});
+    });
+  }
 </script>
 
 <style>
@@ -253,12 +269,16 @@ const closingStats = [
     box-shadow: 0 32px 60px -24px rgba(18, 16, 12, 0.55);
     display: flex; align-items: center; justify-content: center; overflow: hidden;
   }
+  .reel-video__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; background: var(--cabinet); }
   .reel-video::after {
     content: "Video"; position: absolute; bottom: var(--space-3); right: var(--space-4);
     font-family: var(--font-mono); font-size: var(--fs-small); letter-spacing: var(--tracking-caps);
-    text-transform: uppercase; color: var(--paper-50);
+    text-transform: uppercase; color: var(--paper-50); pointer-events: none;
   }
+  .reel-video.is-playing::after { display: none; }
+  .reel-video.is-playing .reel-video__play { display: none; }
   .reel-video__play {
+    position: relative; z-index: 1;
     width: 84px; height: 84px; border-radius: 50%;
     border: 2px solid var(--porcelain); background: color-mix(in srgb, var(--porcelain) 12%, transparent);
     color: var(--porcelain); font-size: 1.6rem; line-height: 1; padding-left: 5px;

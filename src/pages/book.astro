@@ -1,10 +1,11 @@
 ---
-/* /book — the 30-minute strategy session funnel. Four short intake screens
-   (name → contact → your work → the obstacle), then the Calendly calendar.
-   Progress dots (gold fill, no "X of Y" numbers); {first} injected through the
-   flow; choice screens are tap-to-select cards. The intake POSTs to the API on
-   "Book my session" so Shane gets the lead even if the calendar step is
-   abandoned; the real booking happens in the Calendly embed. */
+/* /book — the 30-minute strategy session funnel. One question per screen
+   (intro → name → contact → your work → the obstacle), then the Calendly
+   calendar. It's a SINGLE <form>: every field's value persists in the DOM even
+   while its screen is hidden, so at submit we read ALL answers from the whole
+   form at once — nothing can be lost moving between screens. Lead goes to
+   Web3Forms client-side (fire-and-forget); then it flips to the inline calendar
+   and, once a time is picked, to the confirmation. */
 import BareLayout from '../layouts/BareLayout.astro';
 import { site } from '../data/site.config';
 const minutes = site.callLengthMinutes;
@@ -34,7 +35,7 @@ const DOTS = 4; // question screens 1–4
           </fieldset>
 
           <!-- 1 — NAME -->
-          <fieldset class="bk-screen" data-screen="1" hidden>
+          <fieldset class="bk-screen" data-screen="1" data-field="name" hidden>
             <h2 class="bk-q">What do I call you?</h2>
             <input class="bk-input" name="name" type="text" autocomplete="given-name" placeholder="First name" required />
             <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
@@ -44,15 +45,15 @@ const DOTS = 4; // question screens 1–4
           <fieldset class="bk-screen" data-screen="2" hidden>
             <h2 class="bk-q">A few quick details, <span data-first>there</span>.</h2>
             <div class="bk-fields">
-              <label class="bk-field">
+              <label class="bk-field" data-field="mobile">
                 <span class="bk-label">Best mobile, in case we get cut off?</span>
                 <input class="bk-input" name="mobile" type="tel" autocomplete="tel" placeholder="Mobile number" required />
               </label>
-              <label class="bk-field">
-                <span class="bk-label">Best email for your plan and the calendar invite?</span>
+              <label class="bk-field" data-field="email">
+                <span class="bk-label">Best email for the calendar invite?</span>
                 <input class="bk-input" name="email" type="email" autocomplete="email" placeholder="you@email.com" required />
               </label>
-              <label class="bk-field">
+              <label class="bk-field" data-field="website">
                 <span class="bk-label">What’s your website? No site yet? Just your business name and city.</span>
                 <input class="bk-input" name="website" type="text" placeholder="yoursite.com — or shop name, city" required />
               </label>
@@ -63,44 +64,40 @@ const DOTS = 4; // question screens 1–4
           <!-- 3 — YOUR WORK -->
           <fieldset class="bk-screen" data-screen="3" hidden>
             <h2 class="bk-q">A little about your work.</h2>
-            <p class="bk-sub">Is your work mostly for homeowners, or builder and contractor accounts?</p>
-            <div class="bk-cards" data-name="customers" data-radio>
-              <button type="button" class="bk-card" data-value="Mostly homeowners">Mostly homeowners</button>
-              <button type="button" class="bk-card" data-value="Mostly builder & contractor">Mostly builder &amp; contractor</button>
-              <button type="button" class="bk-card" data-value="A mix">A mix</button>
+            <div class="bk-field" data-field="customers">
+              <p class="bk-sub">Is your work mostly for homeowners, or builder and contractor accounts?</p>
+              <div class="bk-cards" data-name="customers" data-radio>
+                <button type="button" class="bk-card" data-value="Mostly homeowners">Mostly homeowners</button>
+                <button type="button" class="bk-card" data-value="Mostly builder & contractor">Mostly builder &amp; contractor</button>
+                <button type="button" class="bk-card" data-value="A mix">A mix</button>
+              </div>
             </div>
-            <p class="bk-sub bk-sub--gap">Roughly how many kitchens or baths a month?</p>
-            <div class="bk-cards bk-cards--row" data-name="jobs" data-radio>
-              <button type="button" class="bk-card" data-value="1–2">1–2</button>
-              <button type="button" class="bk-card" data-value="3–5">3–5</button>
-              <button type="button" class="bk-card" data-value="6–10">6–10</button>
-              <button type="button" class="bk-card" data-value="10+">10+</button>
+            <div class="bk-field" data-field="jobs">
+              <p class="bk-sub bk-sub--gap">Roughly how many kitchens or baths a month?</p>
+              <div class="bk-cards bk-cards--row" data-name="jobs" data-radio>
+                <button type="button" class="bk-card" data-value="1–2">1–2</button>
+                <button type="button" class="bk-card" data-value="3–5">3–5</button>
+                <button type="button" class="bk-card" data-value="6–10">6–10</button>
+                <button type="button" class="bk-card" data-value="10+">10+</button>
+              </div>
             </div>
             <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
-          <!-- 4 — THE OBSTACLE -->
+          <!-- 4 — THE OBSTACLE (optional) -->
           <fieldset class="bk-screen" data-screen="4" hidden>
-            <h2 class="bk-q"><span data-first>There</span>, what’s the one thing about getting found and getting picked online that’s eating at you most?</h2>
+            <h2 class="bk-q"><span data-first>There</span>, what’s the one thing about getting found and getting picked online that’s eating at you most? <span class="bk-opt">(optional)</span></h2>
             <p class="bk-why">Don’t tidy it up. Give me the real version, in your own words. It’s the first thing I read before we talk.</p>
-            <textarea class="bk-input" name="obstacle" rows="4" required></textarea>
-            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="submit" class="btn btn--primary btn--lg">Book my session <span aria-hidden="true">→</span></button></div>
+            <textarea class="bk-input" name="obstacle" rows="4"></textarea>
+            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary btn--lg" data-submit>Book my session <span aria-hidden="true">→</span></button></div>
             <p class="bk-form__status mono" data-book-status hidden></p>
           </fieldset>
 
-          <!-- 5 — CALENDAR -->
+          <!-- 5 — CALENDAR (full width) -->
           <fieldset class="bk-screen bk-screen--cal" data-screen="5" hidden>
-            <div class="bk-cal">
-              <div class="bk-cal__panel">
-                <p class="bk-cal__brand mono">{site.founder} · {site.brand}</p>
-                <h2 class="bk-cal__h">{minutes}-Minute Strategy Session</h2>
-                <p class="bk-cal__meta mono"><span>🕧 {minutes} min</span><span>📞 Phone call</span></p>
-                <p class="bk-cal__copy">Claim your free, no-obligation {minutes}-minute strategy session. Straight talk, a real plan, and a clear next step. Pick whatever time works.</p>
-                <p class="bk-cal__ps">P.S. Nothing on the calendar that works for you? <a href={`mailto:${site.email}`}>Reach me here.</a></p>
-                <a class="bk-cal__direct" href={site.bookingUrl} target="_blank" rel="noopener">Open the calendar in a new tab →</a>
-              </div>
-              <div class="bk-cal__widget" data-calendly></div>
-            </div>
+            <h2 class="bk-cal__h">Got your details. Pick a time that works.</h2>
+            <div class="bk-cal__widget" data-calendly></div>
+            <a class="bk-cal__direct" href={site.bookingUrl} target="_blank" rel="noopener">Calendar not loading? Open it in a new tab →</a>
           </fieldset>
 
           <!-- honeypot -->
@@ -135,8 +132,9 @@ const DOTS = 4; // question screens 1–4
   const dots = Array.from(document.querySelectorAll<HTMLElement>('.bk-dot'));
   const progRow = document.querySelector<HTMLElement>('[data-prog-row]');
 
-  type Answers = Record<string, string | string[]>;
-  const answers: Answers = {};
+  // Answers persist here for radios; text/textarea values live in the DOM (the
+  // form is never reset between screens), and are read from the whole form at submit.
+  const answers: Record<string, string> = {};
 
   if (form) {
     const screens = Array.from(form.querySelectorAll<HTMLElement>('.bk-screen'));
@@ -147,33 +145,71 @@ const DOTS = 4; // question screens 1–4
       document.querySelectorAll<HTMLElement>('[data-first]').forEach((el) => { el.textContent = name; });
     };
 
-    const flag = (screen: HTMLElement) => {
-      screen.classList.remove('bk-screen--err');
-      void screen.offsetWidth;
-      screen.classList.add('bk-screen--err');
-      return false;
-    };
+    // ---- visible validation (no silent shakes) ----
+    const fieldWrap = (name: string) => form.querySelector<HTMLElement>(`[data-field="${name}"]`);
+    function showErr(name: string, msg: string) {
+      const wrap = fieldWrap(name);
+      if (!wrap) return;
+      wrap.classList.add('bk-field--err');
+      let m = wrap.querySelector<HTMLElement>('.bk-err');
+      if (!m) { m = document.createElement('p'); m.className = 'bk-err'; m.setAttribute('role', 'alert'); wrap.appendChild(m); }
+      m.textContent = msg;
+    }
+    function clearErr(name: string) {
+      const wrap = fieldWrap(name);
+      if (!wrap) return;
+      wrap.classList.remove('bk-field--err');
+      wrap.querySelector('.bk-err')?.remove();
+    }
+    const shake = (screen: HTMLElement) => { screen.classList.remove('bk-screen--err'); void screen.offsetWidth; screen.classList.add('bk-screen--err'); };
 
-    const collect = (screen: HTMLElement) => {
-      screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input[name], textarea[name], select[name]').forEach((f) => {
-        if ((f as HTMLInputElement).type === 'radio' || (f as HTMLInputElement).type === 'checkbox') return;
+    // read every text field across the WHOLE form (values persist on hidden screens)
+    const collectAll = () => {
+      form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
         if (f.name === 'company') return;
+        if ((f as HTMLInputElement).type === 'radio' || (f as HTMLInputElement).type === 'checkbox') return;
         answers[f.name] = f.value.trim();
       });
     };
 
-    const valid = (screen: HTMLElement) => {
-      const fields = Array.from(screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input[name], textarea[name], select[name]'));
-      for (const f of fields) {
-        if (f.name === 'company') continue;
-        if ((f as HTMLInputElement).type === 'radio' || (f as HTMLInputElement).type === 'checkbox') continue;
-        if (!f.value.trim()) return flag(screen);
-        if ((f as HTMLInputElement).type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value)) return flag(screen);
-      }
-      // every single-choice card group on the screen needs a pick
-      const radios = Array.from(screen.querySelectorAll<HTMLElement>('[data-radio]'));
-      for (const g of radios) { if (!g.querySelector('.is-on')) return flag(screen); }
-      return true;
+    // ---- persistence: save every answer so the form NEVER resets between pages
+    //      (or on any accidental reload). Restored on load, cleared after booking.
+    const STORE = 'kw_book_v1';
+    const persist = () => { try { collectAll(); sessionStorage.setItem(STORE, JSON.stringify(answers)); } catch { /* ignore */ } };
+    const restore = () => {
+      let saved: Record<string, string> = {};
+      try { saved = JSON.parse(sessionStorage.getItem(STORE) || '{}'); } catch { return; }
+      Object.assign(answers, saved);
+      Object.entries(saved).forEach(([k, v]) => {
+        const el = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[name="${k}"]`);
+        if (el && typeof v === 'string') el.value = v;
+      });
+      form.querySelectorAll<HTMLElement>('[data-radio]').forEach((g) => {
+        const val = saved[g.dataset.name!];
+        if (val) g.querySelectorAll<HTMLElement>('.bk-card').forEach((c) => c.classList.toggle('is-on', c.dataset.value === val));
+      });
+      if (saved.name) setFirst(saved.name);
+    };
+
+    // validate one screen; returns true if OK, else shows messages + shakes
+    const validScreen = (screen: HTMLElement) => {
+      let ok = true;
+      screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
+        if (f.name === 'company') return;
+        if (!f.required) return;
+        const name = (f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name;
+        if (!f.value.trim()) { showErr(name, 'Please fill this in to continue.'); ok = false; }
+        else if ((f as HTMLInputElement).type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value)) { showErr(name, 'That email doesn’t look right.'); ok = false; }
+        else clearErr(name);
+      });
+      // required single-choice card groups
+      screen.querySelectorAll<HTMLElement>('[data-radio]').forEach((g) => {
+        const name = g.dataset.name!;
+        if (!g.querySelector('.is-on')) { showErr(name, 'Pick an option to continue.'); ok = false; }
+        else clearErr(name);
+      });
+      if (!ok) shake(screen);
+      return ok;
     };
 
     const updateDots = () => {
@@ -194,63 +230,72 @@ const DOTS = 4; // question screens 1–4
     };
 
     const advance = () => {
-      if (i === 1) { collect(screens[1]); setFirst((answers.name as string) || ''); }
-      else collect(screens[i]);
+      if (i === 1) setFirst((form.querySelector<HTMLInputElement>('[name="name"]')?.value || '').trim());
       show(i + 1);
     };
 
-    // single-choice cards: select one (no auto-advance — screens can hold more than one group)
+    // single-choice cards: select one (no auto-advance — screen 3 has two groups)
     form.querySelectorAll<HTMLElement>('[data-radio]').forEach((group) => {
       group.querySelectorAll<HTMLButtonElement>('.bk-card').forEach((card) => {
         card.addEventListener('click', () => {
           group.querySelectorAll('.bk-card').forEach((c) => c.classList.remove('is-on'));
           card.classList.add('is-on');
           answers[group.dataset.name!] = card.dataset.value!;
+          clearErr(group.dataset.name!);
+          persist();
         });
       });
     });
 
+    // clear error + persist as the user types
+    form.querySelectorAll<HTMLInputElement>('input[name], textarea[name]').forEach((f) => {
+      f.addEventListener('input', () => { clearErr((f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name); persist(); });
+    });
+
+    const doSubmit = () => {
+      const last = screens.find((s) => s.dataset.screen === '4')!;
+      if (!validScreen(last)) return;               // obstacle is optional, so this passes
+      if ((form.querySelector<HTMLInputElement>('[name="company"]')?.value || '').trim()) return; // honeypot
+
+      collectAll(); // pull every text value from the whole form, plus radios already in `answers`
+
+      // send the lead to Web3Forms — client-side FormData (no preflight), fire-and-forget
+      const fd = new FormData();
+      fd.append('access_key', site.web3formsKey);
+      fd.append('from_name', 'Kitchen Websites');
+      fd.append('subject', `📅 Session request — ${answers.website || answers.name || 'new owner'}`);
+      fd.append('Name', answers.name || '');
+      fd.append('email', answers.email || '');
+      fd.append('Phone', answers.mobile || '');
+      fd.append('Website / business & city', answers.website || '');
+      fd.append('Customer mix', answers.customers || '');
+      fd.append('Jobs / month', answers.jobs || '');
+      if (answers.obstacle) fd.append('Biggest gripe', answers.obstacle);
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('from')) fd.append('Came from', String(params.get('from')));
+      fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
+      (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
+
+      try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
+      show(i + 1); // → Calendly calendar, immediately
+    };
+
     form.addEventListener('click', (e) => {
       const t = e.target as HTMLElement;
-      if (t.closest('[data-next]')) { if (i === 0 || valid(screens[i])) advance(); }
+      if (t.closest('[data-next]')) { if (i === 0 || validScreen(screens[i])) advance(); }
       else if (t.closest('[data-back]')) show(i - 1);
+      else if (t.closest('[data-submit]')) doSubmit();
     });
 
     form.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
       if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
-      if (i < total - 1) { e.preventDefault(); if (i === 0 || valid(screens[i])) advance(); }
+      e.preventDefault(); // Enter must never natively submit / reload the page
+      if (i < total - 1) { if (i === 0 || validScreen(screens[i])) advance(); }
     });
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const last = screens.find((s) => s.dataset.screen === '4')!;
-      if (!valid(last)) return;
-      collect(last);
-      if ((form.querySelector<HTMLInputElement>('[name=company]')?.value || '').trim()) return; // honeypot
-
-      const first = (answers.name as string) || '';
-      const params = new URLSearchParams(window.location.search);
-      // FormData, not JSON — keeps it a CORS "simple request" (no preflight, which
-      // web3forms blocks). This is web3forms' intended client-side submission path.
-      const fd = new FormData();
-      fd.append('access_key', site.web3formsKey);
-      fd.append('from_name', 'Kitchen Websites');
-      fd.append('subject', `📅 Session request — ${answers.website || first || 'new owner'}`);
-      fd.append('Name', first);
-      fd.append('email', String(answers.email || ''));
-      fd.append('Phone', String(answers.mobile || ''));
-      fd.append('Website / business & city', String(answers.website || ''));
-      fd.append('Customer mix', String(answers.customers || ''));
-      fd.append('Jobs / month', String(answers.jobs || ''));
-      fd.append('Biggest gripe', String(answers.obstacle || ''));
-      if (params.get('from')) fd.append('Came from', String(params.get('from')));
-
-      // Fire in the background — never await — so it can't stall the jump to the calendar.
-      fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
-      (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
-      show(i + 1); // → Calendly calendar, immediately
-    });
+    // hard safety net: the form can never natively submit (which would reload + reset it)
+    form.addEventListener('submit', (e) => { e.preventDefault(); });
 
     // ---- Calendly inline embed (loaded lazily on the calendar screen) ----
     function initCalendly() {
@@ -260,11 +305,10 @@ const DOTS = 4; // question screens 1–4
       const go = () => {
         if (!w.Calendly) return;
         host.dataset.ready = '1';
-        const name = (answers.name as string) || '';
         w.Calendly.initInlineWidget({
           url: bookingUrl,
           parentElement: host,
-          prefill: { name, email: (answers.email as string) || '' },
+          prefill: { name: answers.name || '', email: answers.email || '' },
         });
       };
       if (w.Calendly) { go(); return; }
@@ -293,6 +337,7 @@ const DOTS = 4; // question screens 1–4
       }
     });
 
+    restore();   // refill anything saved from a previous visit / before a reload
     show(0);
   }
 </script>
@@ -303,20 +348,19 @@ const DOTS = 4; // question screens 1–4
   .bk-dot { width: 9px; height: 9px; border-radius: 999px; background: var(--line); transition: background 240ms, transform 240ms; }
   .bk-dot.is-on { background: var(--accent); transform: scale(1.15); }
 
-  /* sit the funnel in the middle of the page, centered, not jammed to the top */
   .bk-funnel { min-height: calc(100vh - 9rem); display: grid; align-items: center; padding-block: var(--space-8); }
   .bk-form { text-align: center; }
   .bk-screen { border: 0; padding: 0; margin: 0; min-height: 18rem; animation: bk-in 320ms cubic-bezier(.2,.7,.2,1); }
   @keyframes bk-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .bk-screen--err { animation: bk-shake 320ms; }
   @keyframes bk-shake { 10%,90%{transform:translateX(-1px)} 30%,70%{transform:translateX(3px)} 50%{transform:translateX(-4px)} }
-  .bk-screen--err .bk-input, .bk-screen--err .bk-card { border-color: var(--warn); }
 
   .bk-intro__h1 { margin-top: var(--space-4); font-size: var(--fs-h2); }
   .bk-intro__lede { margin: var(--space-5) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); max-width: 54ch; }
   .bk-intro__sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }
 
   .bk-q { font-size: var(--fs-h4); line-height: 1.3; max-width: 40ch; margin-inline: auto; }
+  .bk-opt { font-size: var(--fs-body); font-weight: var(--fw-body); color: var(--ink-50); }
   .bk-sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }
   .bk-sub--gap { margin-top: var(--space-8); }
   .bk-why { margin: var(--space-3) auto 0; font-style: italic; font-size: var(--fs-body); color: var(--ink-50); max-width: 56ch; }
@@ -324,7 +368,6 @@ const DOTS = 4; // question screens 1–4
   .bk-input { margin: var(--space-5) auto 0; width: 100%; max-width: 32rem; font-family: var(--font-body); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
   .bk-input:focus-visible { outline: none; border-color: var(--ink); }
   textarea.bk-input { resize: vertical; line-height: 1.5; }
-  .bk-select { appearance: none; cursor: pointer; }
 
   /* stacked labeled fields (contact screen) */
   .bk-fields { margin: var(--space-5) auto 0; display: grid; gap: var(--space-4); max-width: 32rem; text-align: left; }
@@ -340,22 +383,21 @@ const DOTS = 4; // question screens 1–4
   .bk-card:hover { border-color: var(--ink-50); }
   .bk-card.is-on { border-color: var(--ink); background: var(--accent-wash, color-mix(in srgb, var(--accent) 16%, #fff)); }
 
+  /* validation */
+  .bk-field--err .bk-input, .bk-field--err .bk-card { border-color: var(--warn); }
+  .bk-err { margin-top: var(--space-2); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--warn); }
+
   .bk-nav { margin-top: var(--space-8); display: flex; align-items: center; justify-content: center; gap: var(--space-4); }
   .bk-back { background: none; border: 0; padding: var(--space-2); color: var(--ink-50); font-size: var(--fs-body); cursor: pointer; }
   .bk-back:hover { color: var(--ink); }
   .bk-form__status { margin-top: var(--space-4); font-size: var(--fs-caption); color: var(--ink-50); }
 
-  /* calendar screen — keep the two-column layout left-aligned */
-  .bk-screen--cal { min-height: auto; text-align: left; }
-  .bk-cal { display: grid; grid-template-columns: 1fr; gap: var(--space-6); margin-top: var(--space-2); }
-  @media (min-width: 56em) { .bk-cal { grid-template-columns: 22rem 1fr; gap: var(--space-8); align-items: start; } }
-  .bk-cal__brand { font-size: var(--fs-caption); color: var(--ink-50); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
-  .bk-cal__h { margin-top: var(--space-3); font-size: var(--fs-h3); }
-  .bk-cal__meta { margin-top: var(--space-4); display: flex; gap: var(--space-5); font-size: var(--fs-body-sm); color: var(--ink-70); }
-  .bk-cal__copy { margin-top: var(--space-5); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
-  .bk-cal__ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm); color: var(--ink-50); }
-  .bk-cal__direct { display: inline-block; margin-top: var(--space-4); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--accent-deep); }
-  .bk-cal__widget { min-width: 0; min-height: 700px; }
+  /* calendar screen — full-width calendar, minimal chrome */
+  .bk-screen--cal { min-height: auto; text-align: center; }
+  .bk-cal__h { font-size: var(--fs-h3); margin-bottom: var(--space-6); }
+  /* break the calendar out of the narrow container so it fills the screen */
+  .bk-cal__widget { position: relative; left: 50%; transform: translateX(-50%); width: 96vw; max-width: 64rem; min-height: clamp(720px, 86vh, 1100px); }
+  .bk-cal__direct { display: inline-block; margin-top: var(--space-5); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--accent-deep); }
 
   /* confirmation */
   .bk-done { padding-top: var(--space-12); }
