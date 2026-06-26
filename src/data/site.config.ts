@@ -32,10 +32,13 @@ export const site = {
     websites: { open: 2, total: 2, label: 'spec-design slots' },
   },
 
-  // Analytics — PLACEHOLDER ids; wired in BaseLayout, fire on real events
+  // Analytics — wired in BaseLayout (Analytics.astro), fire on real events.
+  // The Meta Pixel ID is PUBLIC by design (it ships in the page source and in
+  // every request to facebook.com/tr), so it lives here in the committed config,
+  // not a secret env var. Swap it if the pixel ever changes.
   analytics: {
-    metaPixelId: '', // PLACEHOLDER
-    ga4Id: '',       // optional
+    metaPixelId: '1460315575868963',
+    ga4Id: '', // optional — leave blank to disable GA4
   },
 } as const;
 

@@ -100,10 +100,11 @@ const DOTS = 4; // question screens 1–4
             <a class="bk-cal__direct" href={site.bookingUrl} target="_blank" rel="noopener">Calendar not loading? Open it in a new tab →</a>
           </fieldset>
 
-          <!-- honeypot -->
+          <!-- honeypot. NO "company" name/label: browser autofill fills a field
+               called "Company" from the saved profile, which used to trip this
+               trap and silently block real bookings. Neutral name + no label. -->
           <div class="honeypot" aria-hidden="true">
-            <label for="company">Company (leave blank)</label>
-            <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+            <input id="hp-confirm" name="hp_confirm" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
           </div>
         </form>
       </div>
@@ -123,7 +124,6 @@ const DOTS = 4; // question screens 1–4
 
 <script>
   import { site } from '../data/site.config';
-  import { track } from '../utils/track.js';
   const bookingUrl = site.bookingUrl;
 
   const form = document.querySelector<HTMLFormElement>('[data-book-form]');
@@ -167,7 +167,7 @@ const DOTS = 4; // question screens 1–4
     // read every text field across the WHOLE form (values persist on hidden screens)
     const collectAll = () => {
       form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
-        if (f.name === 'company') return;
+        if (f.name === 'hp_confirm') return;
         if ((f as HTMLInputElement).type === 'radio' || (f as HTMLInputElement).type === 'checkbox') return;
         answers[f.name] = f.value.trim();
       });
@@ -196,7 +196,7 @@ const DOTS = 4; // question screens 1–4
     const validScreen = (screen: HTMLElement) => {
       let ok = true;
       screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
-        if (f.name === 'company') return;
+        if (f.name === 'hp_confirm') return;
         if (!f.required) return;
         const name = (f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name;
         if (!f.value.trim()) { showErr(name, 'Please fill this in to continue.'); ok = false; }
@@ -256,7 +256,7 @@ const DOTS = 4; // question screens 1–4
     const doSubmit = () => {
       const last = screens.find((s) => s.dataset.screen === '4')!;
       if (!validScreen(last)) return;               // obstacle is optional, so this passes
-      if ((form.querySelector<HTMLInputElement>('[name="company"]')?.value || '').trim()) return; // honeypot
+      if ((form.querySelector<HTMLInputElement>('[name="hp_confirm"]')?.value || '').trim()) return; // honeypot
 
       collectAll(); // pull every text value from the whole form, plus radios already in `answers`
 
@@ -281,18 +281,36 @@ const DOTS = 4; // question screens 1–4
       show(i + 1); // → Calendly calendar, immediately
     };
 
+    // Safety net: if the flow is ever interrupted or throws, don't leave the user
+    // stuck on a dead button — tell them and restart cleanly from the top.
+    const bail = (msg: string) => {
+      try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
+      Object.keys(answers).forEach((k) => delete answers[k]);
+      try { form.reset(); } catch { /* ignore */ }
+      form.querySelectorAll('.bk-field--err').forEach((el) => el.classList.remove('bk-field--err'));
+      form.querySelectorAll('.bk-err').forEach((el) => el.remove());
+      form.querySelectorAll('.bk-card.is-on').forEach((el) => el.classList.remove('is-on'));
+      show(0);
+      window.alert(msg);
+    };
+    const INTERRUPT_MSG = 'Something interrupted the form, so we’ve reset it. Mind starting over? It only takes a minute.';
+
     form.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      if (t.closest('[data-next]')) { if (i === 0 || validScreen(screens[i])) advance(); }
-      else if (t.closest('[data-back]')) show(i - 1);
-      else if (t.closest('[data-submit]')) doSubmit();
+      try {
+        const t = e.target as HTMLElement;
+        if (t.closest('[data-next]')) { if (i === 0 || validScreen(screens[i])) advance(); }
+        else if (t.closest('[data-back]')) show(i - 1);
+        else if (t.closest('[data-submit]')) doSubmit();
+      } catch (err) { console.error('[book] form interrupted:', err); bail(INTERRUPT_MSG); }
     });
 
     form.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
       if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
       e.preventDefault(); // Enter must never natively submit / reload the page
-      if (i < total - 1) { if (i === 0 || validScreen(screens[i])) advance(); }
+      try {
+        if (i < total - 1) { if (i === 0 || validScreen(screens[i])) advance(); }
+      } catch (err) { console.error('[book] form interrupted:', err); bail(INTERRUPT_MSG); }
     });
 
     // hard safety net: the form can never natively submit (which would reload + reset it)
@@ -339,7 +357,9 @@ const DOTS = 4; // question screens 1–4
       }
       if (data?.event === 'calendly.event_scheduled') {
         (window as any).kwTrack?.('CallBooked', { via: 'calendly' });
-        track('CallBooked');
+        // fire the Meta event via the global pixel directly — no module import,
+        // so the booking form never depends on the tracking util loading
+        if ((window as any).fbq) (window as any).fbq('track', 'CallBooked');
         setFirst((answers.name as string) || '');
         if (flow) flow.hidden = true;
         if (done) done.hidden = false;

@@ -1,11 +1,10 @@
 ---
 /* Analytics — Meta Pixel base (fires PageView on every page) + GA4 optional.
-   Pixel ID comes from the PUBLIC_META_PIXEL_ID env var (not hardcoded). Meta
-   conversion events are fired through src/utils/track.js; window.kwTrack carries
+   The Pixel ID is public, so it lives in site.config (committed), not an env var.
+   Meta conversion events fire through src/utils/track.js; window.kwTrack carries
    the internal funnel telemetry to GA4 only, so Meta stays to the named events. */
 import { site } from '../data/site.config';
-const metaPixelId = import.meta.env.PUBLIC_META_PIXEL_ID;
-const { ga4Id } = site.analytics;
+const { metaPixelId, ga4Id } = site.analytics;
 ---
 {metaPixelId && (
   <script is:inline define:vars={{ metaPixelId }}>
