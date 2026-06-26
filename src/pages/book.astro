@@ -327,9 +327,17 @@ const DOTS = 4; // question screens 1–4
       document.body.appendChild(s);
     }
 
-    // Calendly fires this once a time is picked → swap to the confirmation
+    // Calendly messages: keep the embed sized to its content (no inner scroll),
+    // and swap to the confirmation once a time is picked.
     window.addEventListener('message', (e) => {
-      if ((e.data as any)?.event === 'calendly.event_scheduled') {
+      const data = (e.data as any);
+      // auto-resize: grow/shrink the container to exactly fit the calendar
+      if (data?.event === 'calendly.page_height' && data.payload?.height) {
+        const host = document.querySelector<HTMLElement>('[data-calendly]');
+        if (host) host.style.height = data.payload.height;
+        return;
+      }
+      if (data?.event === 'calendly.event_scheduled') {
         (window as any).kwTrack?.('CallBooked', { via: 'calendly' });
         track('CallBooked');
         setFirst((answers.name as string) || '');
@@ -398,7 +406,12 @@ const DOTS = 4; // question screens 1–4
   .bk-screen--cal { min-height: auto; text-align: center; }
   .bk-cal__h { font-size: var(--fs-h3); margin-bottom: var(--space-6); }
   /* break the calendar out of the narrow container so it fills the screen */
-  .bk-cal__widget { position: relative; left: 50%; transform: translateX(-50%); width: 96vw; max-width: 64rem; min-height: clamp(720px, 86vh, 1100px); }
+  /* full-bleed calendar. The JS sizes this to Calendly's reported content height
+     (calendly.page_height) so the whole calendar fits with no inner scrollbar.
+     The fixed height here is the pre-message fallback (generous so it still fits). */
+  .bk-cal__widget { position: relative; left: 50%; transform: translateX(-50%); width: 96vw; max-width: 70rem; height: 820px; }
+  .bk-cal__widget :global(iframe) { width: 100%; height: 100%; border: 0; }
+  @media (max-width: 48em) { .bk-cal__widget { width: 100vw; height: 1180px; } }
   .bk-cal__direct { display: inline-block; margin-top: var(--space-5); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--accent-deep); }
 
   /* confirmation */
