@@ -1,7 +1,9 @@
 ---
-/* StickyMobileCTA — persistent bottom bar on mobile for content pages. Keeps
-   "Book a Call" one tap away through the full scroll. Never on /book or
-   /scorecard (those don't render it). Single CTA → /book. Spec §3. */
+/* StickyMobileCTA — bottom "Book a Call" bar on mobile for content pages. It
+   reveals once you scroll past the hero so it never covers the top-of-page
+   content (the hero text/video and the first section heading), then stays one
+   tap away through the rest of the scroll. Never on /book or /scorecard (those
+   don't render it). Single CTA → /book. Spec §3. */
 interface Props {
   href?: string;
   label?: string;
@@ -13,26 +15,22 @@ const { href = '/book', label = 'Book a Call', event } = Astro.props;
   <a class="btn btn--primary" href={href} data-smcta-link data-event={event}>{label} <span aria-hidden="true">→</span></a>
 </div>
 
-<style>
-  .smcta {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-sticky);
-    display: flex; align-items: center;
-    padding: var(--space-3) var(--gutter);
-    /* sit above the iOS home indicator */
-    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
-    background: color-mix(in srgb, var(--cabinet) 96%, transparent);
-    border-top: var(--rule-thick) solid var(--brass);
-  }
-  .smcta .btn { flex: 1; justify-content: center; }
-  /* desktop has the inline nav CTA, so the bar is mobile-only */
-  @media (min-width: 56em) { .smcta { display: none; } }
-</style>
-
 <script is:inline>
   (function () {
-    var link = document.querySelector('[data-smcta-link]');
-    if (!link) return;
-    link.addEventListener('click', function () {
+    var bar = document.querySelector('[data-smcta]');
+    if (!bar) return;
+    // reveal once the hero is scrolled past; hide again near the top so the
+    // first-screen content (hero text + video + next heading) is never covered
+    function onScroll() {
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
+      if (y > window.innerHeight * 0.7) bar.setAttribute('data-show', 'true');
+      else bar.removeAttribute('data-show');
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    onScroll();
+    var link = bar.querySelector('[data-smcta-link]');
+    if (link) link.addEventListener('click', function () {
       var ev = link.getAttribute('data-event');
       if (ev && window.kwTrack) window.kwTrack(ev);
     });

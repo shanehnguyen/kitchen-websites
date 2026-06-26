@@ -284,7 +284,11 @@ const closingStats = [
   /* mobile: the overlap pulls the video up onto the hero text, so stack it
      cleanly below the hero instead, and tighten the oversized CTA gap */
   @media (max-width: 48em) {
-    .home-reel { margin-top: var(--space-8); }
+    /* content-driven hero height: with min-height:100vh the featured video was
+       pushed a full screen below the text. min-height:auto drops it directly
+       under the subhead, in normal flow, before the next section. */
+    .home-hero { min-height: auto; padding-bottom: var(--space-8); }
+    .home-reel { margin-top: var(--space-6); }
     .home-reel__cta { margin-top: var(--space-10); }
   }
 
