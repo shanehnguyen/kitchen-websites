@@ -5,17 +5,17 @@
    add/remove projects in one place. Tuning lives in the <script> (SPEED_SECONDS)
    and the CSS (--card-w). */
 type Device = 'laptop' | 'desktop' | 'phone' | 'fill';
-type Card = { brand: string; device: Device; img: string; bg?: string; fg?: string };
+type Card = { brand: string; device: Device; img: string; alt: string; bg?: string; fg?: string };
 
 // All six are full-bleed branded images (3:4, matching the card box). Edit here
-// to add/remove projects in one place.
+// to add/remove projects in one place. `alt` describes the actual screen shown.
 const cards: Card[] = [
-  { brand: 'Absolute Kitchen Distributors', device: 'fill', img: '/assets/images/ai-images-work/absolute-kitchen-distributors-image.png' },
-  { brand: 'Austin Home Creations',         device: 'fill', img: '/assets/images/ai-images-work/austin-home-creations-image.png' },
-  { brand: 'Cabinet IQ',                    device: 'fill', img: '/assets/images/ai-images-work/cabinet-iq-image.png' },
-  { brand: 'Kitch Cabinetry',               device: 'fill', img: '/assets/images/ai-images-work/kitch-cabinetry-image.png' },
-  { brand: 'PK Cabinet',                    device: 'fill', img: '/assets/images/ai-images-work/pk-cabinet-image.png' },
-  { brand: 'Texas Remodelers Build',        device: 'fill', img: '/assets/images/ai-images-work/texas-remodelers-build-image.png' },
+  { brand: 'Absolute Kitchen Distributors', device: 'fill', img: '/assets/images/portfolio/absolute-kitchen-distributors-website-design.png', alt: 'Absolute Kitchen Distributors website homepage on a laptop, designed by Kitchen Websites' },
+  { brand: 'Austin Home Creations',         device: 'fill', img: '/assets/images/portfolio/austin-home-creations-website-design.png',         alt: 'Austin Home Creations kitchen remodeling website on a laptop, designed by Kitchen Websites' },
+  { brand: 'Cabinet IQ',                    device: 'fill', img: '/assets/images/portfolio/cabinet-iq-website-design.png',                    alt: 'Cabinet IQ kitchen design website on a laptop, designed by Kitchen Websites' },
+  { brand: 'Kitch Cabinetry',               device: 'fill', img: '/assets/images/portfolio/kitch-cabinetry-website-design.png',               alt: 'Kitch Cabinetry project inquiry website on a laptop, designed by Kitchen Websites' },
+  { brand: 'PK Cabinet',                    device: 'fill', img: '/assets/images/portfolio/pk-cabinet-website-design.png',                    alt: 'PK Cabinet online cabinet store website on a laptop, designed by Kitchen Websites' },
+  { brand: 'Texas Remodelers Build',        device: 'fill', img: '/assets/images/portfolio/texas-remodelers-build-website-design.png',        alt: 'Texas Remodelers Build home remodeling website on a laptop, designed by Kitchen Websites' },
 ];
 // Duplicate the set for a seamless loop; the second copy is hidden from AT.
 const loop = [...cards, ...cards];
@@ -32,7 +32,7 @@ const n = cards.length;
     <div class="cl__track" data-cl-track>
       {loop.map((c, i) => {
         const dup = i >= n;
-        const alt = dup ? '' : `${c.brand} project by Kitchen Websites`;
+        const alt = dup ? '' : c.alt;
         if (c.device === 'fill') {
           // full-bleed image, no device frame — fills the whole card
           return (

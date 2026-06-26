@@ -12,7 +12,7 @@ const minutes = 30;
 ---
 <BareLayout
   title="The Google Scorecard for Kitchen & Bath"
-  description="See the true, homeowner's-eye read of your Google presence next to the shops near you. One tap, your real listing, the three things to fix first."
+  description="See the true, homeowner’s-eye read of your Google presence next to the businesses near you. One tap, your real listing, the three things to fix first."
   noindex={true}
   legalFooter={false}
 >
@@ -29,7 +29,7 @@ const minutes = 30;
         <p class="eyebrow">Free Google check · Kitchen &amp; bath only</p>
         {/* MESSAGE MATCH: this headline must match the running ad word for word. Swap this one line. */}
         <h1 class="sc-start__h1" data-focus tabindex="-1">Is your Google better than your competitors?</h1>
-        <p class="sc-start__sub">Right now a homeowner is sizing you up against the shop next to you on Google. Lose that one, and it’s a twenty to thirty thousand dollar kitchen walking out the door before you ever knew it was up for grabs.</p>
+        <p class="sc-start__sub">Right now a homeowner is sizing you up against the business next to you on Google. Lose that one, and it’s a twenty to thirty thousand dollar kitchen walking out the door before you ever knew it was up for grabs.</p>
         <p class="sc-start__cue">Type your business name and I’ll show you exactly where you stand.</p>
         {/* Demo: input is styled but non-functional. "Check my Google" carries the typed
             value into the real autocomplete step. Live autocomplete drops in on this same input later. */}
@@ -40,7 +40,7 @@ const minutes = 30;
 
         <ul class="sc-start__stats">
           <li><span class="sc-start__stat-num">97%</span><span class="sc-start__stat-cap">of homeowners read your reviews before they pick a local business.</span></li>
-          <li><span class="sc-start__stat-num">92%</span><span class="sc-start__stat-cap">won’t consider a shop under four stars, no matter how good the work.</span></li>
+          <li><span class="sc-start__stat-num">74%</span><span class="sc-start__stat-cap">only trust reviews from the last three months, so old five-star reviews stop counting.</span></li>
           <li><span class="sc-start__stat-num">2.7×</span><span class="sc-start__stat-cap">more likely to be trusted when your Google profile is complete.</span></li>
         </ul>
       </div>
@@ -54,7 +54,7 @@ const minutes = 30;
         <h2 class="sc-h" data-focus tabindex="-1">Start typing your business name.</h2>
         <p class="sc-sub">Pick your own listing from the list so I’m reading the right one.</p>
         <div class="sc-ac">
-          <input class="sc-input" data-ac-input type="text" autocomplete="off" placeholder="e.g. your shop’s name" aria-label="Your business name" />
+          <input class="sc-input" data-ac-input type="text" autocomplete="off" placeholder="e.g. your business name" aria-label="Your business name" />
           <div class="sc-ac__list" data-ac-list hidden></div>
         </div>
         <p class="sc-altlink"><a href="#" data-manual-link>Can’t find your business? Run it by hand instead.</a></p>
@@ -127,7 +127,7 @@ const minutes = 30;
     <!-- FALLBACK — MANUAL CAPTURE (API down / can't find listing) -->
     <section class="sc-screen" data-sc-screen="manual" hidden>
       <div class="sc-wrap">
-        <h2 class="sc-h" data-focus tabindex="-1">Tell me your shop and I’ll run it by hand.</h2>
+        <h2 class="sc-h" data-focus tabindex="-1">Tell me your business and I’ll run it by hand.</h2>
         <p class="sc-sub">Leave your details and I’ll pull your Google myself, then follow up personally. No bot, just me.</p>
         <form class="sc-form" data-manual-form novalidate>
           <div class="field">
@@ -339,7 +339,7 @@ const minutes = 30;
   .sc-pin--out { background: #5b6066; }
   .sc-pin--nodata { background: #9aa0a6; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
   .sc-pin--nodata .sc-pin__n { color: rgba(255,255,255,0.85); }
-  /* your shop: a bigger, dark, ringed marker that sits above the rest */
+  /* your business: a bigger, dark, ringed marker that sits above the rest */
   .sc-pin--you { width: calc(100cqw / var(--n) * 0.82); height: calc(100cqw / var(--n) * 0.82); background: var(--ink); border: 3px solid #fff; outline: 3px solid var(--accent); outline-offset: 1px; z-index: 4; }
   .sc-pin--you .sc-pin__n { font-size: 0; }
   .sc-pin--you::after { content: "★"; position: absolute; transform: rotate(45deg); color: var(--accent); font-size: calc(100cqw / var(--n) * 0.34); line-height: 1; }

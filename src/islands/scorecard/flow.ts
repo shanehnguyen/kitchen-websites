@@ -75,8 +75,8 @@ const MOCK_PAYLOAD: Payload = {
     { name: 'Hearth & Home Remodelers', reviews: 96, rating: 4.7 },
     { name: 'Summit Bath & Kitchen', reviews: 61, rating: 4.6 },
   ],
-  verdict: { key: 'losing', headline: 'You’re in the game, and losing the comparison.', sub: 'You show up. But next to the shop Google puts beside you, a La Mirada homeowner has a reason to pick them. Here’s exactly where.' },
-  hook: 'You have 7 Google reviews. Granite Peak Kitchens, the shop Google puts right above you in La Mirada, has 142.',
+  verdict: { key: 'losing', headline: 'You’re in the game, and losing the comparison.', sub: 'You show up. But next to the business Google puts beside you, a La Mirada homeowner has a reason to pick them. Here’s exactly where.' },
+  hook: 'You have 7 Google reviews. Granite Peak Kitchens, the business Google puts right above you in La Mirada, has 142.',
   rankings: {
     term: 'kitchen remodeler La Mirada',
     city: 'La Mirada',
@@ -95,18 +95,18 @@ const MOCK_PAYLOAD: Payload = {
     mapUrl: null,
     rankStatus: 'warn',
     gridStatus: 'warn',
-    why: 'When a La Mirada homeowner searches “kitchen remodeler La Mirada”, Google shows three shops on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners in La Mirada, and it runs on autopilot once you win it.',
+    why: 'When a La Mirada homeowner searches “kitchen remodeler La Mirada”, Google shows three businesses on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners in La Mirada, and it runs on autopilot once you win it.',
   },
   audit: [
-    { id: 'rev', label: 'Review count', status: 'fail', value: 'You’re at 7. Granite Peak Kitchens, the shop Google puts right above you, has 142.', why: 'When a La Mirada homeowner compares the two of you, that gap is the whole decision.', fix: 'Ask your last ten happy customers for a review, with a direct link. Then keep a steady trickle going.' },
-    { id: 'star', label: 'Star rating', status: 'fail', value: 'You’re sitting at 3.9. Granite Peak’s at 4.8.', why: 'Most homeowners never read a word under four stars. They just scroll to the shop that’s over it.', fix: 'Reply to every review, the rough ones first, and ask happy customers until the average climbs.' },
+    { id: 'rev', label: 'Review count', status: 'fail', value: 'You’re at 7. Granite Peak Kitchens, the business Google puts right above you, has 142.', why: 'When a La Mirada homeowner compares the two of you, that gap is the whole decision.', fix: 'Ask your last ten happy customers for a review, with a direct link. Then keep a steady trickle going.' },
+    { id: 'star', label: 'Star rating', status: 'fail', value: 'You’re sitting at 3.9. Granite Peak’s at 4.8.', why: 'Most homeowners never read a word under four stars. They just scroll to the business that’s over it.', fix: 'Reply to every review, the rough ones first, and ask happy customers until the average climbs.' },
     { id: 'cat1', label: 'Primary category', status: 'fail', value: 'Yours is set to “General contractor.”', why: 'Every homeowner searching “kitchen remodeler in La Mirada” is looking right past you.', fix: 'Set it to the most specific category that fits, Kitchen remodeler or Bathroom remodeler.' },
     { id: 'photos', label: 'Photos', status: 'warn', value: 'You’ve got 4 photos on the profile.', why: 'People buy kitchens and baths with their eyes. A thin gallery looks like thin work.', fix: 'Add fifteen to twenty sharp shots of your finished jobs.' },
-    { id: 'recency', label: 'Review recency', status: 'warn', value: 'Your newest review is about 7 months old.', why: 'A La Mirada homeowner reads a stale profile as a shop that’s slowing down.', fix: 'Ask for a review after every job, so the one on top is always recent.' },
-    { id: 'response', label: 'Review responses', status: 'warn', value: 'You’ve answered 1 of your 7 reviews.', why: 'Silence reads as a shop that doesn’t care, and Google quietly favors the ones that reply.', fix: 'Reply to every review, even a line. The rough ones first.' },
-    { id: 'cat2', label: 'Secondary categories', status: 'warn', value: 'You’ve got none set.', why: 'Each one is another search you could win in La Mirada, and most shops leave them empty. That’s an opening.', fix: 'Add the ones that fit: Bathroom remodeler, Cabinet maker, Countertop store, Tile contractor.' },
+    { id: 'recency', label: 'Review recency', status: 'warn', value: 'Your newest review is about 7 months old.', why: 'A La Mirada homeowner reads a stale profile as a business that’s slowing down.', fix: 'Ask for a review after every job, so the one on top is always recent.' },
+    { id: 'response', label: 'Review responses', status: 'warn', value: 'You’ve answered 1 of your 7 reviews.', why: 'Silence reads as a business that doesn’t care, and Google quietly favors the ones that reply.', fix: 'Reply to every review, even a line. The rough ones first.' },
+    { id: 'cat2', label: 'Secondary categories', status: 'warn', value: 'You’ve got none set.', why: 'Each one is another search you could win in La Mirada, and most businesses leave them empty. That’s an opening.', fix: 'Add the ones that fit: Bathroom remodeler, Cabinet maker, Countertop store, Tile contractor.' },
     { id: 'attrs', label: 'Attributes', status: 'warn', value: 'Missing: Free estimates, Online estimates.', why: 'Homeowners filter Maps by these. Unchecked means you’re filtered out before she ever sees you.', fix: 'Switch on the ones that apply to you, right in your profile.' },
-    { id: 'posts', label: 'Google posts', status: 'warn', value: 'You’ve never posted an update.', why: 'Posts are free, they signal a shop that’s busy, and almost nobody in La Mirada bothers. That’s your opening.', fix: 'Post a finished project every couple of weeks. It takes minutes.' },
+    { id: 'posts', label: 'Google posts', status: 'warn', value: 'You’ve never posted an update.', why: 'Posts are free, they signal a business that’s busy, and almost nobody in La Mirada bothers. That’s your opening.', fix: 'Post a finished project every couple of weeks. It takes minutes.' },
   ],
   passing: ['Hours listed', 'Phone listed', 'Website linked', 'Profile description'],
   website: {
@@ -119,13 +119,13 @@ const MOCK_PAYLOAD: Payload = {
     // silent and is never shown as a fail.
     items: [
       // [from PageSpeed API — already live]
-      { label: 'Speed', status: 'fail', value: 'PageSpeed 38/100 on mobile.', why: 'A slow site bleeds visitors before it even loads, and Google ranks it lower for it.', fix: 'Compress the images and cut the bloat so it loads in a second or two.' },
+      { label: 'Speed', status: 'fail', value: 'PageSpeed 38/100 on mobile.', why: 'A slow site loses visitors before it even loads, and Google ranks it lower for it.', fix: 'Compress the images and cut the bloat so it loads in a second or two.' },
       // [check: count of meaningful <img> tags beyond logo/icons]
       { label: 'Photos of your work', status: 'fail', value: 'Almost no project photos on the homepage.', why: 'She came to see your kitchens, not a stock hero.', fix: 'Lead with a gallery of your real finished kitchens and baths.' },
       // [check: footer year — fire ONLY if more than ~2 years old]
-      { label: 'Footer year', status: 'fail', value: 'Your site footer says © 2019.', why: 'A homeowner reads a years-old date as a shop that’s closed.', fix: 'Set the footer year to update automatically so it’s never stale.' },
+      { label: 'Footer year', status: 'fail', value: 'Your site footer says © 2019.', why: 'A homeowner reads a years-old date as a business that’s closed.', fix: 'Set the footer year to update automatically so it’s never stale.' },
       // [check: tel: link present AND within the first screen]
-      { label: 'Tap-to-call up top', status: 'warn', value: 'No tap-to-call above the fold.', why: 'If she has to hunt for your number, she calls the shop that put theirs front and center.', fix: 'Put a tappable phone number in the header, visible the second the page loads.' },
+      { label: 'Tap-to-call up top', status: 'warn', value: 'No tap-to-call above the fold.', why: 'If she has to hunt for your number, she calls the business that put theirs front and center.', fix: 'Put a tappable phone number in the header, visible the second the page loads.' },
       // [check: testimonial/review block or star markup present]
       { label: 'Reviews on your site', status: 'warn', value: 'No reviews shown on the page.', why: 'You’ve earned reviews, but a homeowner on your site never sees them, they’re one tab away from a competitor on Google.', fix: 'Pull your best Google reviews onto the homepage where she lands.' },
       // [check: <h1> text — show it verbatim as the data line]
@@ -135,7 +135,7 @@ const MOCK_PAYLOAD: Payload = {
     ],
     passing: ['HTTPS secure', 'Mobile-friendly', 'Clear call to action'],
   },
-  math: 'One kitchen in La Mirada runs a homeowner $20,000 to $30,000. Win back one you’d have lost to a sharper-looking shop, and every fix on this page has already paid for itself.',
+  math: 'One kitchen in La Mirada runs a homeowner $20,000 to $30,000. Win one homeowner who’d have picked the sharper-looking business, and every fix on this page has already paid for itself.',
   segment: { band: 'losing', worst: 'Review count' },
 };
 
@@ -462,7 +462,7 @@ export function init() {
     const cells = r.cells || [];
     const n = r.gridN || (cells.length === 25 ? 5 : 3);
     const place = esc(r.city || 'your area');
-    const center = Math.floor((n * n) / 2); // middle cell = the shop
+    const center = Math.floor((n * n) / 2); // middle cell = the business
     const bg = r.mapUrl
       ? `style="background-image:url('${esc(r.mapUrl)}');background-size:cover;background-position:center;"`
       : '';
@@ -497,7 +497,7 @@ export function init() {
         <h3 class="sc-section__h">Your rank on the Google map</h3>
         <p class="sc-section__sub">${esc(r.why)}</p>
         ${map}
-        ${map ? `<p class="sc-map__legend"><span class="sc-map__key sc-map__key--in"></span> Top 3&nbsp;&nbsp;<span class="sc-map__key sc-map__key--mid"></span> 4–10&nbsp;&nbsp;<span class="sc-map__key sc-map__key--low"></span> 11+&nbsp;&nbsp;<span class="sc-map__key sc-map__key--out"></span> Not ranking&nbsp;&nbsp;<span class="sc-map__key sc-map__key--you"></span> Your shop &nbsp;·&nbsp; each pin is your rank where a homeowner searches from around ${place}</p>` : ''}
+        ${map ? `<p class="sc-map__legend"><span class="sc-map__key sc-map__key--in"></span> Top 3&nbsp;&nbsp;<span class="sc-map__key sc-map__key--mid"></span> 4–10&nbsp;&nbsp;<span class="sc-map__key sc-map__key--low"></span> 11+&nbsp;&nbsp;<span class="sc-map__key sc-map__key--out"></span> Not ranking&nbsp;&nbsp;<span class="sc-map__key sc-map__key--you"></span> Your business &nbsp;·&nbsp; each pin is your rank where a homeowner searches from around ${place}</p>` : ''}
         ${stats}
         ${r.above.length ? `<p class="sc-rank__above"><span class="sc-rank__abovelabel">Ahead of you on the map:</span> ${esc(r.above.join(', '))}.</p>` : ''}
       </section>`;
@@ -514,7 +514,7 @@ export function init() {
     const greetName = firstName || me.name;
     const cityPhrase = p.city ? `a homeowner in ${p.city}` : 'a homeowner near you';
     const eyebrow = firstName ? `${firstName}, your scorecard` : `${me.name}, your scorecard`;
-    const intro = `${greetName}, here’s what ${cityPhrase} sees when she checks you against the shops next to you.`;
+    const intro = `${greetName}, here’s what ${cityPhrase} sees when she checks you against the businesses next to you.`;
 
     // competitor comparison table (his row distinguished, losing numbers in --alarm)
     const meReviewsAlarm = p.top && me.reviews !== null && me.reviews < p.top.reviews ? ' sc-num--alarm' : '';

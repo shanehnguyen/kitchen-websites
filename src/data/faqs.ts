@@ -13,7 +13,7 @@ export const homeFaqs: Faq[] = [
     a: [
       'Two things.',
       'I get you found by the homeowners already searching for your work. And I make you the one they pick when they look you up.',
-      'That means rebuilding your Google so it shows the shop you actually are, and building a website that turns a curious click into a booked estimate.',
+      'That means rebuilding your Google so it shows the business you actually are, and building a website that turns a curious click into a booked estimate.',
       'Then I keep it working every month. That’s it.',
     ],
   },
@@ -21,7 +21,7 @@ export const homeFaqs: Faq[] = [
     q: 'Aren’t you just another marketer who’ll rip me off?',
     a: [
       'Fair question. You’ve earned it.',
-      'Here’s the difference. I don’t sell leads. I don’t promise rankings. And I don’t lock you in.',
+      'Here’s the difference. They sold you leads; I make the homeowner already looking choose you. They swore they owned Google; I promise the one thing I can actually move, your phone ringing more. They locked you in for a year; I earn next month every month.',
       'I show you the plan before you pay me a dollar. You see the work every week. You own everything I build.',
       'The last guy mailed you charts while your phone stayed quiet. I’d rather you judge me on homeowners calling.',
     ],
@@ -30,7 +30,7 @@ export const homeFaqs: Faq[] = [
     q: 'Do you promise me leads or rankings?',
     a: [
       'No, and run from anyone who does.',
-      '“Leads” is the Angi game, the same homeowner sold to four shops at once. Rankings nobody controls, not me, not the guy who swore he did.',
+      '“Leads” is the Angi game, the same homeowner sold to four businesses at once. Rankings nobody controls, not me, not the guy who swore he did.',
       'What I promise is the work, the deadline, and more homeowners finding you and calling than do today. Beat that number in 90 days, or you stop paying and I keep going.',
       'That’s a promise I can actually keep.',
     ],
@@ -49,7 +49,7 @@ export const homeFaqs: Faq[] = [
     a: [
       '$750 a month for the whole plan. Your Google rebuilt and run every month, your site built in, the ninety-day guarantee behind all of it. Month to month, and you own everything.',
       'Want a website on its own instead? That’s $1,500 for the standard build, or $4,500 fully custom, and you see your homepage before you pay a dollar of it.',
-      'One kitchen runs your customer twenty, thirty grand. Win back a single homeowner you’d have lost, and it’s paid for itself. We’ll talk real numbers on the call.',
+      'One kitchen runs your customer twenty, thirty grand. Win a single homeowner who’d have called someone else, and it’s paid for itself. We’ll talk real numbers on the call.',
     ],
   },
   {
@@ -65,8 +65,8 @@ export const homeFaqs: Faq[] = [
     q: 'Why should I trust you over a bigger agency?',
     a: [
       'Because a bigger agency has a hundred clients, and you’d be a line item.',
-      'I only work with kitchen and bath shops, and I take a handful at a time. I designed your homepage myself. I know your numbers by name.',
-      'The big shop sells you the same playbook they sell a dentist and a roofer. I know why a homeowner picks one remodeler over another, because it’s the only thing I do.',
+      'I only work with kitchen and bath businesses, and I take a handful at a time. I designed your homepage myself. I know your numbers by name.',
+      'The big agency sells you the same playbook they sell a dentist and a roofer. I know why a homeowner picks one remodeler over another, because it’s the only thing I do.',
       'You’re not a ticket in a queue. You’re the work.',
     ],
   },

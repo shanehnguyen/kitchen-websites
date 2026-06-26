@@ -121,7 +121,7 @@ async function recordAudit(redis, ip, ranExpensive) {
 
 // A dumb comparison (Home Depot as a "rival") trips the scam filter. We exclude
 // big-box stores, national chains, and wholesale/distributor/supply outfits so
-// the rival a homeowner actually weighs you against is another local shop.
+// the rival a homeowner actually weighs you against is another local business.
 const EXCLUDE = [
   // big-box / national retail
   /home\s*depot/i, /lowe'?s/i, /\bikea\b/i, /menards/i, /costco/i, /sam'?s club/i,
@@ -307,7 +307,7 @@ async function fetchLocalRank(keyword, lat, lng, placeId, myName) {
 // Geogrid resolution. 3 = 9 SERP calls (~$0.018/audit). 5 = 25 calls (~$0.05).
 const GEOGRID_N = 5;
 
-// Geogrid: sample an N×N grid around the shop, count points where we land top 3.
+// Geogrid: sample an N×N grid around the business, count points where we land top 3.
 async function fetchGeogrid(keyword, lat, lng, placeId, myName) {
   if (!dfsAuth) return null;
   try {
@@ -561,22 +561,22 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
   const inCity = city ? `in ${city}` : 'near you';
   const cityHomeowner = city ? `a ${city} homeowner` : 'a homeowner near you';
   const CityHomeowner = city ? `A ${city} homeowner` : 'A homeowner near you';
-  const rivalName = top ? top.name : 'the shop above you';
+  const rivalName = top ? top.name : 'the business above you';
   const { localRank = null, geogrid = null, myDomains = null, rivalDomains = null, myKeywords = null, rivalKeywords = null, primaryTerm = '' } = extras;
 
   // verdict + hook
   let verdict;
   const strong = rating >= 4.4 && reviews >= 25 && !!m.domain && (!top || reviews >= Math.round(top.reviews * 0.7));
   if ((reviews !== null && reviews <= 3) || (rating !== null && rating === 0)) {
-    verdict = { key: 'absent', headline: 'You’re not in the room yet.', sub: `When ${cityHomeowner} checks you against the shops next to you, there’s almost nothing here to pick. That’s the cleanest fix on this page.` };
+    verdict = { key: 'absent', headline: 'You’re not showing up for her yet.', sub: `When ${cityHomeowner} checks you against the businesses next to you, there’s almost nothing here to pick. That’s the cleanest fix on this page.` };
   } else if (strong) {
-    verdict = { key: 'strong', headline: 'Your Google’s strong. The leak is after the click.', sub: 'You win the comparison. So the jobs you’re losing aren’t leaking here, they’re leaking on the website she lands on next.' };
+    verdict = { key: 'strong', headline: 'Your Google’s strong. The drop-off is after the click.', sub: 'You win the comparison. So the homeowners you’re losing aren’t slipping away here, they’re slipping away on the website she lands on next.' };
   } else {
-    verdict = { key: 'losing', headline: 'You’re in the game, and losing the comparison.', sub: `You show up. But next to the shop Google puts beside you, ${cityHomeowner} has a reason to pick them. Here’s exactly where.` };
+    verdict = { key: 'losing', headline: 'You’re in the game, and losing the comparison.', sub: `You show up. But next to the business Google puts beside you, ${cityHomeowner} has a reason to pick them. Here’s exactly where.` };
   }
   let hook;
-  if (top && reviews !== null) hook = `You have ${reviews} Google reviews. ${rivalName}, the shop Google puts right above you ${inCity}, has ${top.reviews}.`;
-  else if (rating !== null && rating < 4) hook = `Your Google rating is ${rating.toFixed(1)} stars, under the line most homeowners use to rule a shop out.`;
+  if (top && reviews !== null) hook = `You have ${reviews} Google reviews. ${rivalName}, the business Google puts right above you ${inCity}, has ${top.reviews}.`;
+  else if (rating !== null && rating < 4) hook = `Your Google rating is ${rating.toFixed(1)} stars, under the line most homeowners use to rule a business out.`;
   else hook = `Here’s what ${cityHomeowner} sees when she checks your Google, graded.`;
 
   const items = []; // {id,label,status,value,why,fix,sev}
@@ -594,7 +594,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
   if (Array.isArray(m.additional_categories)) {
     const rel = m.additional_categories.filter((c) => STRONG_CATS.test(c));
     if (rel.length >= 2) pass(`${rel.length} relevant secondary categories`);
-    else add({ id: 'cat2', label: 'Secondary categories', status: 'warn', sev: 3, value: rel.length ? `Only ${rel.length} relevant one.` : 'You’ve got none set.', why: `Each one is another search you could win ${inCity}, and most shops leave them empty. That’s an opening.`, fix: 'Add the ones that fit: Bathroom remodeler, Cabinet maker, Countertop store, Tile contractor.' });
+    else add({ id: 'cat2', label: 'Secondary categories', status: 'warn', sev: 3, value: rel.length ? `Only ${rel.length} relevant one.` : 'You’ve got none set.', why: `Each one is another search you could win ${inCity}, and most businesses leave them empty. That’s an opening.`, fix: 'Add the ones that fit: Bathroom remodeler, Cabinet maker, Countertop store, Tile contractor.' });
   }
   // 5. Services menu (omit when unknown)
   if (num(m.servicesCount) !== null) {
@@ -609,21 +609,21 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       ? true
       : (nm.match(/\b(kitchen|bath|cabinet|countertop|remodel|remodeling|renovation|contractor)\b/gi) || []).length >= 2;
     if (!padded) pass('Clean business name');
-    else add({ id: 'name', label: 'Business name', status: 'warn', sev: 3, value: `Your listed name reads “${nm}.”`, why: 'Padding the name with keywords or your city breaks Google’s rules. They can suspend the whole listing for it, and rivals report shops that do it.', fix: 'Set the name to your real signage, nothing more. Let the categories and services do the keyword work.' });
+    else add({ id: 'name', label: 'Business name', status: 'warn', sev: 3, value: `Your listed name reads “${nm}.”`, why: 'Padding the name with keywords or your city breaks Google’s rules. They can suspend the whole listing for it, and rivals report businesses that do it.', fix: 'Set the name to your real signage, nothing more. Let the categories and services do the keyword work.' });
   }
   // 3. Review count vs the named top rival
   if (reviews !== null && top) {
     if (reviews >= top.reviews) pass(`Review count (${reviews})`);
     else {
       const wide = reviews < top.reviews * 0.6;
-      add({ id: 'rev', label: 'Review count', status: wide ? 'fail' : 'warn', sev: wide ? 1 : 3, value: `You have ${reviews} Google reviews. ${top.name}, the shop Google puts right above you, has ${top.reviews}.`, why: `When ${cityHomeowner} compares the two of you, that gap is the whole decision.`, fix: 'Ask your last ten happy customers for a review, with a direct link. Then keep a steady trickle going.' });
+      add({ id: 'rev', label: 'Review count', status: wide ? 'fail' : 'warn', sev: wide ? 1 : 3, value: `You have ${reviews} Google reviews. ${top.name}, the business Google puts right above you, has ${top.reviews}.`, why: `When ${cityHomeowner} compares the two of you, that gap is the whole decision.`, fix: 'Ask your last ten happy customers for a review, with a direct link. Then keep a steady trickle going.' });
     }
   }
   // 9. Review velocity — reviews added in the last 90 days (cadence number)
   if (reviewsMeta && typeof reviewsMeta.added90 === 'number') {
     const v = reviewsMeta.added90;
     if (v >= 6) pass(`${v} reviews in 90 days`);
-    else add({ id: 'velocity', label: 'Review velocity', status: v === 0 ? 'fail' : 'warn', sev: v === 0 ? 1 : 3, value: v === 0 ? 'You haven’t added a single review in 90 days.' : `You added ${v} review${v === 1 ? '' : 's'} in the last 90 days.`, why: `The shops climbing past you ${inCity} pull in a fresh review most weeks. That gap grows every week you wait.`, fix: 'Ask for a review after every finished job, with a direct link, so they come in steadily.' });
+    else add({ id: 'velocity', label: 'Review velocity', status: v === 0 ? 'fail' : 'warn', sev: v === 0 ? 1 : 3, value: v === 0 ? 'You haven’t added a single review in 90 days.' : `You added ${v} review${v === 1 ? '' : 's'} in the last 90 days.`, why: `The businesses climbing past you ${inCity} pull in a fresh review most weeks. That gap grows every week you wait.`, fix: 'Ask for a review after every finished job, with a direct link, so they come in steadily.' });
   }
   // 4. Star rating vs the 4.0 cliff
   if (rating !== null && rating > 0) {
@@ -631,7 +631,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     else {
       const under = rating < 4.0;
       const rivalStar = top && top.rating ? ` ${top.name} is at ${top.rating.toFixed(1)} stars.` : '';
-      add({ id: 'star', label: 'Star rating', status: under ? 'fail' : 'warn', sev: under ? 1 : 3, value: `Your Google rating is ${rating.toFixed(1)} stars.${rivalStar}`, why: under ? 'Most homeowners never read a word under four stars. They just scroll to the shop that’s over it.' : 'You’re right on the four-star line homeowners filter by, with no cushion under you.', fix: 'Reply to every review, the rough ones first, and ask happy customers until the average climbs.' });
+      add({ id: 'star', label: 'Star rating', status: under ? 'fail' : 'warn', sev: under ? 1 : 3, value: `Your Google rating is ${rating.toFixed(1)} stars.${rivalStar}`, why: under ? 'Most homeowners never read a word under four stars. They just scroll to the business that’s over it.' : 'You’re right on the four-star line homeowners filter by, with no cushion under you.', fix: 'Reply to every review, the rough ones first, and ask happy customers until the average climbs.' });
     }
   }
   // 5. Review recency
@@ -639,14 +639,14 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     const mo = monthsSince(reviewsMeta.newest);
     if (mo !== null) {
       if (mo <= 3) pass('Fresh reviews');
-      else add({ id: 'recency', label: 'Review recency', status: mo > 6 ? 'fail' : 'warn', sev: mo > 6 ? 1 : 3, value: `Your newest review is about ${mo} months old.`, why: `${CityHomeowner} reads a stale profile as a shop that’s slowing down.`, fix: 'Ask for a review after every job, so the one on top is always recent.' });
+      else add({ id: 'recency', label: 'Review recency', status: mo > 6 ? 'fail' : 'warn', sev: mo > 6 ? 1 : 3, value: `Your newest review is about ${mo} months old.`, why: `${CityHomeowner} reads a stale profile as a business that’s slowing down.`, fix: 'Ask for a review after every job, so the one on top is always recent.' });
     }
   }
   // 6. Review response rate
   if (reviewsMeta && reviewsMeta.total > 0) {
     const rate = reviewsMeta.responded / reviewsMeta.total;
     if (rate >= 0.7) pass('Responds to reviews');
-    else add({ id: 'response', label: 'Review responses', status: rate < 0.25 ? 'fail' : 'warn', sev: rate < 0.25 ? 1 : 3, value: `You’ve answered ${reviewsMeta.responded} of your ${reviewsMeta.total} reviews.`, why: 'Silence reads as a shop that doesn’t care, and Google quietly favors the ones that reply.', fix: 'Reply to every review, even a line. The rough ones first.' });
+    else add({ id: 'response', label: 'Review responses', status: rate < 0.25 ? 'fail' : 'warn', sev: rate < 0.25 ? 1 : 3, value: `You’ve answered ${reviewsMeta.responded} of your ${reviewsMeta.total} reviews.`, why: 'Silence reads as a business that doesn’t care, and Google quietly favors the ones that reply.', fix: 'Reply to every review, even a line. The rough ones first.' });
   }
   // 7. Photos (omit on null — never "0 photos")
   if (num(m.photos) !== null) {
@@ -682,9 +682,9 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     if (postsMeta.newest) {
       const mo = monthsSince(postsMeta.newest);
       if (mo !== null && mo <= 3) pass('Posting updates');
-      else add({ id: 'posts', label: 'Google posts', status: 'warn', sev: 4, value: mo !== null ? `Your last post was about ${mo} months ago.` : 'Your posts have gone stale.', why: `Posts are free, they signal a shop that’s busy, and almost nobody ${inCity} bothers. That’s your opening.`, fix: 'Post a finished project every couple of weeks. It takes minutes.' });
+      else add({ id: 'posts', label: 'Google posts', status: 'warn', sev: 4, value: mo !== null ? `Your last post was about ${mo} months ago.` : 'Your posts have gone stale.', why: `Posts are free, they signal a business that’s busy, and almost nobody ${inCity} bothers. That’s your opening.`, fix: 'Post a finished project every couple of weeks. It takes minutes.' });
     } else if (postsMeta.count === 0) {
-      add({ id: 'posts', label: 'Google posts', status: 'warn', sev: 4, value: 'You’ve never posted an update.', why: `Posts are free, they signal a shop that’s busy, and almost nobody ${inCity} bothers. That’s your opening.`, fix: 'Post a finished project every couple of weeks. It takes minutes.' });
+      add({ id: 'posts', label: 'Google posts', status: 'warn', sev: 4, value: 'You’ve never posted an update.', why: `Posts are free, they signal a business that’s busy, and almost nobody ${inCity} bothers. That’s your opening.`, fix: 'Post a finished project every couple of weeks. It takes minutes.' });
     }
   }
 
@@ -726,7 +726,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     } else if (website.loads === true) {
       // Speed
       if (typeof website.perf === 'number') {
-        if (website.perf < 50) wadd('Speed', 'fail', `PageSpeed ${website.perf}/100 on mobile.`, 'A slow site bleeds visitors before it even loads, and Google ranks it lower for it.', 'Compress the images and cut the bloat so it loads in a second or two.');
+        if (website.perf < 50) wadd('Speed', 'fail', `PageSpeed ${website.perf}/100 on mobile.`, 'A slow site loses visitors before it even loads, and Google ranks it lower for it.', 'Compress the images and cut the bloat so it loads in a second or two.');
         else if (website.perf < 90) wadd('Speed', 'warn', `PageSpeed ${website.perf}/100 on mobile.`, 'Every slow second costs you a homeowner who won’t wait.', 'Compress images and trim scripts to get it into the 90s.');
         else wpass.push(`Fast (${website.perf}/100)`);
       }
@@ -744,10 +744,10 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       }
       // Footer year — only when genuinely stale (>2 years old)
       if (typeof website.footerYear === 'number' && website.footerYear < thisYear - 2) {
-        wadd('Footer year', 'fail', `Your site footer says © ${website.footerYear}.`, 'A homeowner reads a years-old date as a shop that’s closed.', 'Set the footer year to update automatically so it’s never stale.');
+        wadd('Footer year', 'fail', `Your site footer says © ${website.footerYear}.`, 'A homeowner reads a years-old date as a business that’s closed.', 'Set the footer year to update automatically so it’s never stale.');
       }
       // Tap-to-call up top
-      if (website.phoneAboveFold === false) wadd('Tap-to-call up top', 'warn', 'No tap-to-call above the fold.', 'If she has to hunt for your number, she calls the shop that put theirs front and center.', 'Put a tappable phone number in the header, visible the second the page loads.');
+      if (website.phoneAboveFold === false) wadd('Tap-to-call up top', 'warn', 'No tap-to-call above the fold.', 'If she has to hunt for your number, she calls the business that put theirs front and center.', 'Put a tappable phone number in the header, visible the second the page loads.');
       else if (website.phoneAboveFold === true) wpass.push('Phone up top');
       // Reviews on the site
       if (website.reviews === false) wadd('Reviews on your site', 'warn', 'No reviews shown on the page.', 'You’ve earned reviews, but a homeowner on your site never sees them, they’re one tab away from a competitor on Google.', 'Pull your best Google reviews onto the homepage where she lands.');
@@ -788,13 +788,13 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       if (website.metaDesc !== null) {
         const len = website.metaDesc.length;
         if (len >= 120 && len <= 160) wpass.push('Meta description set');
-        else wadd('Meta description', 'warn', len < 120 ? 'Your search description is short.' : 'Your search description runs long and gets cut off.', 'It’s the pitch under your link in Google. A weak one loses the click to the shop with a sharper one.', 'Write 120 to 160 characters on what you do, where, and why to call you.');
+        else wadd('Meta description', 'warn', len < 120 ? 'Your search description is short.' : 'Your search description runs long and gets cut off.', 'It’s the pitch under your link in Google. A weak one loses the click to the business with a sharper one.', 'Write 120 to 160 characters on what you do, where, and why to call you.');
       } else {
         wadd('Meta description', 'warn', 'No search description set.', 'Google grabs a random scrap of your page instead of a pitch. It rarely sells the click.', 'Write 120 to 160 characters on your trade, your area, and your offer.');
       }
       // LocalBusiness schema (★ marquee)
       if (website.schemaLocalBusiness === true) wpass.push('LocalBusiness schema');
-      else if (website.schemaLocalBusiness === false) wadd('Local schema', 'warn', 'Your site is missing the code that tells Google what you do and where you are.', 'It’s behind-the-scenes code Google leans on to rank local shops. The ones above you have it.', 'Add LocalBusiness schema with your name, address, phone, and services.');
+      else if (website.schemaLocalBusiness === false) wadd('Local schema', 'warn', 'Your site is missing the code that tells Google what you do and where you are.', 'It’s behind-the-scenes code Google leans on to rank local businesses. The ones above you have it.', 'Add LocalBusiness schema with your name, address, phone, and services.');
       // NAP consistency (phone on site vs GBP)
       if (Array.isArray(website.sitePhones) && website.sitePhones.length && str(m.phone)) {
         const gbp = m.phone.replace(/[^\d]/g, '').replace(/^1(?=\d{10}$)/, '');
@@ -808,7 +808,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       }
       // Blog section
       if (website.blogExists === true) wpass.push('Blog / articles');
-      else if (website.blogExists === false) wadd('Blog', 'warn', 'No blog or articles on the site.', 'A site that never publishes reads to Google like a shop that’s gone quiet. The ones beating you post most months.', 'Add a simple blog and post a finished project or a homeowner question now and then.');
+      else if (website.blogExists === false) wadd('Blog', 'warn', 'No blog or articles on the site.', 'A site that never publishes reads to Google like a business that’s gone quiet. The ones beating you post most months.', 'Add a simple blog and post a finished project or a homeowner question now and then.');
       // Service pages per trade
       if (typeof website.servicePages === 'number') {
         if (website.servicePages >= 3) wpass.push('Separate service pages');
@@ -822,7 +822,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     websiteSection = { url: website.url, items: w, passing: wpass };
   }
 
-  const math = `One kitchen ${inCity} runs a homeowner $20,000 to $30,000. Win back one you’d have lost to a sharper-looking shop, and every fix on this page has already paid for itself.`;
+  const math = `One kitchen ${inCity} runs a homeowner $20,000 to $30,000. Win one homeowner who’d have picked the sharper-looking business, and every fix on this page has already paid for itself.`;
 
   // Rankings — its own section with a map visual on the frontend.
   let rankings = null;
@@ -842,7 +842,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
       rankStatus: rank == null ? 'fail' : rank <= 3 ? 'pass' : rank <= 10 ? 'warn' : 'fail',
       gridStatus: pct == null ? null : pct >= 60 ? 'pass' : pct >= 20 ? 'warn' : 'fail',
       // why it matters, spelled out
-      why: `When ${cityHomeowner} searches “${primaryTerm}”, Google shows three shops on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners ${inCity}, and it runs on autopilot once you win it.`,
+      why: `When ${cityHomeowner} searches “${primaryTerm}”, Google shows three businesses on the map before anything else. Those three split almost every call. Everyone ranked below them is on a second screen she rarely reaches. This is the single biggest source of new homeowners ${inCity}, and it runs on autopilot once you win it.`,
     };
   }
 
@@ -885,7 +885,7 @@ function mergeProfile(places, info) {
   const domain = str(info?.domain) || str(info?.url) || str(places?.websiteUri);
   const hoursSet = info?.work_time?.work_hours ? true : (info && 'work_time' in info && !info.work_time ? null : (info?.work_time ? true : null));
   return {
-    name: places?.displayName?.text || info?.title || 'Your shop',
+    name: places?.displayName?.text || info?.title || 'Your business',
     rating: num(rating),
     reviews: num(reviews),
     photos: num(photos),
