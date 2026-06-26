@@ -8,6 +8,7 @@
    from scorecard.astro; no auto-run.
    ===================================================================== */
 import { site } from '../../data/site.config';
+import { track as metaTrack } from '../../utils/track.js';
 
 type Rival = { name: string; reviews: number; rating: number };
 type AuditItem = { id: string; label: string; status: 'fail' | 'warn'; value: string; why: string; fix: string };
@@ -188,15 +189,70 @@ export function init() {
   const root = document.querySelector<HTMLElement>('[data-sc-root]');
   if (!root) return;
 
+  // ---- Stepped loading narrative. Verbatim copy, paired one-to-one with each
+  //      step. Each step renders for at least STEP_MIN_MS so the priming line is
+  //      readable; steps play in order and loop back to the start if the pull
+  //      runs long; once data is ready the loader leaves after the current step.
+  const LOADING_STEPS: { status: string; priming: string }[] = [
+    { status: 'Pulling up your Google profile.', priming: 'Google can’t see your work. It ranks the shop that looks busiest. That’s the whole game, and most owners never get told.' },
+    { status: 'Finding the shop you’re up against.', priming: 'The shop you’re about to meet probably doesn’t build a better kitchen than you. He just shows up better.' },
+    { status: 'Checking the map across your service area.', priming: 'You can sit at number one outside your own shop and vanish three miles down the road. Google draws a different map for every driveway.' },
+    { status: 'Counting your reviews against his.', priming: 'A homeowner trusts forty reviews over five without reading a single one. He’s not weighing them. He’s counting them.' },
+    { status: 'Seeing who’s pulling reviews faster.', priming: 'One review from last week beats a stack from two years ago. A quiet profile reads like a shop that closed.' },
+    { status: 'Checking who Google points the calls to.', priming: 'Three names show up on the map. Everybody else is on a page nobody scrolls to.' },
+    { status: 'Building your side-by-side.', priming: 'He pulls out his phone in the driveway after you leave and picks from what he finds. Here’s what he finds.' },
+  ];
+  const STEP_MIN_MS = 1500;
+  const loadStatusEl = root.querySelector<HTMLElement>('[data-load-status]');
+  const loadPrimingEl = root.querySelector<HTMLElement>('[data-load-priming]');
+  const loadStepEl = root.querySelector<HTMLElement>('[data-load-step]');
+  let loadTimer: number | undefined;
+  let loadIdx = 0;
+  let loadPending: (() => void) | null = null;
+
+  const paintStep = (i: number) => {
+    const s = LOADING_STEPS[i];
+    if (loadStatusEl) loadStatusEl.textContent = s.status;
+    if (loadPrimingEl) loadPrimingEl.textContent = s.priming;
+    if (loadStepEl) { loadStepEl.classList.remove('is-step-in'); void loadStepEl.offsetWidth; loadStepEl.classList.add('is-step-in'); }
+  };
+  const stopLoader = () => { window.clearTimeout(loadTimer); loadTimer = undefined; loadPending = null; };
+  const startLoader = () => {
+    window.clearTimeout(loadTimer);
+    loadIdx = 0; loadPending = null;
+    paintStep(0);
+    const tick = () => {
+      // the current step has had its minimum readable time
+      if (loadPending) { const go = loadPending; loadPending = null; stopLoader(); go(); return; }
+      loadIdx = (loadIdx + 1) % LOADING_STEPS.length;   // loop back to the start if the pull runs long
+      paintStep(loadIdx);
+      loadTimer = window.setTimeout(tick, STEP_MIN_MS);
+    };
+    loadTimer = window.setTimeout(tick, STEP_MIN_MS);
+  };
+
   const screens = Array.from(root.querySelectorAll<HTMLElement>('[data-sc-screen]'));
-  const show = (name: string) => {
+  let currentScreen = '';
+  const doShow = (name: string) => {
+    currentScreen = name;
     screens.forEach((s) => { s.hidden = s.dataset.scScreen !== name; });
+    if (name === 'loading') startLoader(); else stopLoader();
     const focusable = root.querySelector<HTMLElement>(`[data-sc-screen="${name}"] [data-focus]`);
     requestAnimationFrame(() => focusable?.focus());
     window.scrollTo({ top: 0, behavior: 'smooth' });
     // demo: show the sample businesses the moment the identify screen appears,
     // so you can just click one — no typing, no API.
     if (name === 'identify' && DEMO_MODE) renderAc(MOCK_SUGGESTIONS);
+  };
+  const show = (name: string) => {
+    // while loading, hold any transition until the current priming line has had
+    // its minimum readable time; if the pull is fast we still finish the step,
+    // if it's slow the steps loop until the data lands
+    if (currentScreen === 'loading' && name !== 'loading' && loadTimer !== undefined) {
+      loadPending = () => doShow(name);
+      return;
+    }
+    doShow(name);
   };
 
   let sessionToken = newToken();
@@ -214,6 +270,7 @@ export function init() {
       e.preventDefault();
       dlog('start tapped');
       track('ScorecardStarted');
+      metaTrack('ScorecardStarted');
       const typed = (form.querySelector<HTMLInputElement>('[data-start-input]')?.value || '').trim();
       show('identify');
       const ai = root.querySelector<HTMLInputElement>('[data-ac-input]');
@@ -342,6 +399,7 @@ export function init() {
       try { history.replaceState(null, '', `#b=${encodeURIComponent(chosen.placeId)}`); } catch { /* noop */ }
     }
     track('ScorecardResult', { band: payload?.segment?.band, demo: DEMO_MODE });
+    metaTrack('ViewContent', { content_name: 'Scorecard Results' });
   }
 
   // Shared-link path: a link like /scorecard#b=<placeId> reopens that scorecard
@@ -362,6 +420,7 @@ export function init() {
       try { renderResult(); } catch (err) { console.error('[scorecard] shared render failed:', err); }
       show('result');
       track('ScorecardSharedOpen', { band: data.segment?.band });
+      metaTrack('ViewContent', { content_name: 'Scorecard Results' });
     } catch { show('start'); }
   }
 
@@ -386,6 +445,8 @@ export function init() {
     if (!emailOk(email)) { dlog('gate blocked: invalid email'); fail(gateStatus, 'That email doesn’t look right.'); return; }
     if (!data.get('consent')) { dlog('gate blocked: consent not ticked'); fail(gateStatus, 'Please tick the box so I can send it.'); return; }
     if (gateStatus) { gateStatus.hidden = false; gateStatus.textContent = ''; }
+    metaTrack('Lead', { content_name: 'Scorecard Email' });
+    metaTrack('ScorecardEmailCaptured');
     goToResult();
   });
 

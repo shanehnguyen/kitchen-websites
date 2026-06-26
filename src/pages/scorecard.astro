@@ -7,7 +7,6 @@
    The flow is driven by src/islands/scorecard/flow.ts. */
 import BareLayout from '../layouts/BareLayout.astro';
 import HomeContent from '../components/HomeContent.astro';
-import Footer from '../components/Footer.astro';
 const minutes = 30;
 ---
 <BareLayout
@@ -44,8 +43,6 @@ const minutes = 30;
           <li><span class="sc-start__stat-num">2.7×</span><span class="sc-start__stat-cap">more likely to be trusted when your Google profile is complete.</span></li>
         </ul>
       </div>
-
-      <Footer />
     </section>
 
     <!-- 2 — IDENTIFY -->
@@ -65,7 +62,10 @@ const minutes = 30;
     <section class="sc-screen sc-loading" data-sc-screen="loading" hidden>
       <div class="sc-wrap">
         <div class="sc-spinner" aria-hidden="true"></div>
-        <p class="sc-loading__text mono">Pulling your Google…</p>
+        <div class="sc-load__step" data-load-step>
+          <p class="sc-load__status mono" data-load-status aria-live="polite"></p>
+          <p class="sc-load__priming" data-load-priming></p>
+        </div>
       </div>
     </section>
 
@@ -111,7 +111,7 @@ const minutes = 30;
          FAQ → footer. -->
     <section class="sc-screen sc-screen--result" data-sc-screen="result" hidden>
       <div class="sc-wrap" data-result-host></div>
-      <!-- video the "More info ↓" prompt points to, right after the audit -->
+      <!-- featured video the "More info ↓" prompt points to, right after the audit -->
       <div class="sc-reel">
         <div class="sc-reel__video">
           <video class="sc-reel__media" playsinline preload="metadata" poster="/video/kitchenwebsites-video2-poster.jpg" data-src="/video/kitchenwebsites-video2.mp4"></video>
@@ -120,7 +120,6 @@ const minutes = 30;
       </div>
       <div class="sc-home">
         <HomeContent hero={false} />
-        <Footer />
       </div>
     </section>
 
@@ -189,6 +188,8 @@ const minutes = 30;
      is safe and keeps the injected DOM on the site's design system. -->
 <style is:global>
   .sc { min-height: 100dvh; }
+  /* single-goal funnel: no persistent CTA bar, even from the embedded homepage */
+  .smcta { display: none; }
   .sc-wrap { max-width: 42rem; margin-inline: auto; padding: var(--space-8) var(--gutter) var(--space-16); }
   /* the result runs wider than the question screens so the audit's two columns
      break out of the narrow reading column and the boxes get real width */
@@ -240,6 +241,11 @@ const minutes = 30;
   .sc-spinner { width: 40px; height: 40px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 999px; animation: sc-spin 800ms linear infinite; }
   @keyframes sc-spin { to { transform: rotate(360deg); } }
   .sc-loading__text { color: var(--ink-50); letter-spacing: var(--tracking-caps); }
+  /* stepped loading narrative: status line + readable priming line, ≥1500ms each */
+  .sc-load__step { max-width: 42ch; display: grid; gap: var(--space-3); }
+  .sc-load__step.is-step-in { animation: sc-in 360ms cubic-bezier(.2,.7,.2,1); }
+  .sc-load__status { color: var(--ink-50); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-size: var(--fs-caption); }
+  .sc-load__priming { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.55; color: var(--ink); }
 
   /* hook */
   .sc-hook { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw + 1rem, 2.75rem); line-height: 1.2; color: var(--ink); }
@@ -370,6 +376,8 @@ const minutes = 30;
   .sc-more__label { font-family: var(--font-body); font-size: var(--fs-eyebrow); font-weight: var(--fw-body-semi); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--ink-50); }
   .sc-more__arrow { display: block; margin-top: var(--space-3); font-size: 1.75rem; line-height: 1; color: var(--accent); animation: sc-bounce 1.6s ease-in-out infinite; }
 
+  @keyframes sc-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
   /* featured video, sits right under the audit (the "More info ↓" target) */
   .sc-reel { max-width: 60rem; margin: var(--space-8) auto var(--space-12); padding-inline: var(--gutter); }
   .sc-reel__video {
@@ -389,7 +397,8 @@ const minutes = 30;
   }
   .sc-reel__play:hover { transform: scale(1.06); background: color-mix(in srgb, var(--porcelain) 22%, transparent); }
   .sc-reel__video.is-playing .sc-reel__play { display: none; }
-  @keyframes sc-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+  /* the scorecard features video 2 only; hide the embedded homepage's own reel */
+  .sc-home .home-reel { display: none; }
 
   /* keep the prose at a readable measure even though the grid runs full width */
   .sc-verdict__sub, .sc-section__sub, .sc-doing { max-width: 52rem; }
@@ -412,6 +421,6 @@ const minutes = 30;
   [data-focus]:focus:not(:focus-visible) { outline: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .sc-screen, .sc-spinner, .sc-more__arrow { animation: none; }
+    .sc-screen, .sc-spinner, .sc-more__arrow, .sc-load__step { animation: none; }
   }
 </style>

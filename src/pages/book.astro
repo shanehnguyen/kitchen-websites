@@ -123,6 +123,7 @@ const DOTS = 4; // question screens 1–4
 
 <script>
   import { site } from '../data/site.config';
+  import { track } from '../utils/track.js';
   const bookingUrl = site.bookingUrl;
 
   const form = document.querySelector<HTMLFormElement>('[data-book-form]');
@@ -330,6 +331,7 @@ const DOTS = 4; // question screens 1–4
     window.addEventListener('message', (e) => {
       if ((e.data as any)?.event === 'calendly.event_scheduled') {
         (window as any).kwTrack?.('CallBooked', { via: 'calendly' });
+        track('CallBooked');
         setFirst((answers.name as string) || '');
         if (flow) flow.hidden = true;
         if (done) done.hidden = false;

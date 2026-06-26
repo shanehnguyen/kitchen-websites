@@ -118,7 +118,8 @@ const n = cards.length;
 
   /* responsive: desktop ~3 + bleed, tablet ~2, mobile 1 + peek */
   @media (max-width: 64em) { .cl { --card-w: clamp(260px, 44vw, 360px); } }
-  @media (max-width: 40em) { .cl { --card-w: 76vw; } }
+  /* mobile: smaller cards so the 3:4 portraits don't run nearly full-screen tall */
+  @media (max-width: 40em) { .cl { --card-w: clamp(160px, 50vw, 220px); } .cl__track { gap: var(--space-4); } }
 
   @media (prefers-reduced-motion: reduce) {
     .cl__viewport { overflow-x: auto; scroll-snap-type: x proximity; }

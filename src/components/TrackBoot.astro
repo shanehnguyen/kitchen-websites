@@ -1,0 +1,14 @@
+---
+/* Boots the Meta events that must be wired globally. Every "Book a Call" CTA on
+   the site is a link to /book (nav button, sticky bar, in-page CTAs, scorecard
+   escalation), so one delegated listener covers them all → BookClicked.
+   Page-specific conversions (scorecard, Calendly confirm) are wired in their
+   own islands. */
+---
+<script>
+  import { track } from '../utils/track.js';
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    if (t instanceof Element && t.closest('a[href^="/book"]')) track('BookClicked');
+  });
+</script>

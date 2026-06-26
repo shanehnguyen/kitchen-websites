@@ -3,6 +3,7 @@
    legal line only. Spec §3: "the page IS the CTA." */
 import { site } from '../data/site.config';
 import Analytics from '../components/Analytics.astro';
+import TrackBoot from '../components/TrackBoot.astro';
 import '@fontsource-variable/archivo';
 import '@fontsource-variable/source-serif-4';
 import '@fontsource-variable/jetbrains-mono';
@@ -41,6 +42,7 @@ const year = 2026;
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg" />
     <Analytics />
+    <TrackBoot />
   </head>
   <body>
     <main id="main">

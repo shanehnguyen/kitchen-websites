@@ -1,25 +1,64 @@
 ---
 /* Global nav. Spec §2:
-   Logo · Done For You · Websites · About · [button] Free strategy session
-   One hero-level CTA rule: the nav button → /book. */
+   Logo · Done For You · Websites · About · [button] Book a Call
+   Desktop: links inline + CTA. Mobile: logo (links home) + an always-visible
+   solid CTA + a hamburger that opens ONLY the secondary links. The CTA never
+   lives inside the menu. One hero-level CTA rule: the nav button → /book. */
 interface Props { overlay?: boolean; }
 const { overlay = false } = Astro.props;
 const path = Astro.url.pathname;
 const isActive = (href: string) => path === href || path.startsWith(href + '/');
 ---
-<header class:list={['nav', { 'nav--overlay': overlay }]}>
+<header class:list={['nav', { 'nav--overlay': overlay }]} data-nav>
   <div class="nav__inner">
     <a class="nav__logo" href="/">
       <span class="nav__logo-name">Kitchen <span>Websites</span></span>
       <span class="nav__logo-by">by FlipFix Digital</span>
     </a>
-    <nav aria-label="Primary">
-      <ul class="nav__links">
+    <nav class="nav__menu" aria-label="Primary">
+      <ul class="nav__links" id="nav-menu">
         <li><a href="/done-for-you" aria-current={isActive('/done-for-you') ? 'page' : undefined}>Done For You</a></li>
         <li><a href="/websites" aria-current={isActive('/websites') ? 'page' : undefined}>Websites</a></li>
         <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
       </ul>
     </nav>
-    <a class="btn btn--primary nav__cta" href="/book">Free strategy session</a>
+    <div class="nav__actions">
+      <a class="btn btn--primary nav__cta" href="/book">Book a Call</a>
+      <button
+        class="nav__toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="nav-menu"
+        aria-label="Open menu"
+        data-nav-toggle
+      >
+        <span class="nav__toggle-box" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
 </header>
+
+<script>
+  // Mobile menu toggle. The hamburger reveals ONLY the secondary links; the
+  // CTA sits outside the menu and stays visible at every width.
+  const header = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = header?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const menu = header?.querySelector<HTMLElement>('#nav-menu');
+  if (header && toggle && menu) {
+    const setOpen = (open: boolean) => {
+      header.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    };
+    toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
+    // close after tapping a link, or on Escape
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    // collapse if the viewport grows to the desktop layout
+    window.matchMedia('(min-width: 56em)').addEventListener('change', (e) => {
+      if (e.matches) setOpen(false);
+    });
+  }
+</script>

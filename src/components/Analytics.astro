@@ -1,10 +1,11 @@
 ---
-/* Analytics — Meta Pixel + CAPI-ready, GA4 optional. Only emits when ids are
-   configured in site.config (placeholders => nothing renders, no console noise).
-   Event helper window.kwTrack(name, params) fires to whichever are present.
-   Funnel events: CalcComplete, LeadQualified, CallBooked. */
+/* Analytics — Meta Pixel base (fires PageView on every page) + GA4 optional.
+   Pixel ID comes from the PUBLIC_META_PIXEL_ID env var (not hardcoded). Meta
+   conversion events are fired through src/utils/track.js; window.kwTrack carries
+   the internal funnel telemetry to GA4 only, so Meta stays to the named events. */
 import { site } from '../data/site.config';
-const { metaPixelId, ga4Id } = site.analytics;
+const metaPixelId = import.meta.env.PUBLIC_META_PIXEL_ID;
+const { ga4Id } = site.analytics;
 ---
 {metaPixelId && (
   <script is:inline define:vars={{ metaPixelId }}>
@@ -27,9 +28,9 @@ const { metaPixelId, ga4Id } = site.analytics;
   </>
 )}
 <script is:inline>
-  // Unified event helper used by the islands + CTAs.
+  // Internal funnel telemetry → GA4 only. Meta events go through
+  // src/utils/track.js so the Pixel receives just the named conversion events.
   window.kwTrack = function (name, params) {
-    try { if (window.fbq) window.fbq('trackCustom', name, params || {}); } catch (e) {}
     try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
   };
   // Preserve UTM params across same-origin nav to /book and /scorecard.

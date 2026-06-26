@@ -196,7 +196,7 @@ const closingStats = [
   </div>
 </section>
 
-<StickyMobileCTA href="/book" label={`Book the ${minutes}-minute call`} event="HomeStickyToBook" />
+<StickyMobileCTA href="/book" label="Book a Call" event="HomeStickyToBook" />
 
 <script>
   // Lazy-init the hero background video: set the source after first paint so it
@@ -281,6 +281,12 @@ const closingStats = [
   .reel-video__play:hover { transform: scale(1.06); background: color-mix(in srgb, var(--porcelain) 22%, transparent); }
   /* pushed well below the video so people watch before they click */
   .home-reel__cta { margin-top: var(--space-24); display: flex; justify-content: center; }
+  /* mobile: the overlap pulls the video up onto the hero text, so stack it
+     cleanly below the hero instead, and tighten the oversized CTA gap */
+  @media (max-width: 48em) {
+    .home-reel { margin-top: var(--space-8); }
+    .home-reel__cta { margin-top: var(--space-10); }
+  }
 
   .home-offering { text-align: center; }
   .home-offering__h { margin: var(--space-3) auto 0; max-width: 28ch; }
