@@ -7,6 +7,7 @@
    The flow is driven by src/islands/scorecard/flow.ts. */
 import BareLayout from '../layouts/BareLayout.astro';
 import HomeContent from '../components/HomeContent.astro';
+import CTAButton from '../components/CTAButton.astro';
 const minutes = 30;
 ---
 <BareLayout
@@ -116,6 +117,9 @@ const minutes = 30;
         <div class="sc-reel__video">
           <video class="sc-reel__media" playsinline preload="metadata" poster="/video/kitchenwebsites-video2-poster.jpg" data-src="/video/kitchenwebsites-video2.mp4"></video>
           <button type="button" class="sc-reel__play" aria-label="Play video"><span aria-hidden="true">▶</span></button>
+        </div>
+        <div class="sc-reel__cta">
+          <CTAButton href="/book" label="Claim your free strategy session" event="Scorecard:ReelToBook" size="lg" />
         </div>
       </div>
       <div class="sc-home">
@@ -397,6 +401,7 @@ const minutes = 30;
   }
   .sc-reel__play:hover { transform: scale(1.06); background: color-mix(in srgb, var(--porcelain) 22%, transparent); }
   .sc-reel__video.is-playing .sc-reel__play { display: none; }
+  .sc-reel__cta { margin-top: var(--space-6); display: flex; justify-content: center; }
   /* the scorecard features video 2 only; hide the embedded homepage's own reel */
   .sc-home .home-reel { display: none; }
 
