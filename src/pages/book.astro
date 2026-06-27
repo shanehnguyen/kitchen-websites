@@ -1,15 +1,14 @@
 ---
-/* /book — the 30-minute strategy session funnel. One question per screen
-   (intro → name → contact → your work → the obstacle), then the Calendly
-   calendar. It's a SINGLE <form>: every field's value persists in the DOM even
-   while its screen is hidden, so at submit we read ALL answers from the whole
-   form at once — nothing can be lost moving between screens. Lead goes to
-   Web3Forms client-side (fire-and-forget); then it flips to the inline calendar
-   and, once a time is picked, to the confirmation. */
+/* /book — the 30-minute strategy session as a PROGRESSIVE, stacked form. The
+   first question shows; answering it reveals the next right below it, and every
+   answered question stays visible, so by the end the whole thing reads back as
+   one page. It's a SINGLE <form>; values live in the DOM and persist to
+   sessionStorage so nothing is lost (and autofill just works — nothing is hidden
+   in a way that breaks it). On submit the lead fires to Web3Forms and the
+   Calendly calendar reveals beneath the answers; a booked time → confirmation. */
 import BareLayout from '../layouts/BareLayout.astro';
 import { site } from '../data/site.config';
 const minutes = site.callLengthMinutes;
-const DOTS = 4; // question screens 1–4
 ---
 <BareLayout
   title={`Book your ${minutes}-minute strategy session`}
@@ -17,32 +16,27 @@ const DOTS = 4; // question screens 1–4
   noindex={true}
 >
   <div data-book-flow>
-    <div class="bk-prog" data-prog-row aria-hidden="true">
-      {Array.from({ length: DOTS }).map(() => <span class="bk-dot"></span>)}
-    </div>
-
     <section class="section bk-funnel">
       <div class="container container--narrow">
+
+        <header class="bk-intro">
+          <p class="eyebrow">For kitchen &amp; bath businesses</p>
+          <h1 class="bk-intro__h1">Your free {minutes}-minute game plan</h1>
+          <p class="bk-intro__lede">Thirty minutes with me, and you walk off with a plan to get found by the homeowners already looking and chosen over the business down the road. The kind of plan I’d normally only put together for a paying client.</p>
+          <p class="bk-intro__sub">It’s for owners who do good work and are done watching it go to businesses that do worse.</p>
+        </header>
+
         <form class="bk-form" data-book-form novalidate>
 
-          <!-- 0 — INTRO -->
-          <fieldset class="bk-screen bk-screen--intro" data-screen="0" data-active>
-            <p class="eyebrow">For kitchen &amp; bath businesses</p>
-            <h1 class="bk-intro__h1">Your free {minutes}-minute game plan</h1>
-            <p class="bk-intro__lede">Thirty minutes with me, and you walk off with a plan to get found by the homeowners already looking and chosen over the business down the road. The kind of plan I’d normally only put together for a paying client.</p>
-            <p class="bk-intro__sub">It’s for owners who do good work and are done watching it go to businesses that do worse.</p>
-            <div class="bk-nav"><button type="button" class="btn btn--primary btn--lg" data-next>Get started <span aria-hidden="true">→</span></button></div>
-          </fieldset>
-
-          <!-- 1 — NAME -->
-          <fieldset class="bk-screen" data-screen="1" data-field="name" hidden>
+          <!-- Q1 — NAME (shown first) -->
+          <fieldset class="bk-step" data-step data-field="name">
             <h2 class="bk-q">What do I call you?</h2>
             <input class="bk-input" name="name" type="text" autocomplete="given-name" placeholder="First name" required />
             <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
-          <!-- 2 — CONTACT -->
-          <fieldset class="bk-screen" data-screen="2" hidden>
+          <!-- Q2 — CONTACT -->
+          <fieldset class="bk-step" data-step hidden>
             <h2 class="bk-q">A few quick details, <span data-first>there</span>.</h2>
             <div class="bk-fields">
               <label class="bk-field" data-field="mobile">
@@ -58,11 +52,11 @@ const DOTS = 4; // question screens 1–4
                 <input class="bk-input" name="website" type="text" placeholder="yoursite.com, or business name and city" required />
               </label>
             </div>
-            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
-          <!-- 3 — YOUR WORK -->
-          <fieldset class="bk-screen" data-screen="3" hidden>
+          <!-- Q3 — YOUR WORK -->
+          <fieldset class="bk-step" data-step hidden>
             <h2 class="bk-q">A little about your work.</h2>
             <div class="bk-field" data-field="customers">
               <p class="bk-sub">Is your work mostly for homeowners, or builder and contractor accounts?</p>
@@ -81,23 +75,16 @@ const DOTS = 4; // question screens 1–4
                 <button type="button" class="bk-card" data-value="10+">10+</button>
               </div>
             </div>
-            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
-          <!-- 4 — THE OBSTACLE (optional) -->
-          <fieldset class="bk-screen" data-screen="4" hidden>
+          <!-- Q4 — THE OBSTACLE (optional) → submit -->
+          <fieldset class="bk-step" data-step hidden>
             <h2 class="bk-q"><span data-first>There</span>, what’s the one thing about getting found and getting picked online that’s eating at you most? <span class="bk-opt">(optional)</span></h2>
             <p class="bk-why">Don’t tidy it up. Give me the real version, in your own words. It’s the first thing I read before we talk.</p>
             <textarea class="bk-input" name="obstacle" rows="4"></textarea>
-            <div class="bk-nav"><button type="button" class="bk-back" data-back>← Back</button><button type="button" class="btn btn--primary btn--lg" data-submit>Book my session <span aria-hidden="true">→</span></button></div>
+            <div class="bk-nav"><button type="button" class="btn btn--primary btn--lg" data-submit>Book my session <span aria-hidden="true">→</span></button></div>
             <p class="bk-form__status mono" data-book-status hidden></p>
-          </fieldset>
-
-          <!-- 5 — CALENDAR (full width) -->
-          <fieldset class="bk-screen bk-screen--cal" data-screen="5" hidden>
-            <h2 class="bk-cal__h">Got your details. Pick a time that works.</h2>
-            <div class="bk-cal__widget" data-calendly></div>
-            <a class="bk-cal__direct" href={site.bookingUrl} target="_blank" rel="noopener">Calendar not loading? Open it in a new tab →</a>
           </fieldset>
 
           <!-- honeypot. NO "company" name/label: browser autofill fills a field
@@ -107,6 +94,14 @@ const DOTS = 4; // question screens 1–4
             <input id="hp-confirm" name="hp_confirm" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
           </div>
         </form>
+
+        <!-- CALENDAR — revealed beneath the answers once the form is submitted -->
+        <div class="bk-step bk-step--cal" data-step="cal" hidden>
+          <h2 class="bk-cal__h">Got your details. Pick a time that works.</h2>
+          <div class="bk-cal__widget" data-calendly></div>
+          <a class="bk-cal__direct" href={site.bookingUrl} target="_blank" rel="noopener">Calendar not loading? Open it in a new tab →</a>
+        </div>
+
       </div>
     </section>
   </div>
@@ -129,24 +124,21 @@ const DOTS = 4; // question screens 1–4
   const form = document.querySelector<HTMLFormElement>('[data-book-form]');
   const flow = document.querySelector<HTMLElement>('[data-book-flow]');
   const done = document.querySelector<HTMLElement>('[data-book-done]');
-  const status = document.querySelector<HTMLElement>('[data-book-status]');
-  const dots = Array.from(document.querySelectorAll<HTMLElement>('.bk-dot'));
-  const progRow = document.querySelector<HTMLElement>('[data-prog-row]');
+  const calStep = document.querySelector<HTMLElement>('[data-step="cal"]');
 
-  // Answers persist here for radios; text/textarea values live in the DOM (the
-  // form is never reset between screens), and are read from the whole form at submit.
+  // text/textarea answers live in the DOM; radios are tracked here too
   const answers: Record<string, string> = {};
 
   if (form) {
-    const screens = Array.from(form.querySelectorAll<HTMLElement>('.bk-screen'));
-    const total = screens.length; // 0..5
-    let i = 0;
+    const steps = Array.from(form.querySelectorAll<HTMLElement>('[data-step]'));
+    let current = 0;
 
     const setFirst = (name: string) => {
       document.querySelectorAll<HTMLElement>('[data-first]').forEach((el) => { el.textContent = name; });
     };
+    const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-    // ---- visible validation (no silent shakes) ----
+    // ---- visible validation (shows messages + shakes) ----
     const fieldWrap = (name: string) => form.querySelector<HTMLElement>(`[data-field="${name}"]`);
     function showErr(name: string, msg: string) {
       const wrap = fieldWrap(name);
@@ -162,9 +154,40 @@ const DOTS = 4; // question screens 1–4
       wrap.classList.remove('bk-field--err');
       wrap.querySelector('.bk-err')?.remove();
     }
-    const shake = (screen: HTMLElement) => { screen.classList.remove('bk-screen--err'); void screen.offsetWidth; screen.classList.add('bk-screen--err'); };
+    const shake = (step: HTMLElement) => { step.classList.remove('bk-step--err'); void step.offsetWidth; step.classList.add('bk-step--err'); };
 
-    // read every text field across the WHOLE form (values persist on hidden screens)
+    const validStep = (step: HTMLElement) => {
+      let ok = true;
+      step.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
+        if (f.name === 'hp_confirm' || !f.required) return;
+        const name = (f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name;
+        if (!f.value.trim()) { showErr(name, 'Please fill this in to continue.'); ok = false; }
+        else if ((f as HTMLInputElement).type === 'email' && !emailOk(f.value)) { showErr(name, 'That email doesn’t look right.'); ok = false; }
+        else clearErr(name);
+      });
+      step.querySelectorAll<HTMLElement>('[data-radio]').forEach((g) => {
+        const name = g.dataset.name!;
+        if (!g.querySelector('.is-on')) { showErr(name, 'Pick an option to continue.'); ok = false; }
+        else clearErr(name);
+      });
+      if (!ok) shake(step);
+      return ok;
+    };
+
+    // ---- silent validity (used to resume saved progress without flashing errors) ----
+    const stepValid = (step: HTMLElement) => {
+      let ok = true;
+      step.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
+        if (f.name === 'hp_confirm' || !f.required) return;
+        if (!f.value.trim()) ok = false;
+        else if ((f as HTMLInputElement).type === 'email' && !emailOk(f.value)) ok = false;
+      });
+      step.querySelectorAll<HTMLElement>('[data-radio]').forEach((g) => { if (!g.querySelector('.is-on')) ok = false; });
+      return ok;
+    };
+
+    // ---- persistence: never lose answers between reveals or on reload ----
+    const STORE = 'kw_book_v1';
     const collectAll = () => {
       form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
         if (f.name === 'hp_confirm') return;
@@ -172,10 +195,6 @@ const DOTS = 4; // question screens 1–4
         answers[f.name] = f.value.trim();
       });
     };
-
-    // ---- persistence: save every answer so the form NEVER resets between pages
-    //      (or on any accidental reload). Restored on load, cleared after booking.
-    const STORE = 'kw_book_v1';
     const persist = () => { try { collectAll(); sessionStorage.setItem(STORE, JSON.stringify(answers)); } catch { /* ignore */ } };
     const restore = () => {
       let saved: Record<string, string> = {};
@@ -192,50 +211,37 @@ const DOTS = 4; // question screens 1–4
       if (saved.name) setFirst(saved.name);
     };
 
-    // validate one screen; returns true if OK, else shows messages + shakes
-    const validScreen = (screen: HTMLElement) => {
-      let ok = true;
-      screen.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name], textarea[name]').forEach((f) => {
-        if (f.name === 'hp_confirm') return;
-        if (!f.required) return;
-        const name = (f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name;
-        if (!f.value.trim()) { showErr(name, 'Please fill this in to continue.'); ok = false; }
-        else if ((f as HTMLInputElement).type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.value)) { showErr(name, 'That email doesn’t look right.'); ok = false; }
-        else clearErr(name);
+    // ---- progressive reveal: keep steps 0..current visible, only the current
+    //      step shows its Continue/Submit button ----
+    const reveal = (n: number, scroll = false) => {
+      current = Math.max(0, Math.min(steps.length - 1, n));
+      steps.forEach((s, idx) => {
+        if (idx <= current) s.hidden = false;
+        s.classList.toggle('is-current', idx === current);
       });
-      // required single-choice card groups
-      screen.querySelectorAll<HTMLElement>('[data-radio]').forEach((g) => {
-        const name = g.dataset.name!;
-        if (!g.querySelector('.is-on')) { showErr(name, 'Pick an option to continue.'); ok = false; }
-        else clearErr(name);
-      });
-      if (!ok) shake(screen);
-      return ok;
-    };
-
-    const updateDots = () => {
-      const onCal = i >= total - 1;
-      if (progRow) progRow.style.display = onCal ? 'none' : '';
-      const filled = i >= 1 && i <= dots.length ? i : (i > dots.length ? dots.length : 0);
-      dots.forEach((d, idx) => d.classList.toggle('is-on', idx < filled));
-    };
-
-    const show = (n: number) => {
-      i = Math.max(0, Math.min(total - 1, n));
-      screens.forEach((s, idx) => { s.hidden = idx !== i; });
-      updateDots();
-      if (i === total - 1) initCalendly();
-      const focusable = screens[i].querySelector<HTMLElement>('input:not([hidden]), textarea, select');
-      requestAnimationFrame(() => focusable?.focus());
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const step = steps[current];
+      if (scroll) {
+        step.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const focusable = step.querySelector<HTMLElement>('input:not([type=hidden]), textarea');
+        requestAnimationFrame(() => focusable?.focus());
+      }
     };
 
     const advance = () => {
-      if (i === 1) setFirst((form.querySelector<HTMLInputElement>('[name="name"]')?.value || '').trim());
-      show(i + 1);
+      setFirst((form.querySelector<HTMLInputElement>('[name="name"]')?.value || '').trim());
+      if (current < steps.length - 1) reveal(current + 1, true);
     };
 
-    // single-choice cards: select one (no auto-advance — screen 3 has two groups)
+    const showCalendar = () => {
+      steps.forEach((s) => s.classList.remove('is-current'));
+      if (calStep) {
+        calStep.hidden = false;
+        initCalendly();
+        calStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    // single-choice cards
     form.querySelectorAll<HTMLElement>('[data-radio]').forEach((group) => {
       group.querySelectorAll<HTMLButtonElement>('.bk-card').forEach((card) => {
         card.addEventListener('click', () => {
@@ -248,19 +254,21 @@ const DOTS = 4; // question screens 1–4
       });
     });
 
-    // clear error + persist as the user types
+    // clear error + persist as the user types OR autofills (autofill often fires
+    // 'change' rather than 'input', so listen for both)
     form.querySelectorAll<HTMLInputElement>('input[name], textarea[name]').forEach((f) => {
-      f.addEventListener('input', () => { clearErr((f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name); persist(); });
+      const onEdit = () => { clearErr((f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name); persist(); };
+      f.addEventListener('input', onEdit);
+      f.addEventListener('change', onEdit);
     });
 
     const doSubmit = () => {
-      const last = screens.find((s) => s.dataset.screen === '4')!;
-      if (!validScreen(last)) return;               // obstacle is optional, so this passes
+      const last = steps[steps.length - 1];
+      if (!validStep(last)) return;                 // obstacle is optional, so this passes
       if ((form.querySelector<HTMLInputElement>('[name="hp_confirm"]')?.value || '').trim()) return; // honeypot
+      collectAll();
 
-      collectAll(); // pull every text value from the whole form, plus radios already in `answers`
-
-      // send the lead to Web3Forms — client-side FormData (no preflight), fire-and-forget
+      // send the lead to Web3Forms — fire-and-forget
       const fd = new FormData();
       fd.append('access_key', site.web3formsKey);
       fd.append('from_name', 'Kitchen Websites');
@@ -278,10 +286,10 @@ const DOTS = 4; // question screens 1–4
       (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
 
       try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
-      show(i + 1); // → Calendly calendar, immediately
+      showCalendar();
     };
 
-    // Safety net: if the flow is ever interrupted or throws, don't leave the user
+    // safety net: if the flow is ever interrupted or throws, don't leave the user
     // stuck on a dead button — tell them and restart cleanly from the top.
     const bail = (msg: string) => {
       try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
@@ -290,7 +298,8 @@ const DOTS = 4; // question screens 1–4
       form.querySelectorAll('.bk-field--err').forEach((el) => el.classList.remove('bk-field--err'));
       form.querySelectorAll('.bk-err').forEach((el) => el.remove());
       form.querySelectorAll('.bk-card.is-on').forEach((el) => el.classList.remove('is-on'));
-      show(0);
+      if (calStep) calStep.hidden = true;
+      reveal(0);
       window.alert(msg);
     };
     const INTERRUPT_MSG = 'Something interrupted the form, so we’ve reset it. Mind starting over? It only takes a minute.';
@@ -298,8 +307,7 @@ const DOTS = 4; // question screens 1–4
     form.addEventListener('click', (e) => {
       try {
         const t = e.target as HTMLElement;
-        if (t.closest('[data-next]')) { if (i === 0 || validScreen(screens[i])) advance(); }
-        else if (t.closest('[data-back]')) show(i - 1);
+        if (t.closest('[data-next]')) { if (validStep(steps[current])) advance(); }
         else if (t.closest('[data-submit]')) doSubmit();
       } catch (err) { console.error('[book] form interrupted:', err); bail(INTERRUPT_MSG); }
     });
@@ -309,14 +317,16 @@ const DOTS = 4; // question screens 1–4
       if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
       e.preventDefault(); // Enter must never natively submit / reload the page
       try {
-        if (i < total - 1) { if (i === 0 || validScreen(screens[i])) advance(); }
+        const step = steps[current];
+        if (step.querySelector('[data-submit]')) doSubmit();
+        else if (validStep(step)) advance();
       } catch (err) { console.error('[book] form interrupted:', err); bail(INTERRUPT_MSG); }
     });
 
     // hard safety net: the form can never natively submit (which would reload + reset it)
     form.addEventListener('submit', (e) => { e.preventDefault(); });
 
-    // ---- Calendly inline embed (loaded lazily on the calendar screen) ----
+    // ---- Calendly inline embed (loaded lazily when the calendar reveals) ----
     function initCalendly() {
       const host = document.querySelector<HTMLElement>('[data-calendly]');
       if (!host || host.dataset.ready) return;
@@ -349,7 +359,6 @@ const DOTS = 4; // question screens 1–4
     // and swap to the confirmation once a time is picked.
     window.addEventListener('message', (e) => {
       const data = (e.data as any);
-      // auto-resize: grow/shrink the container to exactly fit the calendar
       if (data?.event === 'calendly.page_height' && data.payload?.height) {
         const host = document.querySelector<HTMLElement>('[data-calendly]');
         if (host) host.style.height = data.payload.height;
@@ -357,8 +366,6 @@ const DOTS = 4; // question screens 1–4
       }
       if (data?.event === 'calendly.event_scheduled') {
         (window as any).kwTrack?.('CallBooked', { via: 'calendly' });
-        // fire the Meta event via the global pixel directly — no module import,
-        // so the booking form never depends on the tracking util loading
         if ((window as any).fbq) (window as any).fbq('track', 'CallBooked');
         setFirst((answers.name as string) || '');
         if (flow) flow.hidden = true;
@@ -367,39 +374,41 @@ const DOTS = 4; // question screens 1–4
       }
     });
 
-    restore();   // refill anything saved from a previous visit / before a reload
-    show(0);
+    // ---- boot ----
+    restore();           // refill anything saved from a previous visit
+    reveal(0);           // first question is always visible
+    // resume: fast-forward past any steps already answered from a prior visit
+    while (current < steps.length - 1 && stepValid(steps[current])) reveal(current + 1);
   }
 </script>
 
 <style>
-  /* progress dots — gold fill, no numbers */
-  .bk-prog { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-8) var(--gutter) 0; }
-  .bk-dot { width: 9px; height: 9px; border-radius: 999px; background: var(--line); transition: background 240ms, transform 240ms; }
-  .bk-dot.is-on { background: var(--accent); transform: scale(1.15); }
+  .bk-funnel { padding-block: var(--space-10) var(--space-16); }
 
-  .bk-funnel { min-height: calc(100vh - 9rem); display: grid; align-items: center; padding-block: var(--space-8); }
-  .bk-form { text-align: center; }
-  .bk-screen { border: 0; padding: 0; margin: 0; min-height: 18rem; animation: bk-in 320ms cubic-bezier(.2,.7,.2,1); }
-  @keyframes bk-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .bk-screen--err { animation: bk-shake 320ms; }
-  @keyframes bk-shake { 10%,90%{transform:translateX(-1px)} 30%,70%{transform:translateX(3px)} 50%{transform:translateX(-4px)} }
-
+  .bk-intro { text-align: center; max-width: 54ch; margin-inline: auto; }
   .bk-intro__h1 { margin-top: var(--space-4); font-size: var(--fs-h2); }
-  .bk-intro__lede { margin: var(--space-5) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); max-width: 54ch; }
-  .bk-intro__sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }
+  .bk-intro__lede { margin: var(--space-5) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .bk-intro__sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); }
+
+  .bk-form { margin-top: var(--space-10); text-align: center; }
+  .bk-step { border: 0; padding: 0; margin: 0; animation: bk-in 320ms cubic-bezier(.2,.7,.2,1); }
+  /* a hairline + breathing room between stacked questions (and before the calendar) */
+  .bk-step + .bk-step, .bk-step--cal { margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--line); }
+  @keyframes bk-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .bk-step--err { animation: bk-shake 320ms; }
+  @keyframes bk-shake { 10%,90%{transform:translateX(-1px)} 30%,70%{transform:translateX(3px)} 50%{transform:translateX(-4px)} }
 
   .bk-q { font-size: var(--fs-h4); line-height: 1.3; max-width: 40ch; margin-inline: auto; }
   .bk-opt { font-size: var(--fs-body); font-weight: var(--fw-body); color: var(--ink-50); }
   .bk-sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }
   .bk-sub--gap { margin-top: var(--space-8); }
-  .bk-why { margin: var(--space-3) auto 0; font-style: italic; font-size: var(--fs-body); color: var(--ink-50); max-width: 56ch; }
+  .bk-why { margin: var(--space-3) auto 0; font-style: italic; font-size: var(--fs-body); color: var(--ink-50); max-width: 56ch; margin-inline: auto; }
 
   .bk-input { margin: var(--space-5) auto 0; width: 100%; max-width: 32rem; font-family: var(--font-body); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
   .bk-input:focus-visible { outline: none; border-color: var(--ink); }
   textarea.bk-input { resize: vertical; line-height: 1.5; }
 
-  /* stacked labeled fields (contact screen) */
+  /* stacked labeled fields (contact) */
   .bk-fields { margin: var(--space-5) auto 0; display: grid; gap: var(--space-4); max-width: 32rem; text-align: left; }
   .bk-field { display: block; }
   .bk-label { display: block; font-family: var(--font-body); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--ink-70); margin-bottom: var(--space-2); }
@@ -417,18 +426,16 @@ const DOTS = 4; // question screens 1–4
   .bk-field--err .bk-input, .bk-field--err .bk-card { border-color: var(--warn); }
   .bk-err { margin-top: var(--space-2); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--warn); }
 
-  .bk-nav { margin-top: var(--space-8); display: flex; align-items: center; justify-content: center; gap: var(--space-4); }
-  .bk-back { background: none; border: 0; padding: var(--space-2); color: var(--ink-50); font-size: var(--fs-body); cursor: pointer; }
-  .bk-back:hover { color: var(--ink); }
+  /* only the current (last revealed) step shows its Continue/Submit button */
+  .bk-nav { margin-top: var(--space-6); display: flex; align-items: center; justify-content: center; gap: var(--space-4); }
+  .bk-step:not(.is-current) .bk-nav { display: none; }
   .bk-form__status { margin-top: var(--space-4); font-size: var(--fs-caption); color: var(--ink-50); }
 
-  /* calendar screen — full-width calendar, minimal chrome */
-  .bk-screen--cal { min-height: auto; text-align: center; }
+  /* calendar — full-bleed, sized to its content by JS (calendly.page_height) so
+     the whole calendar fits with no inner scrollbar; the height here is the
+     pre-message fallback (generous so it still fits). */
+  .bk-step--cal { text-align: center; }
   .bk-cal__h { font-size: var(--fs-h3); margin-bottom: var(--space-6); }
-  /* break the calendar out of the narrow container so it fills the screen */
-  /* full-bleed calendar. The JS sizes this to Calendly's reported content height
-     (calendly.page_height) so the whole calendar fits with no inner scrollbar.
-     The fixed height here is the pre-message fallback (generous so it still fits). */
   .bk-cal__widget { position: relative; left: 50%; transform: translateX(-50%); width: 96vw; max-width: 70rem; height: 820px; }
   .bk-cal__widget :global(iframe) { width: 100%; height: 100%; border: 0; }
   @media (max-width: 48em) { .bk-cal__widget { width: 100vw; height: 1180px; } }
@@ -441,6 +448,6 @@ const DOTS = 4; // question screens 1–4
   .bk-done__sig { margin-top: var(--space-8); font-family: var(--font-display); font-size: var(--fs-h4); color: var(--ink); }
 
   @media (prefers-reduced-motion: reduce) {
-    .bk-screen, .bk-dot { animation: none; transition: none; }
+    .bk-step { animation: none; }
   }
 </style>
