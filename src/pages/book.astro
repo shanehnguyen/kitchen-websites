@@ -87,11 +87,13 @@ const minutes = site.callLengthMinutes;
             <p class="bk-form__status mono" data-book-status hidden></p>
           </fieldset>
 
-          <!-- honeypot. NO "company" name/label: browser autofill fills a field
-               called "Company" from the saved profile, which used to trip this
-               trap and silently block real bookings. Neutral name + no label. -->
+          <!-- honeypot. A CHECKBOX, not a text input: browser autofill and
+               password managers fill TEXT fields (name/email/company/etc.) and
+               were dumping a value into the old text trap, silently blocking real
+               bookings. Nothing ever auto-ticks a checkbox, so only a bot that
+               checks every input gets caught here. -->
           <div class="honeypot" aria-hidden="true">
-            <input id="hp-confirm" name="hp_confirm" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <input id="hp-confirm" name="hp_confirm" type="checkbox" tabindex="-1" autocomplete="off" aria-hidden="true" />
           </div>
         </form>
 
@@ -210,6 +212,17 @@ const minutes = site.callLengthMinutes;
       });
       if (saved.name) setFirst(saved.name);
     };
+    // Re-apply each field's value to itself so an AUTOFILLED value is materialised
+    // as a real, committed DOM value before we read it for validation/submit. This
+    // is the "restart the screen but keep everything" trick — re-rendering the
+    // values (what a reload's restore does) is what makes autofill behave.
+    const commitFields = () => {
+      collectAll();
+      Object.entries(answers).forEach(([k, v]) => {
+        const el = form.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[name="${k}"]`);
+        if (el) el.value = v;
+      });
+    };
 
     // ---- progressive reveal: keep steps 0..current visible, only the current
     //      step shows its Continue/Submit button ----
@@ -265,7 +278,7 @@ const minutes = site.callLengthMinutes;
     const doSubmit = () => {
       const last = steps[steps.length - 1];
       if (!validStep(last)) return;                 // obstacle is optional, so this passes
-      if ((form.querySelector<HTMLInputElement>('[name="hp_confirm"]')?.value || '').trim()) return; // honeypot
+      if (form.querySelector<HTMLInputElement>('[name="hp_confirm"]')?.checked) return; // honeypot — autofill/managers never tick a checkbox
       collectAll();
 
       // send the lead to Web3Forms — fire-and-forget
@@ -307,8 +320,8 @@ const minutes = site.callLengthMinutes;
     form.addEventListener('click', (e) => {
       try {
         const t = e.target as HTMLElement;
-        if (t.closest('[data-next]')) { if (validStep(steps[current])) advance(); }
-        else if (t.closest('[data-submit]')) doSubmit();
+        if (t.closest('[data-next]')) { commitFields(); if (validStep(steps[current])) advance(); }
+        else if (t.closest('[data-submit]')) { commitFields(); doSubmit(); }
       } catch (err) { console.error('[book] form interrupted:', err); bail(INTERRUPT_MSG); }
     });
 
@@ -318,6 +331,7 @@ const minutes = site.callLengthMinutes;
       e.preventDefault(); // Enter must never natively submit / reload the page
       try {
         const step = steps[current];
+        commitFields();
         if (step.querySelector('[data-submit]')) doSubmit();
         else if (validStep(step)) advance();
       } catch (err) { console.error('[book] form interrupted:', err); bail(INTERRUPT_MSG); }
