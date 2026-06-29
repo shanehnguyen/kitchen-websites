@@ -17,13 +17,15 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
     </a>
     <nav class="nav__menu" aria-label="Primary">
       <ul class="nav__links" id="nav-menu">
+        <li><a href="/scorecard" aria-current={isActive('/scorecard') ? 'page' : undefined}>See Where You Rank</a></li>
         <li><a href="/done-for-you" aria-current={isActive('/done-for-you') ? 'page' : undefined}>Done For You</a></li>
         <li><a href="/websites" aria-current={isActive('/websites') ? 'page' : undefined}>Websites</a></li>
         <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
       </ul>
     </nav>
     <div class="nav__actions">
-      <a class="btn btn--primary nav__cta" href="/book">Book a Call</a>
+      <a class="nav__phone" href="tel:+14089088131">408-908-8131</a>
+      <a class="btn btn--primary nav__cta" href="/book">Schedule Strategy Session</a>
       <button
         class="nav__toggle"
         type="button"

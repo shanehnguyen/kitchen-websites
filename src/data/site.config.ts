@@ -16,15 +16,17 @@ export const site = {
   // Contact — TODO confirm production values before launch
   email: 'shane@kitchenwebsites.com',
   phone: '', // PLACEHOLDER: add display phone
-  bookingUrl: 'https://calendly.com/shanehnguyen/cabinet-dealers',
+  bookingUrl: 'https://calendly.com/kitchenwebsites/30-min-strategy-session',
 
   // Call length — single source of truth. Every CTA label + /book read this.
   callLengthMinutes: 30,
 
-  // Web3Forms access key. PUBLIC by design — it lives in the client-side form
+  // Web3Forms access keys. PUBLIC by design — they live in the client-side form
   // submission (Web3Forms blocks server-side POSTs on the free plan). Abuse is
   // limited by domain + spam settings in the Web3Forms dashboard.
-  web3formsKey: '5dcc1132-3dba-43aa-8df8-9b2a841e2bec',
+  // Two separate inboxes: one for scorecard leads, one for booking/session requests.
+  web3formsKey: '5dcc1132-3dba-43aa-8df8-9b2a841e2bec',        // scorecard
+  web3formsBookingKey: '43b3a69b-e565-48c2-bc12-d5c00c863d10', // booking / strategy session
 
   // Capacity (LOAD-BEARING — must be true; Godfather-Offer-System caps)
   capacity: {

@@ -283,7 +283,7 @@ const minutes = site.callLengthMinutes;
 
       // send the lead to Web3Forms — fire-and-forget
       const fd = new FormData();
-      fd.append('access_key', site.web3formsKey);
+      fd.append('access_key', site.web3formsBookingKey);
       fd.append('from_name', 'Kitchen Websites');
       fd.append('subject', `📅 Session request — ${answers.website || answers.name || 'new owner'}`);
       fd.append('Name', answers.name || '');

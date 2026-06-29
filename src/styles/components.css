@@ -114,6 +114,16 @@
 /* logo + CTA are tap-target sized and always present */
 .nav__actions { display: flex; align-items: center; gap: var(--space-3); }
 .nav__cta { display: inline-flex; }
+/* phone: visible on desktop only — the mobile bar already carries logo + CTA +
+   hamburger, so the number is hidden below the desktop breakpoint */
+.nav__phone {
+  display: none;
+  color: var(--ink); text-decoration: none;
+  font-weight: var(--fw-body-medium); font-size: var(--fs-body);
+  white-space: nowrap;
+}
+.nav__phone:hover { color: var(--accent); }
+@media (min-width: 56em) { .nav__phone { display: inline-flex; align-items: center; } }
 /* small phones: keep the CTA a compact one-line pill (it was inheriting desktop
    padding/font and wrapping to two lines, crowding the logo + hamburger) */
 @media (max-width: 480px) {
@@ -157,6 +167,9 @@
 
 /* desktop: links inline, no hamburger */
 @media (min-width: 56em) {
+  /* center the link row: the menu takes the free space between the logo and the
+     actions, and centers its links within it */
+  .nav__menu { flex: 1; display: flex; justify-content: center; }
   .nav__links { display: flex; flex-direction: row; align-items: center; gap: var(--space-6); }
   .nav__toggle { display: none; }
 }
@@ -171,6 +184,8 @@
 .nav--overlay .nav__logo-by { color: var(--paper-50); }
 .nav--overlay .nav__links a { color: var(--paper-70); }
 .nav--overlay .nav__links a:hover, .nav--overlay .nav__links a[aria-current="page"] { color: var(--porcelain); }
+.nav--overlay .nav__phone { color: var(--paper-70); }
+.nav--overlay .nav__phone:hover { color: var(--porcelain); }
 .nav--overlay .btn--primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--ink); }
 .nav--overlay .btn--primary:hover { background: var(--porcelain); border-color: var(--porcelain); color: var(--ink); }
 .nav--overlay .nav__toggle { color: var(--porcelain); }
@@ -188,6 +203,7 @@
 .nav--overlay[data-scrolled="true"] .nav__logo-name span, .nav--overlay.is-open .nav__logo-name span { color: var(--accent); }
 .nav--overlay[data-scrolled="true"] .nav__logo-by, .nav--overlay.is-open .nav__logo-by { color: var(--ink-50); }
 .nav--overlay[data-scrolled="true"] .nav__links a, .nav--overlay.is-open .nav__links a { color: var(--ink-soft); }
+.nav--overlay[data-scrolled="true"] .nav__phone, .nav--overlay.is-open .nav__phone { color: var(--ink); }
 .nav--overlay[data-scrolled="true"] .nav__links a:hover, .nav--overlay.is-open .nav__links a:hover,
 .nav--overlay[data-scrolled="true"] .nav__links a[aria-current="page"], .nav--overlay.is-open .nav__links a[aria-current="page"] { color: var(--ink); }
 .nav--overlay[data-scrolled="true"] .nav__toggle, .nav--overlay.is-open .nav__toggle { color: var(--ink); }
