@@ -24,7 +24,10 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
       </ul>
     </nav>
     <div class="nav__actions">
-      <a class="btn btn--primary nav__cta" href="/book">Schedule Strategy Session</a>
+      <a class="btn btn--primary nav__cta" href="/book">
+        <span class="nav__cta-full">Schedule Strategy Session</span>
+        <span class="nav__cta-short">Schedule Session</span>
+      </a>
       <button
         class="nav__toggle"
         type="button"

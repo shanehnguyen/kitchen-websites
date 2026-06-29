@@ -50,9 +50,11 @@
 .btn--lg { font-size: var(--fs-lede); padding: var(--space-5) var(--space-10); }
 
 /* ---------- Sticky mobile CTA bar (global so it always loads) ---------- */
+/* Disabled: the bottom "Book a Call" bar is hidden on every screen. The nav CTA
+   ("Schedule Strategy Session") is the single CTA at all widths. */
 .smcta {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-sticky);
-  display: flex; align-items: center;
+  display: none; align-items: center;
   padding: var(--space-3) var(--gutter);
   padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   background: color-mix(in srgb, var(--cabinet) 96%, transparent);
@@ -114,10 +116,17 @@
 /* logo + CTA are tap-target sized and always present */
 .nav__actions { display: flex; align-items: center; gap: var(--space-3); }
 .nav__cta { display: inline-flex; }
+/* responsive CTA label: full text on desktop, compact "Schedule" on the mobile
+   bar so the long label can't push the hamburger off-screen */
+.nav__cta-short { display: none; }
+@media (max-width: 55.99em) {
+  .nav__cta-full { display: none; }
+  .nav__cta-short { display: inline; }
+}
 /* small phones: keep the CTA a compact one-line pill (it was inheriting desktop
    padding/font and wrapping to two lines, crowding the logo + hamburger) */
 @media (max-width: 480px) {
-  .nav__cta { padding: 10px 16px; font-size: 14px; min-height: 44px; white-space: nowrap; }
+  .nav__cta { padding: 9px 14px; font-size: 13px; min-height: 44px; white-space: nowrap; }
 }
 
 /* hamburger — mobile only, reveals the secondary links (never the CTA) */
@@ -140,6 +149,12 @@
 
 /* mobile: links collapse into a solid dropdown panel under the bar */
 @media (max-width: 55.99em) {
+  /* drop the "by FlipFix Digital" tagline on the small navbar — keep just the wordmark */
+  .nav__logo-by { display: none; }
+  /* tighten the bar so logo + CTA + hamburger always fit (the empty centered
+     menu would otherwise reserve two wide gaps and push the hamburger off-screen).
+     space-between still spaces the logo and actions apart when there's room. */
+  .nav__inner { gap: 0; }
   .nav__links {
     position: absolute; top: 100%; left: 0; right: 0;
     display: none; flex-direction: column;
