@@ -15,7 +15,7 @@ export const site = {
 
   // Contact — TODO confirm production values before launch
   email: 'shane@kitchenwebsites.com',
-  phone: '', // PLACEHOLDER: add display phone
+  phone: '408-908-8131',
   bookingUrl: 'https://calendly.com/kitchenwebsites/30-min-strategy-session',
 
   // Call length — single source of truth. Every CTA label + /book read this.

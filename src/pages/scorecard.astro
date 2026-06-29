@@ -67,6 +67,7 @@ const minutes = 30;
           <p class="sc-load__status mono" data-load-status aria-live="polite"></p>
           <p class="sc-load__priming" data-load-priming></p>
         </div>
+        <p class="sc-load__eta">This takes about 15 seconds — hang tight while I pull your Google.</p>
       </div>
     </section>
 
@@ -250,6 +251,7 @@ const minutes = 30;
   .sc-load__step.is-step-in { animation: sc-in 360ms cubic-bezier(.2,.7,.2,1); }
   .sc-load__status { color: var(--ink-50); letter-spacing: var(--tracking-caps); text-transform: uppercase; font-size: var(--fs-caption); }
   .sc-load__priming { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.55; color: var(--ink); }
+  .sc-load__eta { margin-top: var(--space-2); font-size: var(--fs-body-sm); color: var(--ink-50); }
 
   /* hook */
   .sc-hook { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw + 1rem, 2.75rem); line-height: 1.2; color: var(--ink); }
