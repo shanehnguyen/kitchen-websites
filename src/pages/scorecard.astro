@@ -8,7 +8,6 @@
 import BareLayout from '../layouts/BareLayout.astro';
 import HomeContent from '../components/HomeContent.astro';
 import CTAButton from '../components/CTAButton.astro';
-const minutes = 30;
 ---
 <BareLayout
   title="The Google Scorecard for Kitchen & Bath"
@@ -55,7 +54,7 @@ const minutes = 30;
           <input class="sc-input" data-ac-input type="text" autocomplete="off" placeholder="e.g. your business name" aria-label="Your business name" />
           <div class="sc-ac__list" data-ac-list hidden></div>
         </div>
-        <p class="sc-altlink"><a href="#" data-manual-link>Can’t find your business? Run it by hand instead.</a></p>
+        <p class="sc-altlink"><a href="#" data-help-link>Can’t find your business? Here’s how to fix that.</a></p>
       </div>
     </section>
 
@@ -98,9 +97,12 @@ const minutes = 30;
             <input type="checkbox" name="consent" required />
             <span>Follow up with me about my Google, and the occasional useful tip. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener">Privacy</a>.</span>
           </label>
+          <!-- honeypot. A CHECKBOX, not a text input: browser autofill and
+               password managers fill TEXT fields (name/email/company/etc.) and
+               were dumping a value into the old text trap, silently blocking
+               real submissions. Nothing auto-ticks a checkbox. -->
           <div class="honeypot" aria-hidden="true">
-            <label for="sc-company">Company (leave blank)</label>
-            <input id="sc-company" name="company" type="text" tabindex="-1" autocomplete="off" />
+            <input id="sc-hp" name="hp_confirm" type="checkbox" tabindex="-1" autocomplete="off" aria-hidden="true" />
           </div>
           <button type="submit" class="btn btn--primary btn--lg">See the full scorecard <span aria-hidden="true">→</span></button>
           <p class="sc-status mono" data-gate-status hidden></p>
@@ -128,44 +130,18 @@ const minutes = 30;
       </div>
     </section>
 
-    <!-- FALLBACK — MANUAL CAPTURE (API down / can't find listing) -->
-    <section class="sc-screen" data-sc-screen="manual" hidden>
+    <!-- NOT FOUND — exact-name help (replaces manual capture; reachable from the
+         "can't find it" link and whenever a lookup can't resolve the listing) -->
+    <section class="sc-screen" data-sc-screen="notfound" hidden>
       <div class="sc-wrap">
-        <h2 class="sc-h" data-focus tabindex="-1">Tell me your business and I’ll run it by hand.</h2>
-        <p class="sc-sub">Leave your details and I’ll pull your Google myself, then follow up personally. No bot, just me.</p>
-        <form class="sc-form" data-manual-form novalidate>
-          <div class="field">
-            <label for="sc-m-business">Business name</label>
-            <input id="sc-m-business" name="business" type="text" required />
-          </div>
-          <div class="field">
-            <label for="sc-m-city">City</label>
-            <input id="sc-m-city" name="city" type="text" />
-          </div>
-          <div class="field">
-            <label for="sc-m-email">Email</label>
-            <input id="sc-m-email" name="email" type="email" autocomplete="email" required />
-          </div>
-          <label class="sc-consent">
-            <input type="checkbox" name="consent" required />
-            <span>Follow up with me about my Google, and the occasional useful tip. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener">Privacy</a>.</span>
-          </label>
-          <div class="honeypot" aria-hidden="true">
-            <label for="sc-m-company">Company (leave blank)</label>
-            <input id="sc-m-company" name="company" type="text" tabindex="-1" autocomplete="off" />
-          </div>
-          <button type="submit" class="btn btn--primary btn--lg">Run my scorecard <span aria-hidden="true">→</span></button>
-          <p class="sc-status mono" data-manual-status hidden></p>
-        </form>
-      </div>
-    </section>
-
-    <!-- MANUAL DONE -->
-    <section class="sc-screen" data-sc-screen="manualDone" hidden>
-      <div class="sc-wrap">
-        <h2 class="sc-h" data-focus tabindex="-1">Got it. I’ll run it by hand.</h2>
-        <p class="sc-sub">I’ll dig into your Google myself and follow up. If it’s as lopsided as most, the fastest way to see what’s costing you jobs is {minutes} minutes on a call.</p>
-        <a class="btn btn--primary btn--lg" href="/book">Book the {minutes}-minute call <span aria-hidden="true">→</span></a>
+        <h2 class="sc-h" data-focus tabindex="-1">I couldn’t pull that one up.</h2>
+        <p class="sc-sub">Nine times out of ten it’s the name. Search the <strong>exact</strong> name as it shows on your Google Business Profile — the one a customer sees on Google Maps — and pick your listing from the list that drops down.</p>
+        <ul class="sc-tips">
+          <li>Spell it exactly the way it appears on Google.</li>
+          <li>Leave off your city, “LLC,” and any extra words you’ve added.</li>
+          <li>Start typing, then tap your business in the list.</li>
+        </ul>
+        <button type="button" class="btn btn--primary btn--lg" data-notfound-retry>Try again <span aria-hidden="true">→</span></button>
       </div>
     </section>
   </div>
@@ -240,6 +216,11 @@ const minutes = 30;
   .sc-ac__secondary { font-size: var(--fs-body-sm); color: var(--ink-50); }
   .sc-altlink { margin-top: var(--space-5); font-size: var(--fs-body-sm); }
   .sc-altlink a { color: var(--ink-50); text-decoration: underline; }
+
+  /* exact-name help (not-found screen) */
+  .sc-tips { margin: var(--space-6) 0 var(--space-8); padding: 0; list-style: none; display: grid; gap: var(--space-3); max-width: 48ch; }
+  .sc-tips li { position: relative; padding-left: var(--space-6); font-size: var(--fs-body); color: var(--ink-70); line-height: 1.5; }
+  .sc-tips li::before { content: "✓"; position: absolute; left: 0; color: var(--accent-deep); font-weight: var(--fw-body-bold); }
 
   /* loading */
   .sc-loading .sc-wrap { display: grid; place-items: center; gap: var(--space-5); min-height: 50vh; text-align: center; }

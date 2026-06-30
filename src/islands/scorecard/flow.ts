@@ -42,9 +42,11 @@ type Payload = {
   website: { url: string; items: WebsiteItem[]; passing: string[] } | null;
   math: string;
   segment: { band: string; worst: string };
+  // Anyone can take the scorecard; only a kitchen & bath business is forwarded
+  // as a lead. Server-set from the GBP category. Treated as a lead unless
+  // explicitly false (so a missing flag never silently drops a real lead).
+  relevant?: boolean;
 };
-
-const minutes = site.callLengthMinutes;
 
 // ============================================================================
 // DEMO MODE — runs the entire scorecard on built-in sample data with ZERO API
@@ -68,6 +70,7 @@ const MOCK_SUGGESTIONS = [
 ];
 const MOCK_PAYLOAD: Payload = {
   ok: true,
+  relevant: true,
   profile: { name: 'Demo Kitchen & Bath Co.', reviews: 7, rating: 3.9 },
   city: 'La Mirada',
   top: { name: 'Granite Peak Kitchens', reviews: 142, rating: 4.8 },
@@ -171,6 +174,30 @@ const DEV_MOCK = (() => {
 })();
 const dlog = (...a: unknown[]) => { if (DEV_MOCK) { try { console.info('[scorecard]', ...a); } catch { /* noop */ } } };
 
+// ---- Safe test harness ------------------------------------------------------
+// The lead has two real side-effects: the web3forms email and the Meta `Lead`
+// pixel. DRY_RUN neutralizes BOTH — on localhost always, or anywhere with
+// ?sc_test=1 (e.g. a Vercel preview). In dry-run the lead path still fully RUNS
+// and logs exactly what it WOULD send, so you can watch the K&B gate decide
+// without ever firing a real lead or emailing yourself. Production (real domain,
+// no flag) is untouched.
+const TEST_PARAM = (() => { try { return new URLSearchParams(location.search).get('sc_test') === '1'; } catch { return false; } })();
+const DRY_RUN = DEV_MOCK || TEST_PARAM;
+// ?relevant=0 (force "not K&B") / ?relevant=1 (force "K&B") overrides the
+// server's classification so you can exercise BOTH branches on demand. Honored
+// only in dry-run, so a stray ?relevant=0 can never suppress a real lead in prod.
+const RELEVANT_OVERRIDE = (() => {
+  try { const v = new URLSearchParams(location.search).get('relevant'); return v === '0' ? false : v === '1' ? true : null; }
+  catch { return null; }
+})();
+const tlog = (...a: unknown[]) => { if (DRY_RUN) { try { console.info('[scorecard]', ...a); } catch { /* noop */ } } };
+// All Meta Pixel events go through this so dry-run sessions fire NOTHING at the
+// pixel (your Pixel ID is live even on localhost). Real visitors hit metaTrack.
+const fireMeta = (name: string, params?: Record<string, unknown>) => {
+  if (DRY_RUN) { tlog('[meta] would fire', name, params || {}); return; }
+  metaTrack(name, params);
+};
+
 const esc = (s: unknown) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
 const track = (name: string, params?: Record<string, unknown>) => {
@@ -270,7 +297,7 @@ export function init() {
       e.preventDefault();
       dlog('start tapped');
       track('ScorecardStarted');
-      metaTrack('ScorecardStarted');
+      fireMeta('ScorecardStarted');
       const typed = (form.querySelector<HTMLInputElement>('[data-start-input]')?.value || '').trim();
       show('identify');
       const ai = root.querySelector<HTMLInputElement>('[data-ac-input]');
@@ -331,10 +358,15 @@ export function init() {
     runLookup();
   });
 
-  // "Can't find it" → manual capture
-  root.querySelectorAll('[data-manual-link]').forEach((el) =>
-    el.addEventListener('click', (e) => { e.preventDefault(); show('manual'); })
+  // "Can't find it" → the exact-name help screen (no manual capture)
+  root.querySelectorAll('[data-help-link]').forEach((el) =>
+    el.addEventListener('click', (e) => { e.preventDefault(); show('notfound'); })
   );
+  // help screen → back to the search, input focused, ready to retry
+  root.querySelector('[data-notfound-retry]')?.addEventListener('click', () => {
+    show('identify');
+    requestAnimationFrame(() => root.querySelector<HTMLInputElement>('[data-ac-input]')?.focus());
+  });
 
   // ---------------- LOOKUP ----------------
   async function runLookup() {
@@ -358,16 +390,17 @@ export function init() {
       sessionToken = newToken(); // session consumed; fresh token for any retry
       if (!data.ok || data.degraded || !data.profile) {
         if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; renderHook(); show('hook'); track('ScorecardHook', { band: MOCK_PAYLOAD.segment.band, mock: true }); return; }
-        show('manual');
+        show('notfound');
         return;
       }
       payload = data;
+      tlog('lookup ok · server relevant =', data.relevant, '· business =', data.profile?.name);
       renderHook();
       show('hook');
       track('ScorecardHook', { band: data.segment?.band });
     } catch {
       if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; renderHook(); show('hook'); track('ScorecardHook', { band: MOCK_PAYLOAD.segment.band, mock: true }); return; }
-      show('manual');
+      show('notfound');
     }
   }
 
@@ -386,8 +419,19 @@ export function init() {
   // buttons. Never leaves a dead button: if rendering throws, it still shows
   // the result screen and logs the error.
   function goToResult() {
-    void capture(false);
-    track('ScorecardEmail', { band: payload?.segment?.band, demo: DEMO_MODE });
+    // Anyone reaches the result; only a kitchen & bath business is forwarded as
+    // a lead. relevant === false (server-set) suppresses the web3forms ping AND
+    // the Meta Lead events, so the ad never optimizes toward off-trade traffic.
+    if (DRY_RUN && RELEVANT_OVERRIDE !== null && payload) payload.relevant = RELEVANT_OVERRIDE; // test override
+    const isLead = !DEMO_MODE && payload?.relevant !== false;
+    if (isLead) {
+      capture();                                  // w3submit is dry-run-safe (logs, never POSTs, under DRY_RUN)
+      fireMeta('Lead', { content_name: 'Scorecard Email' });
+      fireMeta('ScorecardEmailCaptured');
+    } else {
+      tlog('[lead] suppressed — not kitchen & bath (relevant =', payload?.relevant, ')');
+    }
+    track('ScorecardEmail', { band: payload?.segment?.band, relevant: payload?.relevant, lead: isLead, demo: DEMO_MODE });
     try {
       renderResult();
     } catch (err) {
@@ -399,7 +443,7 @@ export function init() {
       try { history.replaceState(null, '', `#b=${encodeURIComponent(chosen.placeId)}`); } catch { /* noop */ }
     }
     track('ScorecardResult', { band: payload?.segment?.band, demo: DEMO_MODE });
-    metaTrack('ViewContent', { content_name: 'Scorecard Results' });
+    fireMeta('ViewContent', { content_name: 'Scorecard Results' });
   }
 
   // Shared-link path: a link like /scorecard#b=<placeId> reopens that scorecard
@@ -420,7 +464,7 @@ export function init() {
       try { renderResult(); } catch (err) { console.error('[scorecard] shared render failed:', err); }
       show('result');
       track('ScorecardSharedOpen', { band: data.segment?.band });
-      metaTrack('ViewContent', { content_name: 'Scorecard Results' });
+      fireMeta('ViewContent', { content_name: 'Scorecard Results' });
     } catch { show('start'); }
   }
 
@@ -439,45 +483,21 @@ export function init() {
     e.preventDefault();
     if (DEMO_MODE) { dlog('gate → result (demo, no validation)'); goToResult(); return; }
     const data = new FormData(gateForm);
-    if ((data.get('company') as string)?.trim()) return; // honeypot
+    if (data.get('hp_confirm')) return; // honeypot — autofill/managers never tick a checkbox
     firstName = String(data.get('firstName') || '').trim();
     email = String(data.get('email') || '').trim();
     if (!emailOk(email)) { dlog('gate blocked: invalid email'); fail(gateStatus, 'That email doesn’t look right.'); return; }
     if (!data.get('consent')) { dlog('gate blocked: consent not ticked'); fail(gateStatus, 'Please tick the box so I can send it.'); return; }
     if (gateStatus) { gateStatus.hidden = false; gateStatus.textContent = ''; }
-    metaTrack('Lead', { content_name: 'Scorecard Email' });
-    metaTrack('ScorecardEmailCaptured');
+    // lead forwarding + Meta Lead events fire inside goToResult, gated on K&B relevance
     goToResult();
-  });
-
-  // ---------------- MANUAL CAPTURE (degrade path) ----------------
-  const manualForm = root.querySelector<HTMLFormElement>('[data-manual-form]');
-  const manualStatus = root.querySelector<HTMLElement>('[data-manual-status]');
-  manualForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = new FormData(manualForm);
-    if ((data.get('company') as string)?.trim()) return; // honeypot
-    const mEmail = String(data.get('email') || '').trim();
-    const business = String(data.get('business') || '').trim();
-    if (!business) { fail(manualStatus, 'Add your business name.'); return; }
-    if (!emailOk(mEmail)) { fail(manualStatus, 'That email doesn’t look right.'); return; }
-    if (!data.get('consent')) { fail(manualStatus, 'Please tick the box so I can send it.'); return; }
-    if (manualStatus) { manualStatus.hidden = false; manualStatus.textContent = 'Sending…'; }
-    if (!DEMO_MODE) {
-      w3submit(`✋ Manual scorecard — ${business}`, {
-        email: mEmail,
-        Business: business,
-        City: String(data.get('city') || '').trim(),
-        Lead: 'Run this one by hand',
-      });
-    }
-    track('ScorecardEmail', { via: 'manual' });
-    show('manualDone');
   });
 
   // Web3Forms submits CLIENT-SIDE only (the free plan blocks server POSTs), so
   // the browser posts straight to web3forms. Fire-and-forget; never blocks UI.
   function w3submit(subject: string, fields: Record<string, unknown>) {
+    // Dry-run (localhost or ?sc_test=1): show the lead in the console, send nothing.
+    if (DRY_RUN) { tlog('[lead] WOULD SEND →', subject, fields); return; }
     // FormData (no JSON content-type) keeps it a CORS "simple request" — no
     // preflight, which web3forms blocks. This is web3forms' intended client path.
     const fd = new FormData();
@@ -490,9 +510,13 @@ export function init() {
     fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
   }
 
-  function capture(manual: boolean) {
-    if (DEMO_MODE || !payload) return;   // demo: don't send anywhere
-    w3submit(`${manual ? '✋ Manual scorecard' : '📊 Scorecard'} — ${payload.profile.name}`, {
+  function capture() {
+    if (DEMO_MODE || !payload) return;          // demo: don't send anywhere
+    if (payload.relevant === false) {           // not kitchen & bath → seen, but never a lead
+      dlog('lead suppressed: business is not kitchen & bath');
+      return;
+    }
+    w3submit(`📊 Scorecard — ${payload.profile.name}`, {
       email,
       'First name': firstName,
       Business: payload.profile.name,

@@ -541,6 +541,35 @@ const monthsSince = (ts) => {
 };
 const STRONG_CATS = /(kitchen|bath|cabinet|countertop|remodel)/i;
 const GENERIC_CATS = /^(contractor|general contractor|construction company|home improvement|handyman)$/i;
+
+// Which businesses count as a kitchen & bath LEAD. This decides the `relevant`
+// flag the client uses to gate the lead. A restaurant, a trash-bin service, a
+// landscaper — anyone can still SEE the scorecard; they just never get forwarded.
+//
+// ALLOW-LIST, FAIL-CLOSED, "strict" scope: a business is a lead only if it
+// positively reads as kitchen & bath / interior remodeling. Everything that
+// doesn't match — trash, lawn, pest, cleaning, restaurants, AND adjacent
+// building trades like roofing/HVAC/electrical/plumbing/landscaping/painting —
+// is NOT a lead. (Earlier this failed OPEN, so "Trash Caddies" slipped through;
+// it now fails closed.)
+//
+// KB_STRONG — unambiguous K&B / interior-remodeling words. A match here is a
+// lead outright. Kept clean of words that collide with other industries.
+const KB_STRONG = /(\bkitchen|\bbath|cabinet|countertop|counter\s*top|\bremodel|renovat|backsplash|drywall|millwork|cabinetry|carpent|wood\s*work|general\s+contractor|\bconstruction|home\s*improvement|interior\s*design|design[\s-]?build|home\s+builder|custom\s+home|masonry|\bhandyman|\btile|flooring)/i;
+// KB_MAYBE — building words that ALSO appear in unrelated trades (Auto GLASS,
+// GRANITE City Brewery, a STONE/MASON surname). Counts as a lead only when
+// nothing in NOT_KB signals a different industry.
+const KB_MAYBE = /(\bgranite|\bmarble|quartz|\bstone\b|solid\s*surface|\bsurface\b|fabricat|\bglass\b|\bmirror\b|\bshower\b|\bwindow\b|\bdoor\b|\bvanit|\bsink\b|\bfaucet\b|\bbuilder\b|\bmason\b|\bfloor\b|\bcountertops?\b)/i;
+// NOT_KB — off-trade / non-construction signals. Used only to veto an ambiguous
+// KB_MAYBE match; a KB_STRONG match ignores it.
+const NOT_KB = /(restaurant|cafe|coffee|\bbar\b|brewery|bakery|\bfood\b|pizza|\bdeli\b|grocer|liquor|dentist|dental|\bdoctor\b|\bmedical\b|\bclinic\b|hospital|pharmac|chiropract|veterinar|optometr|lawyer|attorney|law\s*firm|\blegal\b|\bsalon\b|barber|\bhair\b|\bnails?\b|\bspa\b|\bbeauty\b|tattoo|massage|\bauto\b|\bcar\b|vehicle|truck|mechanic|\btire\b|body\s*shop|\bgym\b|fitness|\byoga\b|pilates|real\s*estate|realtor|\bapartment|\bstorage\b|insurance|\bbank\b|financial|accountant|bookkeep|\bschool\b|academy|church|temple|mosque|\bhotel\b|\bmotel\b|clothing|apparel|boutique|jewelr|florist|\bpet\b|reptile|gas\s*station|laundr|dry\s*clean|photograph|marketing|software|\bconsult|trash|garbage|\bwaste\b|junk|dumpster|lawn|landscap|\bpest\b|cleaning|\broof|hvac|heating|\bair\s*condition|electric|\bplumb|\bpaint|\bdeck\b|patio|fence|pool|tree\s*service|moving|towing)/i;
+export function isKbLead(m) {
+  const blob = [m.category, ...(Array.isArray(m.additional_categories) ? m.additional_categories : []), m.name]
+    .filter(Boolean).join(' · ');
+  if (KB_STRONG.test(blob)) return true;                  // clearly kitchen & bath / remodeling → lead
+  if (KB_MAYBE.test(blob) && !NOT_KB.test(blob)) return true; // borderline word, no off-trade signal → lead
+  return false;                                           // everything else (trash, lawn, restaurant, unknown…) → NOT a lead
+}
 // Relevant-and-missing attribute set for a K&B remodeler (label → matcher).
 const RELEVANT_ATTRS = [
   { key: 'free_estimates', label: 'Free estimates', re: /free.*estimate/i },
@@ -859,6 +888,9 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     website: websiteSection,
     math,
     segment: { band: verdict.key, worst: items[0]?.label || '' },
+    // Anyone can see the scorecard; only a kitchen & bath business becomes a
+    // lead. The client gates the lead notification + Meta Lead event on this.
+    relevant: isKbLead(m),
   };
 }
 
@@ -918,7 +950,10 @@ export default async function handler(req, res) {
 
   const redis = getRedis();
   const ip = clientIp(req);
-  const cacheKey = `scorecard:v2:${placeId}`;
+  // v3: added the `relevant` lead-gate flag. Bumping the version invalidates all
+  // pre-flag cached payloads so they recompute with `relevant` (a stale v2 entry
+  // would return relevant=undefined → wrongly treated as a lead).
+  const cacheKey = `scorecard:v3:${placeId}`;
   // Cache hit → serve free, fire zero paid calls.
   if (redis && CACHE_ENABLED) {
     try {
