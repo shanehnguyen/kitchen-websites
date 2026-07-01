@@ -999,23 +999,28 @@ export default async function handler(req, res) {
     .slice(0, 3);
   const top = competitors[0] || null;
 
-  // Website check only if a domain is linked
-  let website = null;
-  if (merged.domain) {
-    try { website = await fetchWebsite(merged.domain); } catch { website = null; }
-  }
-
   const city = extractCity(places, info);
   const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
 
-  // EXPENSIVE depth layer (geogrid 25 calls, backlinks, organic, rank). Gated by the
-  // daily budget + per-IP limits so a flood of traffic can't run up the bill. Over the
-  // line, these stay null and the audit still renders from the cheap checks.
+  // The website+PageSpeed check and the EXPENSIVE depth layer (geogrid 25 calls,
+  // backlinks, organic, rank) were the two longest phases and used to run
+  // back-to-back. They're independent and only need data we already have, so run
+  // them CONCURRENTLY — cold wall-clock drops from (website + depth) to
+  // max(website, depth). PageSpeed hits Google, the depth layer hits DataForSEO,
+  // so this adds no peak DataForSEO concurrency beyond what geogrid already does.
+  // The depth layer stays gated by the daily budget + per-IP limits; over the
+  // line it's skipped and the audit renders from the cheap profile + website checks.
+  const websiteP = merged.domain
+    ? fetchWebsite(merged.domain).catch(() => null) // fetchWebsite already degrades internally; guard anyway
+    : Promise.resolve(null);
+
+  let website = null;
   let localRank = null, geogrid = null, myDomains = null, rivalDomains = null, myKeywords = null, rivalKeywords = null;
   if (gate.expensiveOk) {
     const myDom = normDomain(merged.domain);
     const rivalDom = top?.domain || null;
-    [localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords] = await Promise.all([
+    [website, localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords] = await Promise.all([
+      websiteP,
       fetchLocalRank(primaryTerm, lat, lng, placeId, merged.name),
       fetchGeogrid(primaryTerm, lat, lng, placeId, merged.name),
       myDom ? fetchReferringDomains(myDom) : Promise.resolve(null),
@@ -1025,6 +1030,7 @@ export default async function handler(req, res) {
     ]);
   } else {
     console.warn('expensive depth skipped:', gate.reason);
+    website = await websiteP; // still fetch the site even when the paid depth layer is skipped
   }
   // tally this audit against the day + IP (count always, $ only if the depth layer ran)
   await recordAudit(redis, ip, gate.expensiveOk);

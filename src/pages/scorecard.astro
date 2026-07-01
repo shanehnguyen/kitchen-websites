@@ -58,6 +58,35 @@ import CTAButton from '../components/CTAButton.astro';
       </div>
     </section>
 
+    <!-- 2b — ENGAGE QUESTIONS. Shown the instant a business is picked; the audit
+         is already running behind these. Framed as tuning the report (never as a
+         stall). One tap each, auto-advances. Answers ride into the lead. -->
+    <section class="sc-screen" data-sc-screen="q1" hidden>
+      <div class="sc-wrap">
+        <p class="eyebrow">So I read your Google right</p>
+        <h2 class="sc-h" data-focus tabindex="-1">How long have you been in business?</h2>
+        <div class="sc-choices" data-q1-choices>
+          <button type="button" class="sc-choice" data-value="Less than 2 years">Less than 2 years</button>
+          <button type="button" class="sc-choice" data-value="2–5 years">2 to 5 years</button>
+          <button type="button" class="sc-choice" data-value="5–10 years">5 to 10 years</button>
+          <button type="button" class="sc-choice" data-value="10+ years">More than 10 years</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="sc-screen" data-sc-screen="q2" hidden>
+      <div class="sc-wrap">
+        <p class="eyebrow">One more</p>
+        <h2 class="sc-h" data-focus tabindex="-1">Where do most of your clients come from?</h2>
+        <div class="sc-choices" data-q2-choices>
+          <button type="button" class="sc-choice" data-value="Word of mouth &amp; referrals">Word of mouth &amp; referrals</button>
+          <button type="button" class="sc-choice" data-value="Google">Google</button>
+          <button type="button" class="sc-choice" data-value="Facebook &amp; Instagram">Facebook &amp; Instagram</button>
+          <button type="button" class="sc-choice" data-value="Angi, Houzz &amp; directories">Angi, Houzz &amp; directories</button>
+        </div>
+      </div>
+    </section>
+
     <!-- 3 — LOADING -->
     <section class="sc-screen sc-loading" data-sc-screen="loading" hidden>
       <div class="sc-wrap">
@@ -66,7 +95,7 @@ import CTAButton from '../components/CTAButton.astro';
           <p class="sc-load__status mono" data-load-status aria-live="polite"></p>
           <p class="sc-load__priming" data-load-priming></p>
         </div>
-        <p class="sc-load__eta">This takes about 15 seconds — hang tight while I pull your Google.</p>
+        <p class="sc-load__eta">This takes about 15 seconds, hang tight while I pull your Google.</p>
       </div>
     </section>
 
@@ -216,6 +245,13 @@ import CTAButton from '../components/CTAButton.astro';
   .sc-ac__secondary { font-size: var(--fs-body-sm); color: var(--ink-50); }
   .sc-altlink { margin-top: var(--space-5); font-size: var(--fs-body-sm); }
   .sc-altlink a { color: var(--ink-50); text-decoration: underline; }
+
+  /* engage questions — big, single-tap choice buttons (auto-advance) */
+  .sc-choices { margin-top: var(--space-6); display: grid; gap: var(--space-3); }
+  .sc-choice { text-align: left; padding: var(--space-4) var(--space-5); font-family: var(--font-body); font-size: var(--fs-bodyL); font-weight: var(--fw-body-semi); color: var(--ink); background: var(--bg-raised); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); cursor: pointer; transition: border-color 120ms, background 120ms, transform 80ms; }
+  .sc-choice:hover { border-color: var(--ink); background: var(--bg); }
+  .sc-choice:active { transform: translateY(1px); }
+  .sc-choice:focus-visible { outline: none; border-color: var(--ink); }
 
   /* exact-name help (not-found screen) */
   .sc-tips { margin: var(--space-6) 0 var(--space-8); padding: 0; list-style: none; display: grid; gap: var(--space-3); max-width: 48ch; }

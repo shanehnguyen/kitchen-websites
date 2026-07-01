@@ -287,6 +287,13 @@ export function init() {
   let chosen = { placeId: '', name: '' };
   let email = '';
   let firstName = '';
+  // Two quick tap-questions (q1/q2) shown right after they pick their business.
+  // They run cover for the audit fetch (fired the moment they pick) so the wait
+  // is hidden behind something useful; the answers ride along into the lead.
+  let yearsInBusiness = '';
+  let leadSource = '';
+  let lookupDone = false;   // audit fetch has resolved (ok or not)
+  let lookupOk = false;     // …and it resolved with a usable payload
 
   // ---------------- START (landing) ----------------
   // Both "Check my Google" buttons live in a [data-start-form]. The landing
@@ -355,7 +362,26 @@ export function init() {
     if (!btn) return;
     chosen = { placeId: btn.dataset.placeId || '', name: btn.dataset.placeName || '' };
     track('ScorecardIdentified', { name: chosen.name });
-    runLookup();
+    beginLookup();     // fire the audit NOW, in the background
+    show('q1');        // …and keep them busy with the first question
+  });
+
+  // ---------------- ENGAGE QUESTIONS (cover the audit fetch) ----------------
+  // Single tap → auto-advance. Q1 → Q2 → then either straight to the hook (audit
+  // already back) or the loader for whatever's left.
+  root.querySelector('[data-q1-choices]')?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-value]');
+    if (!b) return;
+    yearsInBusiness = b.dataset.value || '';
+    track('ScorecardQ1', { years: yearsInBusiness });
+    show('q2');
+  });
+  root.querySelector('[data-q2-choices]')?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-value]');
+    if (!b) return;
+    leadSource = b.dataset.value || '';
+    track('ScorecardQ2', { source: leadSource });
+    finishQuestions();
   });
 
   // "Can't find it" → the exact-name help screen (no manual capture)
@@ -369,16 +395,22 @@ export function init() {
   });
 
   // ---------------- LOOKUP ----------------
-  async function runLookup() {
-    show('loading');
-    if (DEMO_MODE) {                                          // demo: straight to sample result, no API
-      window.setTimeout(() => {
-        payload = demoPayload();
-        renderHook();
-        show('hook');
-        track('ScorecardHook', { band: payload?.segment.band, demo: true });
-      }, 600);
-      return;
+  // beginLookup fires the audit the moment a business is picked, but DOES NOT
+  // touch the screen — the q1/q2 questions are what the visitor sees while this
+  // runs. When it resolves, if they're already waiting on the loader we reveal
+  // straight away; otherwise we just flag it ready and let finishQuestions decide.
+  function beginLookup() {
+    lookupDone = false; lookupOk = false; payload = null;
+    void fetchAudit().then(() => {
+      lookupDone = true;
+      if (currentScreen === 'loading') revealResult();
+    });
+  }
+
+  async function fetchAudit() {
+    if (DEMO_MODE) {                                          // demo: sample result after a beat, no API
+      await new Promise((r) => window.setTimeout(r, 600));
+      payload = demoPayload(); lookupOk = true; return;
     }
     try {
       const r = await fetch('/api/scorecard', {
@@ -389,17 +421,31 @@ export function init() {
       const data = (await r.json()) as Payload;
       sessionToken = newToken(); // session consumed; fresh token for any retry
       if (!data.ok || data.degraded || !data.profile) {
-        if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; renderHook(); show('hook'); track('ScorecardHook', { band: MOCK_PAYLOAD.segment.band, mock: true }); return; }
-        show('notfound');
-        return;
+        if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; lookupOk = true; return; }
+        lookupOk = false; return;
       }
-      payload = data;
+      payload = data; lookupOk = true;
       tlog('lookup ok · server relevant =', data.relevant, '· business =', data.profile?.name);
+    } catch {
+      if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; lookupOk = true; return; }
+      lookupOk = false;
+    }
+  }
+
+  // They've answered both questions. Straight to the hook if the audit is already
+  // back (no spinner at all); otherwise show the loader — fetchAudit's .then will
+  // reveal it the moment data lands.
+  function finishQuestions() {
+    if (lookupDone) revealResult();
+    else show('loading');
+  }
+
+  function revealResult() {
+    if (lookupOk && payload) {
       renderHook();
       show('hook');
-      track('ScorecardHook', { band: data.segment?.band });
-    } catch {
-      if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; renderHook(); show('hook'); track('ScorecardHook', { band: MOCK_PAYLOAD.segment.band, mock: true }); return; }
+      track('ScorecardHook', { band: payload.segment?.band, demo: DEMO_MODE });
+    } else {
       show('notfound');
     }
   }
@@ -521,6 +567,8 @@ export function init() {
       'First name': firstName,
       Business: payload.profile.name,
       City: payload.city,
+      'Years in business': yearsInBusiness,
+      'Clients come from': leadSource,
       Verdict: payload.segment.band,
       'Worst point': payload.segment.worst,
       Reviews: payload.profile.reviews,
