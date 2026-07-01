@@ -46,6 +46,9 @@ type Payload = {
   // as a lead. Server-set from the GBP category. Treated as a lead unless
   // explicitly false (so a missing flag never silently drops a real lead).
   relevant?: boolean;
+  // Per-call server timings (ms) — logged to the console so we can see exactly
+  // which fetch is slow. Debug only.
+  _ms?: Record<string, number>;
 };
 
 // ============================================================================
@@ -110,7 +113,6 @@ const MOCK_PAYLOAD: Payload = {
     { id: 'response', label: 'Review responses', status: 'warn', value: 'You’ve answered 1 of your 7 reviews.', why: 'Silence reads as a business that doesn’t care, and Google quietly favors the ones that reply.', fix: 'Reply to every review, even a line. The rough ones first.' },
     { id: 'cat2', label: 'Secondary categories', status: 'warn', value: 'You’ve got none set.', why: 'Each one is another search you could win in La Mirada, and most businesses leave them empty. That’s an opening.', fix: 'Add the ones that fit: Bathroom remodeler, Cabinet maker, Countertop store, Tile contractor.' },
     { id: 'attrs', label: 'Attributes', status: 'warn', value: 'Missing: Free estimates, Online estimates.', why: 'Homeowners filter Maps by these. Unchecked means you’re filtered out before she ever sees you.', fix: 'Switch on the ones that apply to you, right in your profile.' },
-    { id: 'posts', label: 'Google posts', status: 'warn', value: 'You’ve never posted an update.', why: 'Posts are free, they signal a business that’s busy, and almost nobody in La Mirada bothers. That’s your opening.', fix: 'Post a finished project every couple of weeks. It takes minutes.' },
   ],
   passing: ['Hours listed', 'Phone listed', 'Website linked', 'Profile description'],
   website: {
@@ -122,8 +124,6 @@ const MOCK_PAYLOAD: Payload = {
     // version is pushed ONLY when its check is certain — uncertain/unknown stays
     // silent and is never shown as a fail.
     items: [
-      // [from PageSpeed API — already live]
-      { label: 'Speed', status: 'fail', value: 'PageSpeed 38/100 on mobile.', why: 'A slow site loses visitors before it even loads, and Google ranks it lower for it.', fix: 'Compress the images and cut the bloat so it loads in a second or two.' },
       // [check: count of meaningful <img> tags beyond logo/icons]
       { label: 'Photos of your work', status: 'fail', value: 'Almost no project photos on the homepage.', why: 'She came to see your kitchens, not a stock hero.', fix: 'Lead with a gallery of your real finished kitchens and baths.' },
       // [check: footer year — fire ONLY if more than ~2 years old]
@@ -292,8 +292,15 @@ export function init() {
   // is hidden behind something useful; the answers ride along into the lead.
   let yearsInBusiness = '';
   let leadSource = '';
-  let lookupDone = false;   // audit fetch has resolved (ok or not)
-  let lookupOk = false;     // …and it resolved with a usable payload
+  // Two-phase load. The fast HOOK pull backs the hook screen; the heavy FULL audit
+  // runs in the background and is only ever WAITED on after the email gate (where
+  // they've already committed). hookPayload feeds the hook; `payload` is the full result.
+  let hookPayload: Payload | null = null;
+  let hookDone = false, hookOk = false;
+  let fullStarted = false, fullDone = false, fullOk = false;
+  let waitingFor: '' | 'hook' | 'result' = '';
+  let pickAt = 0;   // perf timestamp when the business was picked (for timing logs)
+  const perfNow = () => { try { return performance.now(); } catch { return 0; } };
 
   // ---------------- START (landing) ----------------
   // Both "Check my Google" buttons live in a [data-start-form]. The landing
@@ -394,57 +401,68 @@ export function init() {
     requestAnimationFrame(() => root.querySelector<HTMLInputElement>('[data-ac-input]')?.focus());
   });
 
-  // ---------------- LOOKUP ----------------
-  // beginLookup fires the audit the moment a business is picked, but DOES NOT
-  // touch the screen — the q1/q2 questions are what the visitor sees while this
-  // runs. When it resolves, if they're already waiting on the loader we reveal
-  // straight away; otherwise we just flag it ready and let finishQuestions decide.
+  // ---------------- LOOKUP (two-phase) ----------------
+  // On business pick we fire the FAST hook pull. When it lands we (a) render the
+  // hook the moment the questions are done, and (b) kick off the heavy FULL audit
+  // in the background. The full audit is only ever WAITED on after the email gate.
   function beginLookup() {
-    lookupDone = false; lookupOk = false; payload = null;
-    void fetchAudit().then(() => {
-      lookupDone = true;
-      if (currentScreen === 'loading') revealResult();
+    hookPayload = null; payload = null;
+    hookDone = hookOk = false;
+    fullStarted = fullDone = fullOk = false;
+    waitingFor = '';
+    pickAt = perfNow();
+    void fetchStage('hook').then((data) => {
+      hookDone = true;
+      hookPayload = data || (DEV_MOCK ? MOCK_PAYLOAD : null);
+      hookOk = !!hookPayload;
+      tlog(`hook ready in ${Math.round(perfNow() - pickAt)}ms · ok=${hookOk} · relevant=${hookPayload?.relevant} · server ms:`, data?._ms || '(mock)');
+      if (hookOk) startFull();                        // heavy audit begins now (hook's fetches are cached server-side)
+      if (waitingFor === 'hook') { waitingFor = ''; revealHook(); }  // they finished the questions before the hook landed
     });
   }
 
-  async function fetchAudit() {
-    if (DEMO_MODE) {                                          // demo: sample result after a beat, no API
-      await new Promise((r) => window.setTimeout(r, 600));
-      payload = demoPayload(); lookupOk = true; return;
-    }
+  // The heavy audit. Fired once the hook lands so it reuses the hook's cached
+  // fetches. Its result is only shown after the gate — proceedResult picks it up.
+  function startFull() {
+    if (fullStarted) return;
+    fullStarted = true;
+    const fullAt = perfNow();
+    void fetchStage('full').then((data) => {
+      fullDone = true;
+      payload = data || (DEV_MOCK ? MOCK_PAYLOAD : null);
+      fullOk = !!payload;
+      tlog(`full ready in ${Math.round(perfNow() - fullAt)}ms (${Math.round(perfNow() - pickAt)}ms since pick) · ok=${fullOk} · server ms:`, data?._ms || '(mock)');
+      if (waitingFor === 'result') { waitingFor = ''; proceedResult(); }  // they already submitted the gate → go now
+    });
+  }
+
+  // Fetch one stage. Returns the payload or null on failure. DEMO/DEV fall back to
+  // the sample data so the flow is always clickable locally.
+  async function fetchStage(stage: 'hook' | 'full'): Promise<Payload | null> {
+    if (DEMO_MODE) { await new Promise((r) => window.setTimeout(r, stage === 'hook' ? 400 : 900)); return demoPayload(); }
     try {
-      const r = await fetch('/api/scorecard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ placeId: chosen.placeId, sessionToken }),
-      });
+      const body: Record<string, unknown> = { placeId: chosen.placeId, stage };
+      if (stage === 'hook') body.sessionToken = sessionToken;   // the hook call consumes the Places session
+      const r = await fetch('/api/scorecard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = (await r.json()) as Payload;
-      sessionToken = newToken(); // session consumed; fresh token for any retry
-      if (!data.ok || data.degraded || !data.profile) {
-        if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; lookupOk = true; return; }
-        lookupOk = false; return;
-      }
-      payload = data; lookupOk = true;
-      tlog('lookup ok · server relevant =', data.relevant, '· business =', data.profile?.name);
-    } catch {
-      if (DEV_MOCK) { dlog('using demo data (no live API on localhost)'); payload = MOCK_PAYLOAD; lookupOk = true; return; }
-      lookupOk = false;
-    }
+      if (stage === 'hook') sessionToken = newToken();
+      if (!data.ok || data.degraded || !data.profile) return null;
+      return data;
+    } catch { return null; }
   }
 
-  // They've answered both questions. Straight to the hook if the audit is already
-  // back (no spinner at all); otherwise show the loader — fetchAudit's .then will
-  // reveal it the moment data lands.
+  // Both questions answered → show the hook the instant it's ready (usually now:
+  // it lands in ~5s and the taps take ~8s). If not, a brief loader bridges to it.
   function finishQuestions() {
-    if (lookupDone) revealResult();
-    else show('loading');
+    if (hookDone) revealHook();
+    else { waitingFor = 'hook'; show('loading'); }
   }
 
-  function revealResult() {
-    if (lookupOk && payload) {
+  function revealHook() {
+    if (hookOk && hookPayload) {
       renderHook();
       show('hook');
-      track('ScorecardHook', { band: payload.segment?.band, demo: DEMO_MODE });
+      track('ScorecardHook', { band: hookPayload.segment?.band, demo: DEMO_MODE });
     } else {
       show('notfound');
     }
@@ -453,7 +471,7 @@ export function init() {
   // ---------------- HOOK ----------------
   function renderHook() {
     const host = root!.querySelector<HTMLElement>('[data-hook]');
-    if (host && payload) host.textContent = payload.hook;
+    if (host && hookPayload) host.textContent = hookPayload.hook;
   }
   root.querySelector('[data-hook-next]')?.addEventListener('click', () => {
     if (DEMO_MODE) { dlog('hook → full scorecard (demo, gate skipped)'); goToResult(); return; }
@@ -461,23 +479,38 @@ export function init() {
     show('gate');
   });
 
-  // Single hardened path to the result. Used by both "See the full scorecard"
-  // buttons. Never leaves a dead button: if rendering throws, it still shows
-  // the result screen and logs the error.
+  // Gate submitted → time to show the result. The heavy audit may still be
+  // finishing, so this is the ONE place we wait — AFTER they've committed. Usually
+  // it's already done (they spent ~15s on the hook + gate), so it's instant.
   function goToResult() {
-    // Anyone reaches the result; only a kitchen & bath business is forwarded as
-    // a lead. relevant === false (server-set) suppresses the web3forms ping AND
-    // the Meta Lead events, so the ad never optimizes toward off-trade traffic.
-    if (DRY_RUN && RELEVANT_OVERRIDE !== null && payload) payload.relevant = RELEVANT_OVERRIDE; // test override
-    const isLead = !DEMO_MODE && payload?.relevant !== false;
+    if (fullDone) { proceedResult(); return; }
+    startFull();                     // safety: ensure it's running (normally already is)
+    waitingFor = 'result';
+    show('loading');
+  }
+
+  // Renders the result and fires the lead. Never leaves a dead button: if rendering
+  // throws it still shows the result screen and logs the error.
+  function proceedResult() {
+    // If the full audit failed after they gave their email, degrade to the
+    // hook-stage payload — still a real, profile-based audit — rather than
+    // dead-ending a committed lead.
+    if (!payload) payload = hookPayload;
+    if (!payload) { show('notfound'); return; }
+
+    // Anyone reaches the result; only a kitchen & bath business is forwarded as a
+    // lead. relevant === false (server-set) suppresses the web3forms ping AND the
+    // Meta Lead events, so the ad never optimizes toward off-trade traffic.
+    if (DRY_RUN && RELEVANT_OVERRIDE !== null) payload.relevant = RELEVANT_OVERRIDE; // test override
+    const isLead = !DEMO_MODE && payload.relevant !== false;
     if (isLead) {
       capture();                                  // w3submit is dry-run-safe (logs, never POSTs, under DRY_RUN)
       fireMeta('Lead', { content_name: 'Scorecard Email' });
       fireMeta('ScorecardEmailCaptured');
     } else {
-      tlog('[lead] suppressed — not kitchen & bath (relevant =', payload?.relevant, ')');
+      tlog('[lead] suppressed — not kitchen & bath (relevant =', payload.relevant, ')');
     }
-    track('ScorecardEmail', { band: payload?.segment?.band, relevant: payload?.relevant, lead: isLead, demo: DEMO_MODE });
+    track('ScorecardEmail', { band: payload.segment?.band, relevant: payload.relevant, lead: isLead, demo: DEMO_MODE });
     try {
       renderResult();
     } catch (err) {
@@ -488,7 +521,7 @@ export function init() {
     if (!DEMO_MODE && chosen.placeId) {
       try { history.replaceState(null, '', `#b=${encodeURIComponent(chosen.placeId)}`); } catch { /* noop */ }
     }
-    track('ScorecardResult', { band: payload?.segment?.band, demo: DEMO_MODE });
+    track('ScorecardResult', { band: payload.segment?.band, demo: DEMO_MODE });
     fireMeta('ViewContent', { content_name: 'Scorecard Results' });
   }
 

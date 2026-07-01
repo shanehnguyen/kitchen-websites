@@ -37,7 +37,6 @@ import * as cheerio from 'cheerio';
 const PLACES_KEY = process.env.GOOGLE_PLACES_API_KEY || '';
 const DFS_LOGIN = process.env.DATAFORSEO_LOGIN || '';
 const DFS_PASSWORD = process.env.DATAFORSEO_PASSWORD || '';
-const PAGESPEED_KEY = process.env.PAGESPEED_API_KEY || '';
 const CACHE_TTL_SECONDS = 60 * 60 * 24; // 24h
 
 // Cache kill switch. While testing, set to false so every lookup hits the live
@@ -70,6 +69,26 @@ function getRedis() {
   return redisClient;
 }
 
+// Bound every Redis op. Upstash normally answers in ~30ms; if it can't in
+// REDIS_TIMEOUT_MS (unreachable / network blip) we bail instead of hanging the
+// request ~4s per call (which is exactly what was happening). Plus a circuit
+// breaker: after one timeout/failure we skip Redis for REDIS_COOLDOWN_MS, so a
+// dead store costs ONE 0.7s timeout total — not one per call, per request.
+const REDIS_TIMEOUT_MS = 700;
+const REDIS_COOLDOWN_MS = 30000;
+let redisDownUntil = 0;
+const R_SENTINEL = Symbol('redis-timeout');
+// Redis is usable when configured AND not in a post-failure cooldown.
+function redisUp(redis) { return !!redis && Date.now() >= redisDownUntil; }
+// Run a Redis op with a hard timeout; trip the cooldown on timeout/error.
+async function withTimeout(promise, fallback = null) {
+  let t;
+  const timeout = new Promise((resolve) => { t = setTimeout(() => resolve(R_SENTINEL), REDIS_TIMEOUT_MS); if (t.unref) t.unref(); });
+  const v = await Promise.race([Promise.resolve(promise).catch(() => R_SENTINEL), timeout]).finally(() => clearTimeout(t));
+  if (v === R_SENTINEL) { redisDownUntil = Date.now() + REDIS_COOLDOWN_MS; return fallback; }
+  return v;
+}
+
 const todayKey = () => new Date().toISOString().slice(0, 10);
 const clientIp = (req) => String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
   || req.headers['x-real-ip'] || req.socket?.remoteAddress || '';
@@ -78,17 +97,17 @@ const clientIp = (req) => String(req.headers['x-forwarded-for'] || '').split(','
 // returns degraded → manual capture). expensiveOk=false runs the cheap audit but
 // skips the costly depth layer (geogrid/backlinks/organic/rank).
 async function auditGate(redis, ip) {
-  if (!SPEND_GUARD || !redis) return { paidOk: true, expensiveOk: true, reason: '' };
+  if (!SPEND_GUARD || !redisUp(redis)) return { paidOk: true, expensiveOk: true, reason: '' };
   try {
     const day = todayKey();
     const hourK = `rl:${ip}:${day}:${new Date().getUTCHours()}`;
     const dayK = `rl:${ip}:${day}`;
-    const [countRaw, spentRaw, ipH, ipD] = await Promise.all([
+    const [countRaw, spentRaw, ipH, ipD] = await withTimeout(Promise.all([
       redis.get(`audits:${day}`),
       redis.get(`spend:${day}`),
       ip ? redis.get(hourK) : Promise.resolve(0),
       ip ? redis.get(dayK) : Promise.resolve(0),
-    ]);
+    ]), [0, 0, 0, 0]);
     const count = Number(countRaw) || 0;
     const spent = Number(spentRaw) || 0;
     const ipBlocked = (Number(ipH) || 0) >= IP_AUDITS_PER_HOUR || (Number(ipD) || 0) >= IP_AUDITS_PER_DAY;
@@ -103,19 +122,17 @@ async function auditGate(redis, ip) {
 // Tally a completed paid audit (best-effort). Counts every audit; only adds $ when
 // the expensive layer actually ran.
 async function recordAudit(redis, ip, ranExpensive) {
-  if (!SPEND_GUARD || !redis) return;
+  if (!SPEND_GUARD || !redisUp(redis)) return;
   try {
     const day = todayKey();
-    await redis.incr(`audits:${day}`); await redis.expire(`audits:${day}`, 60 * 60 * 48);
-    if (ranExpensive) { await redis.incrbyfloat(`spend:${day}`, EST_AUDIT_COST); await redis.expire(`spend:${day}`, 60 * 60 * 48); }
+    const writes = [redis.incr(`audits:${day}`), redis.expire(`audits:${day}`, 60 * 60 * 48)];
+    if (ranExpensive) { writes.push(redis.incrbyfloat(`spend:${day}`, EST_AUDIT_COST), redis.expire(`spend:${day}`, 60 * 60 * 48)); }
     if (ip) {
       const hourK = `rl:${ip}:${day}:${new Date().getUTCHours()}`;
       const dayK = `rl:${ip}:${day}`;
-      await Promise.all([
-        redis.incr(hourK), redis.expire(hourK, 3600),
-        redis.incr(dayK), redis.expire(dayK, 60 * 60 * 48),
-      ]);
+      writes.push(redis.incr(hourK), redis.expire(hourK, 3600), redis.incr(dayK), redis.expire(dayK, 60 * 60 * 48));
     }
+    await withTimeout(Promise.all(writes)); // bounded — metering never blocks the audit
   } catch { /* metering is best-effort, never block the audit */ }
 }
 
@@ -218,8 +235,10 @@ async function fetchReviewsMeta(name, lat, lng) {
     });
     const id = posted?.id;
     if (!id) return null;
-    for (let i = 0; i < 3; i++) {
-      await new Promise((res) => setTimeout(res, 1500));
+    // Trimmed poll: 2 tries × 1s (was 3 × 1.5s). If the task isn't ready in ~2s we
+    // omit review recency/velocity/response findings rather than stall the audit.
+    for (let i = 0; i < 2; i++) {
+      await new Promise((res) => setTimeout(res, 1000));
       const got = await fetch(`https://api.dataforseo.com/v3/business_data/google/reviews/task_get/${id}`, {
         headers: { Authorization: dfsAuth },
       }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
@@ -246,34 +265,7 @@ async function fetchReviewsMeta(name, lat, lng) {
   }
 }
 
-// my_business_updates — newest post timestamp (task-based; best-effort).
-async function fetchPostsMeta(name, lat, lng) {
-  if (!dfsAuth) return null;
-  try {
-    const posted = await dfsPost('business_data/google/my_business_updates/task_post', {
-      keyword: name,
-      location_coordinate: `${lat},${lng}`,
-      language_code: 'en',
-    });
-    const id = posted?.id;
-    if (!id) return null;
-    for (let i = 0; i < 2; i++) {
-      await new Promise((res) => setTimeout(res, 1500));
-      const got = await fetch(`https://api.dataforseo.com/v3/business_data/google/my_business_updates/task_get/${id}`, {
-        headers: { Authorization: dfsAuth },
-      }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-      const items = got?.tasks?.[0]?.result?.[0]?.items;
-      if (Array.isArray(items)) {
-        const newest = items.map((it) => it.timestamp).filter(Boolean).sort().pop();
-        return { newest: newest || null, count: items.length };
-      }
-    }
-    return null;
-  } catch (err) {
-    console.warn('updates failed:', err.message);
-    return null;
-  }
-}
+// (Google posts / my_business_updates removed — posts no longer graded.)
 
 // ---------- DataForSEO SERP: local-pack rank (Maps) ----------
 // Returns { rank, above } where rank is our position in the Maps pack (1-based)
@@ -304,7 +296,10 @@ async function fetchLocalRank(keyword, lat, lng, placeId, myName) {
   }
 }
 
-// Geogrid resolution. 3 = 9 SERP calls (~$0.018/audit). 5 = 25 calls (~$0.05).
+// Geogrid resolution. 3 = 9 SERP calls (~$0.018/audit, ~5s). 5 = 25 calls
+// (~$0.05, ~12s). Kept at 5 for the richer map — it's in the background full
+// audit (post-gate), so the extra ~7s runs while they read the hook + fill the
+// gate and is normally invisible.
 const GEOGRID_N = 5;
 
 // Geogrid: sample an N×N grid around the business, count points where we land top 3.
@@ -515,20 +510,9 @@ async function fetchWebsite(domain) {
     out.loads = false;
   }
 
-  // PageSpeed (mobile) — free; better with a key (higher rate limit)
-  try {
-    const ps = new URL('https://www.googleapis.com/pagespeedonline/v5/runPagespeed');
-    ps.searchParams.set('url', url);
-    ps.searchParams.set('strategy', 'mobile');
-    ps.searchParams.set('category', 'performance');
-    if (PAGESPEED_KEY) ps.searchParams.set('key', PAGESPEED_KEY);
-    const r = await fetch(ps.toString());
-    if (r.ok) {
-      const data = await r.json();
-      const score = data?.lighthouseResult?.categories?.performance?.score;
-      if (typeof score === 'number') out.perf = Math.round(score * 100);
-    }
-  } catch { /* omit perf on failure */ }
+  // PageSpeed removed — it was the single slowest call in the audit (~8–15s) for
+  // one line. The website check is now just the HTML parse (~1–2s). Speed is no
+  // longer graded; out.perf stays null and analyze() omits it.
   return out;
 }
 
@@ -605,6 +589,9 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
   }
   let hook;
   if (top && reviews !== null) hook = `You have ${reviews} Google reviews. ${rivalName}, the business Google puts right above you ${inCity}, has ${top.reviews}.`;
+  // Places-only hook (no rival yet — the hook stage skips competitors for speed):
+  // lead with their own real numbers and tee up the comparison in the result.
+  else if (reviews !== null && rating !== null && rating > 0) hook = `You’ve got ${reviews} Google review${reviews === 1 ? '' : 's'} and a ${rating.toFixed(1)}-star rating. Here’s exactly where that puts you against the shops ${inCity} — and the first three things costing you jobs.`;
   else if (rating !== null && rating < 4) hook = `Your Google rating is ${rating.toFixed(1)} stars, under the line most homeowners use to rule a business out.`;
   else hook = `Here’s what ${cityHomeowner} sees when she checks your Google, graded.`;
 
@@ -706,16 +693,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
   // 13. Website link — present, or this is the finding (bridges to website section)
   if (str(m.domain)) pass('Website linked');
   else add({ id: 'web', label: 'Website link', status: 'fail', sev: 2, value: 'There’s no website on your profile.', why: 'The homeowner ready to see your work hits a dead end, and you’ve got nothing to show her.', fix: 'Link a site built to turn that click into a booked job. That’s the second half of the call.' });
-  // 14. Posts — "never" only when we successfully fetched updates and found none
-  if (postsMeta) {
-    if (postsMeta.newest) {
-      const mo = monthsSince(postsMeta.newest);
-      if (mo !== null && mo <= 3) pass('Posting updates');
-      else add({ id: 'posts', label: 'Google posts', status: 'warn', sev: 4, value: mo !== null ? `Your last post was about ${mo} months ago.` : 'Your posts have gone stale.', why: `Posts are free, they signal a business that’s busy, and almost nobody ${inCity} bothers. That’s your opening.`, fix: 'Post a finished project every couple of weeks. It takes minutes.' });
-    } else if (postsMeta.count === 0) {
-      add({ id: 'posts', label: 'Google posts', status: 'warn', sev: 4, value: 'You’ve never posted an update.', why: `Posts are free, they signal a business that’s busy, and almost nobody ${inCity} bothers. That’s your opening.`, fix: 'Post a finished project every couple of weeks. It takes minutes.' });
-    }
-  }
+  // (Google posts finding removed — posts no longer graded.)
 
   // 39. Referring domains vs rival (★ marquee, authority)
   if (typeof myDomains === 'number') {
@@ -753,12 +731,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     if (website.loads === false) {
       wadd('Loads', 'fail', 'Your site didn’t load for me.', 'A homeowner who clicks and gets nothing is a job gone in one bounce.', 'Get it back online, fast. Every minute down is a missed call.');
     } else if (website.loads === true) {
-      // Speed
-      if (typeof website.perf === 'number') {
-        if (website.perf < 50) wadd('Speed', 'fail', `PageSpeed ${website.perf}/100 on mobile.`, 'A slow site loses visitors before it even loads, and Google ranks it lower for it.', 'Compress the images and cut the bloat so it loads in a second or two.');
-        else if (website.perf < 90) wadd('Speed', 'warn', `PageSpeed ${website.perf}/100 on mobile.`, 'Every slow second costs you a homeowner who won’t wait.', 'Compress images and trim scripts to get it into the 90s.');
-        else wpass.push(`Fast (${website.perf}/100)`);
-      }
+      // (Speed / PageSpeed removed — no longer graded.)
       // Secure
       if (website.https === false) wadd('Secure (HTTPS)', 'fail', 'Your site isn’t secure.', 'Her browser warns “Not secure,” and she reads that as “not safe to hire.”', 'Add an SSL certificate. Most hosts turn it on free in a click.');
       else if (website.https === true) wpass.push('HTTPS secure');
@@ -939,12 +912,32 @@ function mergeProfile(places, info) {
   };
 }
 
+// Per-call timing. Records how long a fetch took into `store[key]` (ms) so we can
+// see EXACTLY where the seconds go — returned as `_ms` in the payload and logged.
+async function timed(store, key, p) {
+  const s = Date.now();
+  try { return await p; }
+  finally { store[key] = Date.now() - s; }
+}
+
+// Shared competitor shaping: drop big-box/chains, self, and implausible counts;
+// keep the top 3 local rivals by review count. Used by both stages.
+function buildCompetitors(rawCompetitors, mergedName) {
+  return (rawCompetitors || [])
+    .filter((c) => !isExcluded(c.title))
+    .filter((c) => str(c.title) && str(c.title).toLowerCase() !== (mergedName || '').toLowerCase())
+    .map((c) => ({ name: c.title, reviews: num(c.rating?.votes_count) ?? 0, rating: num(c.rating?.value) ?? 0, domain: normDomain(str(c.url) || str(c.domain)) }))
+    .filter((c) => c.reviews > 0 && c.reviews <= MAX_PLAUSIBLE_REVIEWS)
+    .sort((a, b) => b.reviews - a.reviews)
+    .slice(0, 3);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
   }
-  const { placeId, sessionToken } = req.body || {};
+  const { placeId, sessionToken, stage } = req.body || {};
   if (!placeId) return res.status(400).json({ ok: false, error: 'Missing placeId' });
   if (!PLACES_KEY) return res.status(200).json({ ok: true, degraded: true });
 
@@ -954,98 +947,124 @@ export default async function handler(req, res) {
   // pre-flag cached payloads so they recompute with `relevant` (a stale v2 entry
   // would return relevant=undefined → wrongly treated as a lead).
   const cacheKey = `scorecard:v3:${placeId}`;
-  // Cache hit → serve free, fire zero paid calls.
-  if (redis && CACHE_ENABLED) {
+  // parts bridge: the fast HOOK stage stashes its raw fetches here so the FULL
+  // stage (fired seconds later) reuses them and never pays for the same
+  // placeDetails/profile/competitors calls twice.
+  const partsKey = `scorecard:parts:v3:${placeId}`;
+  // Full cache hit → serve free for EITHER stage (the hook renders fine from a
+  // full payload), fire zero paid calls.
+  if (redisUp(redis) && CACHE_ENABLED) {
     try {
-      const cached = await redis.get(cacheKey);
+      const cached = await withTimeout(redis.get(cacheKey));
       if (cached) return res.status(200).json({ ok: true, cached: true, ...cached });
     } catch (err) { console.warn('cache read failed:', err.message); }
   }
 
   // Spend gate — checked BEFORE any paid call. Over the per-IP or daily-count limit:
-  // no paid calls at all, fall back to manual capture. Never run up the bill.
+  // no paid calls at all, fall back to the help screen. Never run up the bill.
   const gate = await auditGate(redis, ip);
   if (!gate.paidOk) {
     console.warn('audit blocked by spend guard:', gate.reason);
     return res.status(200).json({ ok: true, degraded: true, limited: true });
   }
 
-  // Confirm name + coordinates (identify bridge)
+  // ===================== HOOK STAGE (fast, cheap) =====================
+  // Just enough for the one-fact hook: placeDetails + profile + competitors. No
+  // reviews/posts/website/geogrid — those slow parts aren't in the hook. Stash
+  // the raw fetches for the full stage, then analyze() with the expensive inputs
+  // null (it honestly omits them) to get a valid hook/verdict/relevant payload.
+  if (stage === 'hook') {
+    const ms = {}; const t0 = Date.now();
+    let places;
+    try { places = await timed(ms, 'placeDetails', placeDetails(placeId, sessionToken)); }
+    catch (err) { console.warn('placeDetails(hook) failed:', err.message); return res.status(200).json({ ok: true, degraded: true }); }
+    const lat = places?.location?.latitude, lng = places?.location?.longitude;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return res.status(200).json({ ok: true, degraded: true });
+
+    // Hook = placeDetails ONLY (~0.4s, one Google call, zero DataForSEO). Your
+    // review count + rating come straight from Google Places; the rival comparison
+    // is deferred to the result table. This lands effectively instantly.
+    if (redisUp(redis)) {
+      try { await withTimeout(redis.set(partsKey, { places }, { ex: 300 })); }
+      catch (err) { console.warn('parts write failed:', err.message); }
+    }
+    const merged = mergeProfile(places, null);   // info=null → reviews/rating come from Google Places
+    const city = extractCity(places, null);
+    const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
+    const payload = analyze(merged, null, [], null, null, null, city, { primaryTerm });
+    ms.total = Date.now() - t0;
+    console.log('[scorecard] hook timings (ms):', JSON.stringify(ms));
+    return res.status(200).json({ ok: true, stage: 'hook', _ms: ms, ...payload });
+  }
+
+  // ===================== FULL STAGE (default) =====================
+  const ms = {}; const t0 = Date.now();
+  // Reuse the hook stage's place lookup when present (saves a Google call + the
+  // consumed session token). Competitors + profile are fetched here now.
   let places;
-  try { places = await placeDetails(placeId, sessionToken); }
-  catch (err) { console.warn('placeDetails failed:', err.message); return res.status(200).json({ ok: true, degraded: true }); }
+  let parts = null;
+  if (redisUp(redis) && CACHE_ENABLED) { try { parts = await timed(ms, 'partsRead', withTimeout(redis.get(partsKey))); } catch { parts = null; } }
+  if (parts && parts.places) {
+    places = parts.places; ms.reused = 1;
+  } else {
+    ms.reused = 0;
+    try { places = await timed(ms, 'placeDetails', placeDetails(placeId, sessionToken)); }
+    catch (err) { console.warn('placeDetails failed:', err.message); return res.status(200).json({ ok: true, degraded: true }); }
+  }
 
   const lat = places?.location?.latitude;
   const lng = places?.location?.longitude;
   const name = places?.displayName?.text || '';
   if (typeof lat !== 'number' || typeof lng !== 'number') return res.status(200).json({ ok: true, degraded: true });
 
-  // Rich profile + competitors + reviews + posts (each best-effort, honest omit)
-  const [info, rawCompetitors, reviewsMeta, postsMeta] = await Promise.all([
-    fetchMyBusinessInfo(name, lat, lng),
-    fetchCompetitors(lat, lng),
-    fetchReviewsMeta(name, lat, lng),
-    fetchPostsMeta(name, lat, lng),
+  const city = extractCity(places, null);
+  const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
+  const exp = gate.expensiveOk;
+  if (!exp) console.warn('expensive depth skipped:', gate.reason);
+
+  // Wave 1: profile, competitors, reviews, and the map/rank layer — everything that
+  // needs only the place. All concurrent (posts removed).
+  const [info, rawCompetitors, reviewsMeta, localRank, geogrid] = await Promise.all([
+    timed(ms, 'myBusinessInfo', fetchMyBusinessInfo(name, lat, lng)),
+    timed(ms, 'competitors', fetchCompetitors(lat, lng)),
+    timed(ms, 'reviews', fetchReviewsMeta(name, lat, lng)),
+    exp ? timed(ms, 'localRank', fetchLocalRank(primaryTerm, lat, lng, placeId, name)) : Promise.resolve(null),
+    exp ? timed(ms, 'geogrid', fetchGeogrid(primaryTerm, lat, lng, placeId, name)) : Promise.resolve(null),
   ]);
 
   const merged = mergeProfile(places, info);
-
-  const competitors = (rawCompetitors || [])
-    .filter((c) => !isExcluded(c.title))
-    .filter((c) => str(c.title) && str(c.title).toLowerCase() !== (merged.name || '').toLowerCase())
-    .map((c) => ({ name: c.title, reviews: num(c.rating?.votes_count) ?? 0, rating: num(c.rating?.value) ?? 0, domain: normDomain(str(c.url) || str(c.domain)) }))
-    .filter((c) => c.reviews > 0 && c.reviews <= MAX_PLAUSIBLE_REVIEWS)
-    .sort((a, b) => b.reviews - a.reviews)
-    .slice(0, 3);
+  const competitors = buildCompetitors(rawCompetitors, merged.name);
   const top = competitors[0] || null;
+  const myDom = normDomain(merged.domain);
+  const rivalDom = top?.domain || null;
 
-  const city = extractCity(places, info);
-  const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
+  // Wave 2: the website audit (now fast — PageSpeed gone) plus authority for us and
+  // the rival — the calls that need the resolved domains from wave 1.
+  const [website, myDomains, rivalDomains, myKeywords, rivalKeywords] = await Promise.all([
+    merged.domain ? timed(ms, 'website', fetchWebsite(merged.domain).catch(() => null)) : Promise.resolve(null),
+    exp && myDom ? fetchReferringDomains(myDom) : Promise.resolve(null),
+    exp && rivalDom ? fetchReferringDomains(rivalDom) : Promise.resolve(null),
+    exp && myDom ? timed(ms, 'organicMine', fetchOrganicKeywords(myDom)) : Promise.resolve(null),
+    exp && rivalDom ? timed(ms, 'organicRival', fetchOrganicKeywords(rivalDom)) : Promise.resolve(null),
+  ]);
 
-  // The website+PageSpeed check and the EXPENSIVE depth layer (geogrid 25 calls,
-  // backlinks, organic, rank) were the two longest phases and used to run
-  // back-to-back. They're independent and only need data we already have, so run
-  // them CONCURRENTLY — cold wall-clock drops from (website + depth) to
-  // max(website, depth). PageSpeed hits Google, the depth layer hits DataForSEO,
-  // so this adds no peak DataForSEO concurrency beyond what geogrid already does.
-  // The depth layer stays gated by the daily budget + per-IP limits; over the
-  // line it's skipped and the audit renders from the cheap profile + website checks.
-  const websiteP = merged.domain
-    ? fetchWebsite(merged.domain).catch(() => null) // fetchWebsite already degrades internally; guard anyway
-    : Promise.resolve(null);
-
-  let website = null;
-  let localRank = null, geogrid = null, myDomains = null, rivalDomains = null, myKeywords = null, rivalKeywords = null;
-  if (gate.expensiveOk) {
-    const myDom = normDomain(merged.domain);
-    const rivalDom = top?.domain || null;
-    [website, localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords] = await Promise.all([
-      websiteP,
-      fetchLocalRank(primaryTerm, lat, lng, placeId, merged.name),
-      fetchGeogrid(primaryTerm, lat, lng, placeId, merged.name),
-      myDom ? fetchReferringDomains(myDom) : Promise.resolve(null),
-      rivalDom ? fetchReferringDomains(rivalDom) : Promise.resolve(null),
-      myDom ? fetchOrganicKeywords(myDom) : Promise.resolve(null),
-      rivalDom ? fetchOrganicKeywords(rivalDom) : Promise.resolve(null),
-    ]);
-  } else {
-    console.warn('expensive depth skipped:', gate.reason);
-    website = await websiteP; // still fetch the site even when the paid depth layer is skipped
-  }
   // tally this audit against the day + IP (count always, $ only if the depth layer ran)
   await recordAudit(redis, ip, gate.expensiveOk);
 
-  const payload = analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city, {
+  const payload = analyze(merged, top, competitors, reviewsMeta, null, website, city, {
     localRank, geogrid, myDomains, rivalDomains, myKeywords, rivalKeywords, primaryTerm,
   });
+  ms.total = Date.now() - t0;
+  payload._ms = ms;
+  console.log('[scorecard] full timings (ms):', JSON.stringify(ms));
 
   // Attach a proxied static-map background for the rankings visual (key stays server-side).
   if (payload.rankings) {
     payload.rankings.mapUrl = `/api/staticmap?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`;
   }
 
-  if (redis && CACHE_ENABLED) {
-    try { await redis.set(cacheKey, payload, { ex: CACHE_TTL_SECONDS }); }
+  if (redisUp(redis) && CACHE_ENABLED) {
+    try { await withTimeout(redis.set(cacheKey, payload, { ex: CACHE_TTL_SECONDS })); }
     catch (err) { console.warn('cache write failed:', err.message); }
   }
   return res.status(200).json({ ok: true, ...payload });
