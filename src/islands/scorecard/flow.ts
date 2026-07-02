@@ -30,7 +30,7 @@ type Rankings = {
 type Payload = {
   ok?: boolean;
   degraded?: boolean;
-  profile: { name: string; reviews: number | null; rating: number | null };
+  profile: { name: string; reviews: number | null; rating: number | null; category?: string | null };
   city: string | null;
   top: Rival | null;
   competitors: Rival[];
@@ -43,9 +43,15 @@ type Payload = {
   math: string;
   segment: { band: string; worst: string };
   // Anyone can take the scorecard; only a kitchen & bath business is forwarded
-  // as a lead. Server-set from the GBP category. Treated as a lead unless
-  // explicitly false (so a missing flag never silently drops a real lead).
+  // as a lead. PRIMARY signal: the real Google category from the DataForSEO
+  // profile pull. Treated as a lead unless explicitly false (so a missing flag
+  // never silently drops a real lead).
   relevant?: boolean;
+  // True when the server had a real Google category to base `relevant` on.
+  // False means Google gave us nothing — that's the ONLY time the client
+  // applies the self-reported "line of work" answer as a fallback/confidence
+  // check (see proceedResult). Never overrides a real category.
+  categoryKnown?: boolean;
   // Per-call server timings (ms) — logged to the console so we can see exactly
   // which fetch is slow. Debug only.
   _ms?: Record<string, number>;
@@ -221,11 +227,11 @@ export function init() {
   //      readable; steps play in order and loop back to the start if the pull
   //      runs long; once data is ready the loader leaves after the current step.
   const LOADING_STEPS: { status: string; priming: string }[] = [
-    { status: 'Pulling up your Google profile.', priming: 'Google can’t see your work. It ranks the shop that looks busiest. That’s the whole game, and most owners never get told.' },
-    { status: 'Finding the shop you’re up against.', priming: 'The shop you’re about to meet probably doesn’t build a better kitchen than you. He just shows up better.' },
-    { status: 'Checking the map across your service area.', priming: 'You can sit at number one outside your own shop and vanish three miles down the road. Google draws a different map for every driveway.' },
+    { status: 'Pulling up your Google profile.', priming: 'Google can’t see your work. It ranks the business that looks busiest. That’s the whole game, and most owners never get told.' },
+    { status: 'Finding the competitor you’re up against.', priming: 'The competitor you’re about to meet probably doesn’t build a better kitchen than you. He just shows up better.' },
+    { status: 'Checking the map across your service area.', priming: 'You can sit at number one outside your own business and vanish three miles down the road. Google draws a different map for every driveway.' },
     { status: 'Counting your reviews against his.', priming: 'A homeowner trusts forty reviews over five without reading a single one. He’s not weighing them. He’s counting them.' },
-    { status: 'Seeing who’s pulling reviews faster.', priming: 'One review from last week beats a stack from two years ago. A quiet profile reads like a shop that closed.' },
+    { status: 'Seeing who’s pulling reviews faster.', priming: 'One review from last week beats a stack from two years ago. A quiet profile reads like a business that closed.' },
     { status: 'Checking who Google points the calls to.', priming: 'Three names show up on the map. Everybody else is on a page nobody scrolls to.' },
     { status: 'Building your side-by-side.', priming: 'He pulls out his phone in the driveway after you leave and picks from what he finds. Here’s what he finds.' },
   ];
@@ -290,8 +296,9 @@ export function init() {
   // Two quick tap-questions (q1/q2) shown right after they pick their business.
   // They run cover for the audit fetch (fired the moment they pick) so the wait
   // is hidden behind something useful; the answers ride along into the lead.
-  let yearsInBusiness = '';
-  let leadSource = '';
+  // lineOfWork doubles as a category fallback/confidence check — see proceedResult.
+  let lineOfWork = '';
+  let phoneVolume = '';
   // Two-phase load. The fast HOOK pull backs the hook screen; the heavy FULL audit
   // runs in the background and is only ever WAITED on after the email gate (where
   // they've already committed). hookPayload feeds the hook; `payload` is the full result.
@@ -379,15 +386,15 @@ export function init() {
   root.querySelector('[data-q1-choices]')?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-value]');
     if (!b) return;
-    yearsInBusiness = b.dataset.value || '';
-    track('ScorecardQ1', { years: yearsInBusiness });
+    lineOfWork = b.dataset.value || '';
+    track('ScorecardQ1', { lineOfWork });
     show('q2');
   });
   root.querySelector('[data-q2-choices]')?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-value]');
     if (!b) return;
-    leadSource = b.dataset.value || '';
-    track('ScorecardQ2', { source: leadSource });
+    phoneVolume = b.dataset.value || '';
+    track('ScorecardQ2', { phoneVolume });
     finishQuestions();
   });
 
@@ -501,6 +508,16 @@ export function init() {
     // Anyone reaches the result; only a kitchen & bath business is forwarded as a
     // lead. relevant === false (server-set) suppresses the web3forms ping AND the
     // Meta Lead events, so the ad never optimizes toward off-trade traffic.
+    //
+    // Self-reported "line of work" (Q1) is a FALLBACK + confidence check ONLY —
+    // the server's real Google category is the primary signal and always wins
+    // when known. This only steps in when Google gave us no category at all to
+    // check against, so a real K&B business with sparse GBP data doesn't get
+    // wrongly dropped just because Google has nothing on file for them.
+    if (payload.categoryKnown === false && payload.relevant === false && lineOfWork) {
+      tlog('[lead] category unknown to Google — falling back to self-reported line of work:', lineOfWork);
+      payload.relevant = true;
+    }
     if (DRY_RUN && RELEVANT_OVERRIDE !== null) payload.relevant = RELEVANT_OVERRIDE; // test override
     const isLead = !DEMO_MODE && payload.relevant !== false;
     if (isLead) {
@@ -600,8 +617,9 @@ export function init() {
       'First name': firstName,
       Business: payload.profile.name,
       City: payload.city,
-      'Years in business': yearsInBusiness,
-      'Clients come from': leadSource,
+      'Line of work (self-reported)': lineOfWork,
+      'Google category (actual)': payload.profile.category || (payload.categoryKnown === false ? 'unknown to Google' : ''),
+      'Phone volume': phoneVolume,
       Verdict: payload.segment.band,
       'Worst point': payload.segment.worst,
       Reviews: payload.profile.reviews,

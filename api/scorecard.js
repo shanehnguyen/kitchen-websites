@@ -526,6 +526,26 @@ const monthsSince = (ts) => {
 const STRONG_CATS = /(kitchen|bath|cabinet|countertop|remodel)/i;
 const GENERIC_CATS = /^(contractor|general contractor|construction company|home improvement|handyman)$/i;
 
+// The homeowner search term used to rank-check this business (SERP/geogrid).
+// Built from the REAL Google category (never a self-reported guess) — a
+// cabinet maker shouldn't get checked against "kitchen remodeler" rankings.
+// Falls back to a broad kitchen & bath term when the category is empty,
+// generic, or spans multiple trades — never invents a specific trade we don't
+// have evidence for.
+function termForCategory(category) {
+  const c = (category || '').toLowerCase();
+  const hasKitchen = /kitchen/.test(c);
+  const hasBath = /bath/.test(c);
+  if (hasKitchen && !hasBath) return 'kitchen remodeler';
+  if (hasBath && !hasKitchen) return 'bathroom remodeler';
+  if (/cabinet/.test(c)) return 'cabinet maker';
+  if (/countertop|counter\s*top|granite|marble|quartz|stone|surface|fabricat/.test(c)) return 'countertop installer';
+  if (/tile/.test(c)) return 'tile contractor';
+  if (/showroom|dealer/.test(c)) return 'kitchen and bath showroom';
+  if (/design[\s-]?build|interior\s*design/.test(c)) return 'kitchen and bath designer';
+  return 'kitchen and bath remodeler'; // unknown, generic, or spans both trades
+}
+
 // Which businesses count as a kitchen & bath LEAD. This decides the `relevant`
 // flag the client uses to gate the lead. A restaurant, a trash-bin service, a
 // landscaper — anyone can still SEE the scorecard; they just never get forwarded.
@@ -591,7 +611,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
   if (top && reviews !== null) hook = `You have ${reviews} Google reviews. ${rivalName}, the business Google puts right above you ${inCity}, has ${top.reviews}.`;
   // Places-only hook (no rival yet — the hook stage skips competitors for speed):
   // lead with their own real numbers and tee up the comparison in the result.
-  else if (reviews !== null && rating !== null && rating > 0) hook = `You’ve got ${reviews} Google review${reviews === 1 ? '' : 's'} and a ${rating.toFixed(1)}-star rating. Here’s exactly where that puts you against the shops ${inCity} — and the first three things costing you jobs.`;
+  else if (reviews !== null && rating !== null && rating > 0) hook = `You’ve got ${reviews} Google review${reviews === 1 ? '' : 's'} and a ${rating.toFixed(1)}-star rating. Here’s exactly where that puts you against the businesses ${inCity}, and the first three things costing you jobs.`;
   else if (rating !== null && rating < 4) hook = `Your Google rating is ${rating.toFixed(1)} stars, under the line most homeowners use to rule a business out.`;
   else hook = `Here’s what ${cityHomeowner} sees when she checks your Google, graded.`;
 
@@ -849,7 +869,7 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
   }
 
   return {
-    profile: { name: m.name, reviews, rating },
+    profile: { name: m.name, reviews, rating, category: m.category || null },
     city: city || null,
     top: top || null,
     competitors: competitors.slice(0, 3),
@@ -862,8 +882,13 @@ function analyze(merged, top, competitors, reviewsMeta, postsMeta, website, city
     math,
     segment: { band: verdict.key, worst: items[0]?.label || '' },
     // Anyone can see the scorecard; only a kitchen & bath business becomes a
-    // lead. The client gates the lead notification + Meta Lead event on this.
+    // lead. PRIMARY signal is the real Google category (m.category), pulled
+    // from the DataForSEO profile resolved off the place_id from the identify
+    // screen — never the visitor's self-reported answer. The client only
+    // falls back to the self-report when categoryKnown is false (see flow.ts
+    // proceedResult), i.e. Google gave us nothing to check the claim against.
     relevant: isKbLead(m),
+    categoryKnown: !!str(m.category),
   };
 }
 
@@ -1018,22 +1043,49 @@ export default async function handler(req, res) {
   if (typeof lat !== 'number' || typeof lng !== 'number') return res.status(200).json({ ok: true, degraded: true });
 
   const city = extractCity(places, null);
-  const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
   const exp = gate.expensiveOk;
   if (!exp) console.warn('expensive depth skipped:', gate.reason);
 
-  // Wave 1: profile, competitors, reviews, and the map/rank layer — everything that
-  // needs only the place. All concurrent (posts removed).
-  const [info, rawCompetitors, reviewsMeta, localRank, geogrid] = await Promise.all([
+  // Wave 1a: profile, competitors, reviews — everything that needs only the
+  // place. All concurrent.
+  const [info, rawCompetitors, reviewsMeta] = await Promise.all([
     timed(ms, 'myBusinessInfo', fetchMyBusinessInfo(name, lat, lng)),
     timed(ms, 'competitors', fetchCompetitors(lat, lng)),
     timed(ms, 'reviews', fetchReviewsMeta(name, lat, lng)),
+  ]);
+
+  const merged = mergeProfile(places, info);
+  // The rank/geogrid search term needs the REAL Google category (not a
+  // hardcoded "kitchen remodeler" for every visitor), so this is the one place
+  // that waits on my_business_info before firing the paid SERP calls — adds a
+  // few seconds here, but it's still background time before the email gate.
+  const primaryTerm = `${termForCategory(merged.category)}${city ? ' ' + city : ''}`;
+
+  // Wave 1b: the map/rank layer, now that we know which trade to rank-check.
+  const [localRank, geogrid] = await Promise.all([
     exp ? timed(ms, 'localRank', fetchLocalRank(primaryTerm, lat, lng, placeId, name)) : Promise.resolve(null),
     exp ? timed(ms, 'geogrid', fetchGeogrid(primaryTerm, lat, lng, placeId, name)) : Promise.resolve(null),
   ]);
 
-  const merged = mergeProfile(places, info);
-  const competitors = buildCompetitors(rawCompetitors, merged.name);
+  let competitors = buildCompetitors(rawCompetitors, merged.name);
+  // Prefer REAL Google Maps rank order over the review-count sort when we have
+  // it: re-order so any business that actually appears ranked above this one
+  // in the live SERP (localRank.above) comes first, in that real order. This
+  // is what makes "the business Google puts right above you" (the hook line)
+  // true, not just "the business with the most reviews nearby" — those aren't
+  // always the same business. Falls back to review-count order for anyone not
+  // found in the rank data; never invents a rank we don't have.
+  if (localRank?.above?.length) {
+    const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const rankOrder = localRank.above.map(norm);
+    const rest = [...competitors];
+    const ranked = [];
+    rankOrder.forEach((rn) => {
+      const idx = rest.findIndex((c) => norm(c.name) === rn);
+      if (idx !== -1) ranked.push(rest.splice(idx, 1)[0]);
+    });
+    competitors = [...ranked, ...rest];
+  }
   const top = competitors[0] || null;
   const myDom = normDomain(merged.domain);
   const rivalDom = top?.domain || null;

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "dev:watch": "node scripts/dev-watch.mjs",
     "dev:api": "vercel dev",
     "build": "astro build",
     "preview": "astro preview",

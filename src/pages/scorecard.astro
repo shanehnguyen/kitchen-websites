@@ -22,26 +22,49 @@ import CTAButton from '../components/CTAButton.astro';
       <span class="sc-brand__by">by FlipFix Digital</span>
     </header>
 
-    <!-- 1 — START: the cold-ad landing state (single page: hero → stats → footer) -->
+    <!-- 1 — START: the cold-ad landing. Two columns on desktop: the form on the
+         left, social proof on the right; stacks on mobile. -->
     <section class="sc-screen sc-start" data-sc-screen="start">
       <div class="sc-wrap sc-start__hero">
-        <p class="eyebrow">Free Google check · Kitchen &amp; bath only</p>
-        {/* MESSAGE MATCH: this headline must match the running ad word for word. Swap this one line. */}
-        <h1 class="sc-start__h1" data-focus tabindex="-1">Is your Google better than your competitors?</h1>
-        <p class="sc-start__sub">Right now a homeowner is sizing you up against the business next to you on Google. Lose that one, and it’s a twenty to thirty thousand dollar kitchen walking out the door before you ever knew it was up for grabs.</p>
-        <p class="sc-start__cue">Type your business name and I’ll show you exactly where you stand.</p>
-        {/* Demo: input is styled but non-functional. "Check my Google" carries the typed
-            value into the real autocomplete step. Live autocomplete drops in on this same input later. */}
-        <form class="sc-start__action" data-start-form>
-          <input class="sc-input" type="text" placeholder="Start typing your business name…" aria-label="Your business name" autocomplete="off" data-start-input />
-          <button type="submit" class="btn btn--primary btn--lg" data-start>Check my Google <span aria-hidden="true">→</span></button>
-        </form>
+        <div class="sc-start__main">
+          <p class="eyebrow">Free Google check · Kitchen &amp; bath only</p>
+          {/* MESSAGE MATCH: this headline must match the running ad word for word. Swap this one line. */}
+          <h1 class="sc-start__h1" data-focus tabindex="-1">Think you show up on Google?</h1>
+          <p class="sc-start__subhead">Most kitchen &amp; bath owners assume they do. In 60 seconds you’ll know for sure.</p>
+          <p class="sc-start__sub">Right now a homeowner is deciding between you and the business next to you on Google. Lose that comparison and a thirty thousand dollar kitchen walks out the door before you knew it was up for grabs.</p>
 
-        <ul class="sc-start__stats">
-          <li><span class="sc-start__stat-num">97%</span><span class="sc-start__stat-cap">of homeowners read your reviews before they pick a local business.</span></li>
-          <li><span class="sc-start__stat-num">74%</span><span class="sc-start__stat-cap">only trust reviews from the last three months, so old five-star reviews stop counting.</span></li>
-          <li><span class="sc-start__stat-num">2.7×</span><span class="sc-start__stat-cap">more likely to be trusted when your Google profile is complete.</span></li>
-        </ul>
+          <div class="sc-intrigue">
+            <p class="sc-intrigue__lead"><strong>Type your name and in 60 seconds you’ll see:</strong></p>
+            <ul class="sc-intrigue__list">
+              <li>Where you rank on the Google map for your area.</li>
+              <li>Who your top competitors are, by name.</li>
+              <li>The exact steps to fix your Google Business Profile and climb the rankings.</li>
+              <li>The steps to fix your website so more homeowners turn into booked jobs.</li>
+            </ul>
+          </div>
+
+          {/* Demo: input is styled but non-functional. "Check my Google" carries the typed
+              value into the real autocomplete step. Live autocomplete drops in on this same input later. */}
+          <form class="sc-start__action" data-start-form>
+            <input class="sc-input" type="text" placeholder="Start typing your business name…" aria-label="Your business name" autocomplete="off" data-start-input />
+            <button type="submit" class="btn btn--primary btn--lg" data-start>Check my Google <span aria-hidden="true">→</span></button>
+          </form>
+          {/* ⚠️ DEMO placeholder "100+" figure — replace with an accurate count
+              before running traffic (an unsubstantiated claim is an FTC/advertising risk). */}
+          <div class="sc-usedby">
+            <span class="sc-usedby__stars" aria-hidden="true">★★★★★</span>
+            <span class="sc-usedby__text">Used by <strong>100+</strong> kitchen &amp; bath professionals</span>
+          </div>
+        </div>
+
+        {/* RIGHT RAIL: the 5×5 ranking-map visual. Illustrative example, not this
+            visitor's data. */}
+        <aside class="sc-start__proof" aria-label="Your ranking map">
+          <figure class="sc-start__mapcard">
+            <p class="sc-start__mappoint">These are the rankings of the real kitchen &amp; bath pros in the Sykesville area <span aria-hidden="true">↓</span></p>
+            <img class="sc-start__mapimg" src="/assets/images/5x5map.png" alt="Example 5×5 map grid showing where the top kitchen and bath businesses rank across the Sykesville area" loading="lazy" />
+          </figure>
+        </aside>
       </div>
     </section>
 
@@ -49,12 +72,13 @@ import CTAButton from '../components/CTAButton.astro';
     <section class="sc-screen" data-sc-screen="identify" hidden>
       <div class="sc-wrap">
         <h2 class="sc-h" data-focus tabindex="-1">Start typing your business name.</h2>
-        <p class="sc-sub">Pick your own listing from the list so I’m reading the right one.</p>
+        <p class="sc-sub">Pick your listing so I’m reading the right one. It pulls your public Google data, nothing to sign up for.</p>
+        <p class="sc-identify__momentum">Your map and your numbers are one tap away.</p>
         <div class="sc-ac">
           <input class="sc-input" data-ac-input type="text" autocomplete="off" placeholder="e.g. your business name" aria-label="Your business name" />
           <div class="sc-ac__list" data-ac-list hidden></div>
         </div>
-        <p class="sc-altlink"><a href="#" data-help-link>Can’t find your business? Here’s how to fix that.</a></p>
+        <p class="sc-altlink"><a href="#" data-help-link>Can’t find your business? That might be the finding. Tap here.</a></p>
       </div>
     </section>
 
@@ -64,12 +88,14 @@ import CTAButton from '../components/CTAButton.astro';
     <section class="sc-screen" data-sc-screen="q1" hidden>
       <div class="sc-wrap">
         <p class="eyebrow">So I read your Google right</p>
-        <h2 class="sc-h" data-focus tabindex="-1">How long have you been in business?</h2>
+        <h2 class="sc-h" data-focus tabindex="-1">What’s your main line of work?</h2>
         <div class="sc-choices" data-q1-choices>
-          <button type="button" class="sc-choice" data-value="Less than 2 years">Less than 2 years</button>
-          <button type="button" class="sc-choice" data-value="2–5 years">2 to 5 years</button>
-          <button type="button" class="sc-choice" data-value="5–10 years">5 to 10 years</button>
-          <button type="button" class="sc-choice" data-value="10+ years">More than 10 years</button>
+          <button type="button" class="sc-choice" data-value="Kitchen remodeling">Kitchen remodeling</button>
+          <button type="button" class="sc-choice" data-value="Bathroom remodeling">Bathroom remodeling</button>
+          <button type="button" class="sc-choice" data-value="Countertops &amp; fabrication">Countertops &amp; fabrication</button>
+          <button type="button" class="sc-choice" data-value="Cabinets">Cabinets</button>
+          <button type="button" class="sc-choice" data-value="Showroom / dealer">Showroom / dealer</button>
+          <button type="button" class="sc-choice" data-value="Something else in kitchen &amp; bath">Something else in kitchen &amp; bath</button>
         </div>
       </div>
     </section>
@@ -77,12 +103,11 @@ import CTAButton from '../components/CTAButton.astro';
     <section class="sc-screen" data-sc-screen="q2" hidden>
       <div class="sc-wrap">
         <p class="eyebrow">One more</p>
-        <h2 class="sc-h" data-focus tabindex="-1">Where do most of your clients come from?</h2>
+        <h2 class="sc-h" data-focus tabindex="-1">How’s the phone been lately?</h2>
         <div class="sc-choices" data-q2-choices>
-          <button type="button" class="sc-choice" data-value="Word of mouth &amp; referrals">Word of mouth &amp; referrals</button>
-          <button type="button" class="sc-choice" data-value="Google">Google</button>
-          <button type="button" class="sc-choice" data-value="Facebook &amp; Instagram">Facebook &amp; Instagram</button>
-          <button type="button" class="sc-choice" data-value="Angi, Houzz &amp; directories">Angi, Houzz &amp; directories</button>
+          <button type="button" class="sc-choice" data-value="Slammed, can barely keep up">Slammed, can barely keep up</button>
+          <button type="button" class="sc-choice" data-value="Steady, but it should be better">Steady, but it should be better</button>
+          <button type="button" class="sc-choice" data-value="Quieter than it should be">Quieter than it should be</button>
         </div>
       </div>
     </section>
@@ -213,26 +238,57 @@ import CTAButton from '../components/CTAButton.astro';
   .sc-screen { animation: sc-in 320ms cubic-bezier(.2,.7,.2,1); }
   @keyframes sc-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-  /* ---- START: cold-ad landing (single page: hero → stats → footer) ---- */
-  .sc-start__hero { padding-top: var(--space-6); padding-bottom: var(--space-12); }
-  .sc-start__h1 { margin-top: var(--space-3); font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; letter-spacing: var(--tracking-display); font-size: var(--fs-h2); line-height: 1.04; color: var(--ink); text-wrap: balance; }
-  .sc-start__sub { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.6; color: var(--ink-70); max-width: 54ch; }
-  .sc-start__cue { margin-top: var(--space-4); font-family: var(--font-body); font-weight: var(--fw-body-semi); font-size: var(--fs-body); color: var(--ink); }
-  .sc-start__action { margin-top: var(--space-5); display: grid; gap: var(--space-3); }
+  /* ---- START: cold-ad landing. Two columns on desktop (form left, proof right).
+     Wider wrap + a fixed-width proof rail so the left column (headline/form)
+     gets real breathing room instead of splitting the page down the middle. ---- */
+  .sc-start__hero { padding-top: var(--space-6); padding-bottom: var(--space-12); display: grid; gap: var(--space-8); }
+  @media (min-width: 54em) {
+    .sc-start .sc-wrap { max-width: 80rem; }
+    .sc-start__hero { grid-template-columns: minmax(0, 1fr) 24rem; align-items: start; gap: var(--space-12); }
+  }
+  /* boxed headline — a highlighted card around the H1, same accent-top-rule
+     treatment as the site's stat/grade cards, so the headline reads as the
+     one thing on the page you're meant to stop on. */
+  .sc-start__h1 {
+    margin-top: var(--space-3); display: inline-block; max-width: 40rem;
+    padding: var(--space-5) var(--space-6);
+    background: var(--bg-raised); border: var(--rule-width) solid var(--line); border-top: var(--rule-thick) solid var(--accent); border-radius: var(--radius-sm);
+    font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; letter-spacing: var(--tracking-display); font-size: var(--fs-h2); line-height: 1.15; color: var(--ink); text-wrap: balance;
+  }
+  /* subheadline, directly under the boxed H1 — body-large size, semibold weight */
+  .sc-start__subhead { margin-top: var(--space-4); font-family: var(--font-body); font-weight: var(--fw-body-semi); font-size: var(--fs-bodyL); line-height: 1.4; color: var(--ink); max-width: 44rem; }
+  .sc-start__sub { margin-top: var(--space-5); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.6; color: var(--ink-70); max-width: 44rem; }
+
+  /* intrigue block — what the 60-second read shows, before the form */
+  .sc-intrigue { margin-top: var(--space-6); max-width: 44rem; }
+  .sc-intrigue__lead { font-family: var(--font-body); font-size: var(--fs-body); color: var(--ink); }
+  .sc-intrigue__list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+  .sc-intrigue__list li { position: relative; padding-left: var(--space-6); font-family: var(--font-body); font-size: var(--fs-body-sm); line-height: 1.5; color: var(--ink-70); }
+  .sc-intrigue__list li::before { content: "→"; position: absolute; left: 0; color: var(--accent-deep); font-weight: var(--fw-body-bold); }
+
+  .sc-start__action { margin-top: var(--space-6); display: grid; gap: var(--space-3); max-width: 46rem; }
   .sc-start__action .sc-input { margin-top: 0; }
   .sc-start__action .btn { width: 100%; }
   @media (min-width: 32em) { .sc-start__action { grid-template-columns: 1fr auto; align-items: center; } .sc-start__action .btn { width: auto; } }
-  .sc-start__micro { margin-top: var(--space-3); font-size: var(--fs-caption); color: var(--ink-50); }
 
-  /* stat strip — homepage receipts treatment, gold numbers (real stats only) */
-  .sc-start__stats { list-style: none; padding: 0; margin: var(--space-10) 0 0; display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
-  @media (min-width: 44em) { .sc-start__stats { grid-template-columns: repeat(3, 1fr); } }
-  .sc-start__stats li { background: var(--bg-raised); border: var(--rule-width) solid var(--line); border-top: var(--rule-thick) solid var(--accent); border-radius: var(--radius-sm); padding: var(--space-5) var(--space-6); }
-  .sc-start__stat-num { display: block; font-family: var(--font-display); font-weight: var(--fw-display); font-size: var(--fs-stat); line-height: 1; color: var(--accent-deep); }
-  .sc-start__stat-cap { display: block; margin-top: var(--space-3); font-size: var(--fs-body-sm); line-height: 1.4; color: var(--ink-70); }
+  /* "used by" trust line, under the form (replaces the old "Free · Kitchen and bath only" strip) */
+  .sc-usedby { margin-top: var(--space-4); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+  .sc-usedby__stars { color: var(--accent-deep); letter-spacing: 2px; font-size: 1rem; line-height: 1; }
+  .sc-usedby__text { font-size: var(--fs-body-sm); color: var(--ink-70); }
+  .sc-usedby__text strong { color: var(--ink); font-weight: var(--fw-body-bold); }
+
+  /* right rail — ranking-map visual on top, testimonials underneath */
+  .sc-start__proof { display: grid; gap: var(--space-5); align-content: start; }
+  .sc-start__mapcard { margin: 0; }
+  /* big callout pointing down at the map, instead of a small caption under it */
+  .sc-start__mappoint { margin: 0 0 var(--space-4); font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; letter-spacing: var(--tracking-display); font-size: var(--fs-h3); line-height: 1.2; color: var(--accent-deep); text-wrap: balance; }
+  .sc-start__mappoint span { display: inline-block; margin-left: var(--space-2); font-size: 1.3em; }
+  .sc-start__mapimg { display: block; width: 100%; height: auto; border: var(--rule-width) solid var(--line); border-radius: var(--radius-sm); }
 
   .sc-h { font-size: clamp(1.6rem, 2.5vw + 1rem, 2.5rem); line-height: 1.15; }
   .sc-sub { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 52ch; }
+  /* momentum line on the identify screen — slightly emphasized, not a full subhead */
+  .sc-identify__momentum { margin-top: var(--space-3); font-family: var(--font-body); font-weight: var(--fw-body-semi); font-size: var(--fs-body); color: var(--ink); }
 
   /* autocomplete */
   .sc-ac { position: relative; margin-top: var(--space-6); }
