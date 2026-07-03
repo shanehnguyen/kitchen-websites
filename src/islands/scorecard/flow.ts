@@ -388,6 +388,7 @@ export function init() {
     if (!b) return;
     lineOfWork = b.dataset.value || '';
     track('ScorecardQ1', { lineOfWork });
+    fireMeta('ScorecardLineOfWork', { lineOfWork });
     show('q2');
   });
   root.querySelector('[data-q2-choices]')?.addEventListener('click', (e) => {
