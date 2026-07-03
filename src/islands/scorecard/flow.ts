@@ -218,6 +218,18 @@ const bookHref = () => {
 };
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
+// Q2 answer → nurture segment (FlipFix-HVCO-Funnel-Plan.md §Segmented email
+// sequences). "Tried paid leads before" is a history signal, not an outcome
+// claim — we don't assert it went badly, just that it's enough to route them
+// into the Burned sequence. Anything unmapped ("Something else") falls back
+// to Invisible, the default/broadest sequence.
+const JOB_SOURCE_SEGMENT: Record<string, 'Invisible' | 'Burned' | 'Slammed'> = {
+  'Word of mouth and referrals, mostly': 'Invisible',
+  'Tried paid leads or a marketing company before': 'Burned',
+  'Business is steady, I just want more of it': 'Slammed',
+};
+const jobSourceToSegment = (v: string): 'Invisible' | 'Burned' | 'Slammed' => JOB_SOURCE_SEGMENT[v] || 'Invisible';
+
 export function init() {
   const root = document.querySelector<HTMLElement>('[data-sc-root]');
   if (!root) return;
@@ -298,7 +310,8 @@ export function init() {
   // is hidden behind something useful; the answers ride along into the lead.
   // lineOfWork doubles as a category fallback/confidence check — see proceedResult.
   let lineOfWork = '';
-  let phoneVolume = '';
+  let jobSource = '';
+  let jobSourceSegment = '';
   // Two-phase load. The fast HOOK pull backs the hook screen; the heavy FULL audit
   // runs in the background and is only ever WAITED on after the email gate (where
   // they've already committed). hookPayload feeds the hook; `payload` is the full result.
@@ -394,8 +407,10 @@ export function init() {
   root.querySelector('[data-q2-choices]')?.addEventListener('click', (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-value]');
     if (!b) return;
-    phoneVolume = b.dataset.value || '';
-    track('ScorecardQ2', { phoneVolume });
+    jobSource = b.dataset.value || '';
+    jobSourceSegment = jobSourceToSegment(jobSource);
+    track('ScorecardQ2', { jobSource, jobSourceSegment });
+    fireMeta('ScorecardJobSource', { jobSource, jobSourceSegment });
     finishQuestions();
   });
 
@@ -620,7 +635,8 @@ export function init() {
       City: payload.city,
       'Line of work (self-reported)': lineOfWork,
       'Google category (actual)': payload.profile.category || (payload.categoryKnown === false ? 'unknown to Google' : ''),
-      'Phone volume': phoneVolume,
+      'Job source': jobSource,
+      'Nurture segment': jobSourceSegment,
       Verdict: payload.segment.band,
       'Worst point': payload.segment.worst,
       Reviews: payload.profile.reviews,
