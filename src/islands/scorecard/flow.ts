@@ -389,6 +389,13 @@ export function init() {
     if (!btn) return;
     chosen = { placeId: btn.dataset.placeId || '', name: btn.dataset.placeName || '' };
     track('ScorecardIdentified', { name: chosen.name });
+    // Durable log of every business that enters the funnel, independent of the
+    // email gate — most of these never opt in, so this is the only record of
+    // who checked. Fire-and-forget, same as the lead email; never gates the UI.
+    w3submit(`👀 Scorecard — checked their Google: ${chosen.name}`, {
+      Business: chosen.name,
+      'Place ID': chosen.placeId,
+    });
     beginLookup();     // fire the audit NOW, in the background
     show('q1');        // …and keep them busy with the first question
   });
