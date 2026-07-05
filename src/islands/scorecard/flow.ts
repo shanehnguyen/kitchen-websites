@@ -48,9 +48,10 @@ type Payload = {
   // never silently drops a real lead).
   relevant?: boolean;
   // True when the server had a real Google category to base `relevant` on.
-  // False means Google gave us nothing — that's the ONLY time the client
-  // applies the self-reported "line of work" answer as a fallback/confidence
-  // check (see proceedResult). Never overrides a real category.
+  // Informational only (shown in the lead email) — the client no longer uses
+  // this to fall back to the self-reported "line of work," since every Q1
+  // answer reads as kitchen & bath and can't actually distinguish a real K&B
+  // business from anyone testing the funnel.
   categoryKnown?: boolean;
   // Per-call server timings (ms) — logged to the console so we can see exactly
   // which fetch is slow. Debug only.
@@ -322,6 +323,46 @@ export function init() {
   let pickAt = 0;   // perf timestamp when the business was picked (for timing logs)
   const perfNow = () => { try { return performance.now(); } catch { return 0; } };
 
+  // Same K&B lead gate the email-capture Lead event uses (see proceedResult),
+  // read-only — so the Q1/Q2 taps don't have to wait for the gate to know
+  // whether this visitor is worth sending to the Pixel at all. Trusts ONLY
+  // the server's real Google-category classification (relevant). Self-report
+  // (lineOfWork) is NEVER used to grant relevance — every Q1 button is
+  // K&B-labeled, so a self-report fallback can't actually distinguish a real
+  // K&B business from anyone else clicking through; it was letting off-trade
+  // testers ("hair removal," etc.) through as leads whenever Google's data
+  // was thin. Fail closed: unknown category = not a lead.
+  const isLeadFor = (p: Payload | null): boolean => {
+    if (!p) return false;
+    let relevant = p.relevant;
+    if (DRY_RUN && RELEVANT_OVERRIDE !== null) relevant = RELEVANT_OVERRIDE;
+    return !DEMO_MODE && relevant !== false;
+  };
+  // Gate Q1/Q2 Pixel events off the HOOK payload, not the full audit — the
+  // hook stage now folds in Google Places' own category (types/primaryType,
+  // fetched at zero extra cost — see api/scorecard.js) plus the business name
+  // into the same isKbLead() check, so it catches the obvious cases (a real
+  // "General Contractor"/"Kitchen Remodeler" category, or a name with
+  // "kitchen"/"bath"/"remodel"/"countertop" in it) in ~0.2-0.5s instead of
+  // waiting ~10-15s for the full DataForSEO category pull. That matters
+  // because closing the tab kills all pending JS — nothing queued on the slow
+  // full audit would ever fire for someone who bounces before it resolves.
+  // Ambiguous cases (no clear name or Google category) fail closed, same as
+  // everywhere else in this funnel.
+  let pendingLeadMeta: { name: string; params?: Record<string, unknown> }[] = [];
+  const fireLeadGatedMeta = (name: string, params?: Record<string, unknown>) => {
+    if (!hookDone) { tlog(`[meta] ${name} queued — waiting on hook`); pendingLeadMeta.push({ name, params }); return; }
+    if (isLeadFor(hookPayload)) fireMeta(name, params);
+    else tlog(`[meta] ${name} suppressed — not kitchen & bath (relevant =`, hookPayload?.relevant, ')');
+  };
+  const flushPendingLeadMeta = () => {
+    if (!pendingLeadMeta.length) return;
+    const lead = isLeadFor(hookPayload);
+    if (lead) pendingLeadMeta.forEach((e) => fireMeta(e.name, e.params));
+    else tlog(`[meta] suppressed queued events (${pendingLeadMeta.map((e) => e.name).join(', ')}) — not kitchen & bath (relevant =`, hookPayload?.relevant, ')');
+    pendingLeadMeta = [];
+  };
+
   // ---------------- START (landing) ----------------
   // Both "Check my Google" buttons live in a [data-start-form]. The landing
   // input is non-functional for now; on submit we advance to the real identify
@@ -408,7 +449,7 @@ export function init() {
     if (!b) return;
     lineOfWork = b.dataset.value || '';
     track('ScorecardQ1', { lineOfWork });
-    fireMeta('ScorecardLineOfWork', { lineOfWork });
+    fireLeadGatedMeta('ScorecardLineOfWork', { lineOfWork });
     show('q2');
   });
   root.querySelector('[data-q2-choices]')?.addEventListener('click', (e) => {
@@ -417,7 +458,7 @@ export function init() {
     jobSource = b.dataset.value || '';
     jobSourceSegment = jobSourceToSegment(jobSource);
     track('ScorecardQ2', { jobSource, jobSourceSegment });
-    fireMeta('ScorecardJobSource', { jobSource, jobSourceSegment });
+    fireLeadGatedMeta('ScorecardJobSource', { jobSource, jobSourceSegment });
     finishQuestions();
   });
 
@@ -440,6 +481,7 @@ export function init() {
     hookDone = hookOk = false;
     fullStarted = fullDone = fullOk = false;
     waitingFor = '';
+    pendingLeadMeta = [];
     pickAt = perfNow();
     void fetchStage('hook').then((data) => {
       hookDone = true;
@@ -447,6 +489,7 @@ export function init() {
       hookOk = !!hookPayload;
       tlog(`hook ready in ${Math.round(perfNow() - pickAt)}ms · ok=${hookOk} · relevant=${hookPayload?.relevant} · server ms:`, data?._ms || '(mock)');
       if (hookOk) startFull();                        // heavy audit begins now (hook's fetches are cached server-side)
+      flushPendingLeadMeta();                          // Q1/Q2 events queued waiting on the (fast) hook qualification
       if (waitingFor === 'hook') { waitingFor = ''; revealHook(); }  // they finished the questions before the hook landed
     });
   }
@@ -532,17 +575,16 @@ export function init() {
     // lead. relevant === false (server-set) suppresses the web3forms ping AND the
     // Meta Lead events, so the ad never optimizes toward off-trade traffic.
     //
-    // Self-reported "line of work" (Q1) is a FALLBACK + confidence check ONLY —
-    // the server's real Google category is the primary signal and always wins
-    // when known. This only steps in when Google gave us no category at all to
-    // check against, so a real K&B business with sparse GBP data doesn't get
-    // wrongly dropped just because Google has nothing on file for them.
-    if (payload.categoryKnown === false && payload.relevant === false && lineOfWork) {
-      tlog('[lead] category unknown to Google — falling back to self-reported line of work:', lineOfWork);
-      payload.relevant = true;
-    }
-    if (DRY_RUN && RELEVANT_OVERRIDE !== null) payload.relevant = RELEVANT_OVERRIDE; // test override
-    const isLead = !DEMO_MODE && payload.relevant !== false;
+    // Self-reported "line of work" (Q1) is NEVER trusted to grant relevance —
+    // every Q1 button reads as kitchen & bath, so it can't tell a real K&B
+    // business apart from anyone testing the funnel with a random business.
+    // The server's real Google category (isKbLead in api/scorecard.js) is the
+    // only signal; unknown category fails closed (not a lead), same as the
+    // server's own design.
+    // capture() re-checks payload.relevant itself, so the test override has to
+    // land on the object, not just a local variable — mutate it here too.
+    if (DRY_RUN && RELEVANT_OVERRIDE !== null) payload.relevant = RELEVANT_OVERRIDE;
+    const isLead = isLeadFor(payload);   // same qualification the Q1/Q2 Pixel events waited on
     if (isLead) {
       capture();                                  // w3submit is dry-run-safe (logs, never POSTs, under DRY_RUN)
       fireMeta('Lead', { content_name: 'Scorecard Email' });

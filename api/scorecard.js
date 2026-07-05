@@ -163,7 +163,11 @@ async function placeDetails(placeId, sessionToken) {
   const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
   const headers = {
     'X-Goog-Api-Key': PLACES_KEY,
-    'X-Goog-FieldMask': 'id,displayName,location,rating,userRatingCount,websiteUri,addressComponents',
+    // types/primaryType/primaryTypeDisplayName: Google's OWN category taxonomy
+    // for this place. Free — same call, no extra latency — and lets the hook
+    // stage classify K&B relevance instantly instead of waiting on the slow
+    // DataForSEO category pull (see hook-stage handler below).
+    'X-Goog-FieldMask': 'id,displayName,location,rating,userRatingCount,websiteUri,addressComponents,types,primaryType,primaryTypeDisplayName',
   };
   if (sessionToken) headers['X-Goog-Session-Token'] = sessionToken;
   const r = await fetch(url, { headers });
@@ -951,6 +955,12 @@ function buildCompetitors(rawCompetitors, mergedName) {
   return (rawCompetitors || [])
     .filter((c) => !isExcluded(c.title))
     .filter((c) => str(c.title) && str(c.title).toLowerCase() !== (mergedName || '').toLowerCase())
+    // DataForSEO's own category filter (kitchen_remodeler/remodeler/etc.) isn't
+    // strict enough on its own — it's let HVAC, exteriors, and plumbing
+    // businesses through under the broad "remodeler" tag. Re-run the same K&B
+    // classifier used on the visitor's own business so "your competitors"
+    // never shows an off-trade business.
+    .filter((c) => isKbLead({ category: c.category, additional_categories: c.additional_categories, name: c.title }))
     .map((c) => ({ name: c.title, reviews: num(c.rating?.votes_count) ?? 0, rating: num(c.rating?.value) ?? 0, domain: normDomain(str(c.url) || str(c.domain)) }))
     .filter((c) => c.reviews > 0 && c.reviews <= MAX_PLAUSIBLE_REVIEWS)
     .sort((a, b) => b.reviews - a.reviews)
@@ -968,14 +978,16 @@ export default async function handler(req, res) {
 
   const redis = getRedis();
   const ip = clientIp(req);
-  // v3: added the `relevant` lead-gate flag. Bumping the version invalidates all
-  // pre-flag cached payloads so they recompute with `relevant` (a stale v2 entry
-  // would return relevant=undefined → wrongly treated as a lead).
-  const cacheKey = `scorecard:v3:${placeId}`;
+  // v3: added the `relevant` lead-gate flag. v4: buildCompetitors now re-checks
+  // each competitor against isKbLead (was letting HVAC/plumbing/exteriors
+  // through under DataForSEO's loose "remodeler" category tag). Bumping the
+  // version invalidates all pre-fix cached payloads so they recompute instead
+  // of replaying a stale competitor list for 24h.
+  const cacheKey = `scorecard:v4:${placeId}`;
   // parts bridge: the fast HOOK stage stashes its raw fetches here so the FULL
   // stage (fired seconds later) reuses them and never pays for the same
   // placeDetails/profile/competitors calls twice.
-  const partsKey = `scorecard:parts:v3:${placeId}`;
+  const partsKey = `scorecard:parts:v4:${placeId}`;
   // Full cache hit → serve free for EITHER stage (the hook renders fine from a
   // full payload), fire zero paid calls.
   if (redisUp(redis) && CACHE_ENABLED) {
@@ -1014,6 +1026,16 @@ export default async function handler(req, res) {
       catch (err) { console.warn('parts write failed:', err.message); }
     }
     const merged = mergeProfile(places, null);   // info=null → reviews/rating come from Google Places
+    // Fast K&B signal: Google's OWN category for this place (primaryType/types),
+    // already fetched above at zero extra cost. Lets the hook stage return a
+    // real relevant verdict in ~0.2-0.5s instead of waiting ~10-15s for the
+    // full stage's DataForSEO category pull. isKbLead() also checks the
+    // business name, so an obvious "Smith Kitchen Remodeling" or "ABC General
+    // Contractor" is caught here even with no category at all.
+    const placesCategory = str(
+      String(places?.primaryTypeDisplayName?.text || places?.primaryType || (Array.isArray(places?.types) ? places.types.join(' ') : '')).replace(/_/g, ' ')
+    );
+    if (placesCategory) merged.category = placesCategory;
     const city = extractCity(places, null);
     const primaryTerm = `kitchen remodeler${city ? ' ' + city : ''}`;
     const payload = analyze(merged, null, [], null, null, null, city, { primaryTerm });
