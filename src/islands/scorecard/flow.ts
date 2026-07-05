@@ -10,7 +10,7 @@
 import { site } from '../../data/site.config';
 import { track as metaTrack } from '../../utils/track.js';
 
-type Rival = { name: string; reviews: number; rating: number };
+type Rival = { name: string; reviews: number; rating: number; domain?: string | null };
 type AuditItem = { id: string; label: string; status: 'fail' | 'warn'; value: string; why: string; fix: string };
 type WebsiteItem = { label: string; status: 'fail' | 'warn'; value: string; why: string; fix?: string };
 type Rankings = {
@@ -218,6 +218,33 @@ const bookHref = () => {
   return qs && qs.indexOf('utm_') > -1 ? `/book${qs}` : '/book';
 };
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+// ---- Lead-email formatting: turn the full audit payload into readable,
+// multi-line plain-text blocks (web3forms renders each field as label + value,
+// so lists/objects need to be pre-formatted, not just String()'d). ----
+const fmtRival = (r: Rival | null | undefined) =>
+  r ? `${r.name} — ${r.reviews} reviews, ${r.rating}★${r.domain ? ` (${r.domain})` : ''}` : '';
+const fmtCompetitors = (list?: Rival[]) =>
+  list && list.length ? list.map((c, i) => `${i + 1}. ${fmtRival(c)}`).join('\n') : '';
+const fmtFinding = (it: { label: string; status: string; value: string; why: string; fix?: string }, i: number) =>
+  `${i + 1}. [${it.status.toUpperCase()}] ${it.label} — ${it.value}\n   Why: ${it.why}${it.fix ? `\n   Fix: ${it.fix}` : ''}`;
+const fmtFindings = (items?: { label: string; status: string; value: string; why: string; fix?: string }[]) =>
+  items && items.length ? items.map(fmtFinding).join('\n\n') : '';
+const fmtList = (list?: string[]) => (list && list.length ? list.join(', ') : '');
+// Ad/referral attribution — same on every w3submit ping so you can trace a
+// lead back to the exact ad/campaign, not just "came from Facebook."
+const pageContext = () => {
+  let qs = ''; try { qs = window.location.search || ''; } catch { /* noop */ }
+  let ref = ''; try { ref = document.referrer || ''; } catch { /* noop */ }
+  return { 'Query params': qs, Referrer: ref };
+};
+const fmtRankings = (r?: Rankings | null) => {
+  if (!r) return '';
+  const rank = r.rank != null ? `#${r.rank}` : 'not in the top pack';
+  const grid = r.gridPct != null ? `, top-3 across ${r.gridPct}% of the surrounding map` : '';
+  const above = r.above.length ? ` — ranked above you: ${r.above.join(', ')}` : '';
+  return `${rank} for "${r.term}"${r.city ? ` in ${r.city}` : ''}${grid}${above}`;
+};
 
 // Q2 answer → nurture segment (FlipFix-HVCO-Funnel-Plan.md §Segmented email
 // sequences). "Tried paid leads before" is a history signal, not an outcome
@@ -436,6 +463,7 @@ export function init() {
     w3submit(`👀 Scorecard — checked their Google: ${chosen.name}`, {
       Business: chosen.name,
       'Place ID': chosen.placeId,
+      ...pageContext(),
     });
     beginLookup();     // fire the audit NOW, in the background
     show('q1');        // …and keep them busy with the first question
@@ -677,20 +705,42 @@ export function init() {
       dlog('lead suppressed: business is not kitchen & bath');
       return;
     }
-    w3submit(`📊 Scorecard — ${payload.profile.name}`, {
+    const p = payload;
+    // Reopens the exact same live, server-cached result — the actual "copy of
+    // the scorecard," not just a text dump. Built manually (not location.href)
+    // because the #b= hash isn't stamped into the URL until AFTER capture()
+    // runs (see proceedResult).
+    const shareUrl = chosen.placeId
+      ? `${location.origin}${location.pathname}#b=${encodeURIComponent(chosen.placeId)}`
+      : '';
+    w3submit(`📊 Scorecard — ${p.profile.name}`, {
       email,
       'First name': firstName,
-      Business: payload.profile.name,
-      City: payload.city,
+      Business: p.profile.name,
+      City: p.city,
       'Line of work (self-reported)': lineOfWork,
-      'Google category (actual)': payload.profile.category || (payload.categoryKnown === false ? 'unknown to Google' : ''),
+      'Google category (actual)': p.profile.category || (p.categoryKnown === false ? 'unknown to Google' : ''),
       'Job source': jobSource,
       'Nurture segment': jobSourceSegment,
-      Verdict: payload.segment.band,
-      'Worst point': payload.segment.worst,
-      Reviews: payload.profile.reviews,
-      Rating: payload.profile.rating,
-      'Top rival reviews': payload.top?.reviews ?? '',
+      'View full scorecard': shareUrl,
+      Verdict: p.segment.band,
+      'Verdict headline': p.verdict?.headline,
+      'Verdict summary': p.verdict?.sub,
+      'Hook line': p.hook,
+      'Worst point': p.segment.worst,
+      Reviews: p.profile.reviews,
+      Rating: p.profile.rating,
+      'Top rival': fmtRival(p.top),
+      'Top rival reviews': p.top?.reviews ?? '',
+      'All competitors': fmtCompetitors(p.competitors),
+      'Map ranking': fmtRankings(p.rankings),
+      'Audit findings (worst first)': fmtFindings(p.audit),
+      'Passing items (GBP)': fmtList(p.passing),
+      'Website URL': p.website?.url || '',
+      'Website findings': fmtFindings(p.website?.items),
+      'Website passing items': fmtList(p.website?.passing),
+      'Stakes / math': p.math,
+      ...pageContext(),
     });
   }
 

@@ -295,6 +295,10 @@ const minutes = site.callLengthMinutes;
       if (answers.obstacle) fd.append('Biggest gripe', answers.obstacle);
       const params = new URLSearchParams(window.location.search);
       if (params.get('from')) fd.append('Came from', String(params.get('from')));
+      // Full attribution — not just `from`, every UTM/click-id param plus the
+      // referring page, so a lead can be traced back to the exact ad/campaign.
+      if (window.location.search) fd.append('Query params', window.location.search);
+      if (document.referrer) fd.append('Referrer', document.referrer);
       fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
       (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
 
