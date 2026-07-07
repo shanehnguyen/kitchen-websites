@@ -333,6 +333,7 @@ export function init() {
   let chosen = { placeId: '', name: '' };
   let email = '';
   let firstName = '';
+  let marketingOptIn = false; // optional tips/follow-up email consent (terms are mandatory & gate submit)
   // Two quick tap-questions (q1/q2) shown right after they pick their business.
   // They run cover for the audit fetch (fired the moment they pick) so the wait
   // is hidden behind something useful; the answers ride along into the lead.
@@ -676,7 +677,8 @@ export function init() {
     firstName = String(data.get('firstName') || '').trim();
     email = String(data.get('email') || '').trim();
     if (!emailOk(email)) { dlog('gate blocked: invalid email'); fail(gateStatus, 'That email doesn’t look right.'); return; }
-    if (!data.get('consent')) { dlog('gate blocked: consent not ticked'); fail(gateStatus, 'Please tick the box so I can send it.'); return; }
+    if (!data.get('terms')) { dlog('gate blocked: terms not accepted'); fail(gateStatus, 'Please accept the Terms & Conditions so I can send it.'); return; }
+    marketingOptIn = !!data.get('marketing'); // optional — tips / follow-up email consent
     if (gateStatus) { gateStatus.hidden = false; gateStatus.textContent = ''; }
     // lead forwarding + Meta Lead events fire inside goToResult, gated on K&B relevance
     goToResult();
@@ -716,6 +718,7 @@ export function init() {
     w3submit(`📊 Scorecard — ${p.profile.name}`, {
       email,
       'First name': firstName,
+      'Marketing opt-in': marketingOptIn ? 'Yes' : 'No',
       Business: p.profile.name,
       City: p.city,
       'Line of work (self-reported)': lineOfWork,

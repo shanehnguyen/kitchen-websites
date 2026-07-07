@@ -150,8 +150,12 @@ import CTAButton from '../components/CTAButton.astro';
             <input id="sc-email" name="email" type="email" autocomplete="email" required />
           </div>
           <label class="sc-consent">
-            <input type="checkbox" name="consent" required />
-            <span>Follow up with me about my Google, and the occasional useful tip. Unsubscribe anytime. <a href="/privacy" target="_blank" rel="noopener">Privacy</a>.</span>
+            <input type="checkbox" name="terms" required />
+            <span>I agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>. <span class="sc-consent__req">Required</span></span>
+          </label>
+          <label class="sc-consent">
+            <input type="checkbox" name="marketing" />
+            <span>Yes, keep me in the loop — send me occasional tips, and follow up about my Google. Unsubscribe anytime. <span class="sc-consent__opt">Optional</span></span>
           </label>
           <!-- honeypot. A CHECKBOX, not a text input: browser autofill and
                password managers fill TEXT fields (name/email/company/etc.) and
@@ -338,6 +342,9 @@ import CTAButton from '../components/CTAButton.astro';
   .sc-consent { display: flex; align-items: flex-start; gap: var(--space-3); font-size: var(--fs-body-sm); color: var(--ink-70); cursor: pointer; }
   .sc-consent input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--ink); flex-shrink: 0; }
   .sc-consent a { color: var(--ink); text-decoration: underline; }
+  .sc-consent__req, .sc-consent__opt { display: inline-block; font-size: 0.72em; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; margin-left: 2px; vertical-align: middle; }
+  .sc-consent__req { background: var(--ink); color: var(--paper, #fff); }
+  .sc-consent__opt { background: transparent; color: var(--ink-70); border: 1px solid var(--ink-70); }
   .sc-status { font-size: var(--fs-caption); color: var(--alarm); }
 
   /* result — verdict */
