@@ -6,6 +6,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CTAButton from '../components/CTAButton.astro';
 import StickyMobileCTA from '../components/StickyMobileCTA.astro';
+import ClientShowcase from '../components/ClientShowcase.astro';
+import FAQ from '../components/FAQ.astro';
+import { dfyFaqs } from '../data/faqs';
 import { site } from '../data/site.config';
 
 const minutes = site.callLengthMinutes;
@@ -54,11 +57,13 @@ const bookHref = '/book';
       <p>I build your site for the nine. It shows her the kitchen she has been picturing. It answers the questions she is worried about. It gives her enough proof to stop comparing and call you.</p>
       <p class="seo2-beat"><span class="hl">She lands just looking. She leaves ready to call.</span></p>
 
-      <h2 class="seo2-h">The 90-day guarantee.</h2>
-      <p>On day one, we write down what your Google brings in now. Calls, taps, and form fills. These are counted by call tracking and Google’s own numbers, not by me.</p>
-      <p>We set that starting number in writing. We make it fair to your slow season. Neither of us changes it.</p>
-      <p>Ninety days later, the number is higher, or I keep working for free until it is.</p>
-      <p class="seo2-beat"><span class="hl">You watch it go up every week. You own all of it.</span></p>
+      <h2 class="seo2-h">If your calls don’t go up in ninety days, we work for free.</h2>
+      <p class="seo2-beat"><strong>Read that again.</strong></p>
+      <p>Day one, we write down your numbers. How many calls you get, how many homeowners find you. Then I get to work, and you watch it happen every week.</p>
+      <p>Ninety days in, more homeowners are calling you than the day we started. If they’re not, you stop paying and I keep working until that number moves.</p>
+      <p>Still flat three months later? We shake hands and you keep all of it. The profile, the reviews, the work. Yours.</p>
+      <p>Picture the calendar then. The gaps filled. The phone going off while you’re on a job, because they find you first now, not the guy three streets over.</p>
+      <p class="seo2-beat"><span class="hl">If it doesn’t happen, I haven’t earned a dollar. And I don’t stop until it does.</span></p>
     </div>
   </section>
 
@@ -66,43 +71,73 @@ const bookHref = '/book';
   <section class="section seo2-body">
     <div class="container container--prose seo2-prose">
       <h2 class="seo2-h">Here’s exactly what you get.</h2>
-      <p>One package. Everything that makes a homeowner find you, trust you, and call you.</p>
+      <p>One package, built and run for you every month.</p>
       <ul class="seo2-gets">
-        <li><strong>A website built to convert.</strong> Your kitchens, your reviews, your services, on a site made to turn a homeowner who is just looking into one who calls. You see it before you pay a dollar. On its own, it is a $1,500 build.</li>
+        <li><strong>A website built to convert.</strong> Your kitchens, your reviews, your services, on a site made to turn a homeowner who is just looking into one who calls. You see it before you pay a dollar.</li>
         <li><strong>Your Google profile, rebuilt and run.</strong> The right categories, every service filled in, fresh photos and posts each month. So you climb the map for people searching near you.</li>
-        <li><strong>Local SEO that moves you up.</strong> Your site and profile built around what homeowners actually search. So you rise in the results instead of sitting below the business two towns over.</li>
-        <li><strong>A steady stream of reviews.</strong> Every kitchen you finish becomes another five-star review. Reviews are the first thing she reads before she calls.</li>
-        <li><strong>Set up for AI search.</strong> When she asks ChatGPT or Google’s AI for a good remodeler nearby, your business is set up to be one of the names it gives her.</li>
-        <li><strong>The 90-day guarantee.</strong> More homeowners calling, or I work for free until they do.</li>
-        <li><strong>All of it yours.</strong> Month to month, no contract. Every piece stays with you if you ever leave.</li>
+        <li><strong>Local SEO that moves you up.</strong> Your site and profile built around what homeowners actually search, so you rise above the business two towns over.</li>
+        <li><strong>A steady stream of reviews.</strong> Every kitchen you finish becomes another five-star review, the first thing she reads before she calls.</li>
+        <li><strong>Set up for AI search.</strong> When she asks ChatGPT or Google’s AI for a remodeler nearby, you’re one of the names it gives her.</li>
       </ul>
-      <p class="seo2-price__lead">Hire this out in pieces and it runs $1,500 for the site, then $500 to $1,000 a month for the Google work, the reviews, and the AI search. You get all of it for $750 a month.</p>
+      <p class="seo2-price__lead">Bought piece by piece, here’s what each one really costs:</p>
+      <div class="seo2-compare">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th scope="col">The piece</th>
+              <th scope="col" class="cmp__mkt">Hired out</th>
+              <th scope="col" class="cmp__me">With me</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Website built to convert</td><td class="cmp__mkt">$5,000 build</td><td class="cmp__me">Included</td></tr>
+            <tr><td>Website hosting &amp; upkeep</td><td class="cmp__mkt">$150/mo</td><td class="cmp__me">Included</td></tr>
+            <tr><td>Local SEO, every month</td><td class="cmp__mkt">$1,500/mo</td><td class="cmp__me">Included</td></tr>
+            <tr><td>Google profile, run for you</td><td class="cmp__mkt">$300/mo</td><td class="cmp__me">Included</td></tr>
+            <tr><td>Reviews &amp; reputation</td><td class="cmp__mkt">$275/mo</td><td class="cmp__me">Included</td></tr>
+            <tr><td>AI search optimization</td><td class="cmp__mkt">$1,000/mo</td><td class="cmp__me">Included</td></tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>What you’d pay</td>
+              <td class="cmp__mkt">$3,225/mo<span class="cmp__sub">plus $5,000 build</span></td>
+              <td class="cmp__me">$750/mo</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
       <p class="seo2-price">$750 a month. Month to month. You own all of it.</p>
       <div class="seo2-cta"><CTAButton href={bookHref} label="Schedule your free strategy session" event="Dfy:PlanToBook" size="lg" /></div>
     </div>
   </section>
 
-  <!-- 4 — THINGS I WON'T DO -->
-  <section class="section section--sm seo2-body">
-    <div class="container container--prose seo2-prose">
-      <h2 class="seo2-h">The terms, in plain words.</h2>
-      <p>You pay month to month. Cancel any time, and everything I built stays yours.</p>
-      <p>I guarantee more calls, not a ranking. Nobody can promise a spot on Google, and Google says to avoid anyone who does. So I promise the number that matters: your phone ringing more.</p>
-      <p>The lead companies sell you strangers, the same homeowner they already sold to five other businesses. I make the homeowner already searching choose you instead.</p>
-      <p class="seo2-beat"><span class="hl">If it stops working, you stop paying. That’s the deal.</span></p>
+  <!-- 4 — PROOF: be the next success story -->
+  <section class="section section--sm seo2-proof">
+    <div class="container">
+      <h2 class="seo2-proof__h">Be the next success story.</h2>
+    </div>
+    <div class="seo2-proof__showcase"><ClientShowcase /></div>
+  </section>
+
+  <!-- 5 — FAQ -->
+  <section class="section section--sm seo2-faq">
+    <div class="container container--narrow">
+      <h2 class="seo2-faq__h">The questions a burned owner actually asks.</h2>
+      <div class="seo2-faq__list"><FAQ items={dfyFaqs} /></div>
     </div>
   </section>
 
-  <!-- 5 — THE STRATEGY SESSION (dark) -->
+  <!-- 6 — THE STRATEGY SESSION (dark) -->
   <section class="section section--dark seo2-session">
     <div class="container container--narrow seo2-session__inner">
-      <h2 class="seo2-session__h">See what your Google is costing you. Free, in {minutes} minutes.</h2>
-      <p>You’ll walk away knowing exactly where she’s choosing someone else, what it’s costing you, and how to fix it. <span class="seo2-em">Written down, yours to keep, even if you never hire me.</span></p>
+      <h2 class="seo2-session__h">Anyone can promise you more calls. In {minutes} minutes, I’ll show you exactly how.</h2>
+      <p>We’ll fully audit the three things a homeowner checks before she picks anyone: your Google, your website, and whether AI names you when she asks. I show you where you’re losing her, and the exact steps to fix it, in order.</p>
+      <p><span class="seo2-em">You leave with that plan written down.</span> Run it yourself or hand it to me.</p>
       <div class="seo2-session__cta">
         <CTAButton href={bookHref} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Dfy:SessionToBook" size="lg" />
       </div>
       <p class="seo2-sig">— Shane Nguyen, Kitchen Websites</p>
-      <p class="seo2-ps">P.S. Worst case, you walk away with a free plan worth more than the half hour. Best case, you stop handing jobs to a worse business with a better-looking Google. There’s no bad outcome in it.</p>
+      <p class="seo2-ps">P.S. This is for owners doing great work but losing jobs online. If that’s you, it’s the best half hour you’ll spend on your business this month.</p>
     </div>
   </section>
 
@@ -142,7 +177,28 @@ const bookHref = '/book';
 
   /* price — the obvious part */
   .seo2-price__lead { margin-top: var(--space-6); }
+
+  /* à-la-carte vs. me comparison table */
+  .seo2-compare { margin-top: var(--space-5); overflow-x: auto; }
+  .cmp { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
+  .cmp th, .cmp td { padding: var(--space-3) var(--space-4); text-align: left; border-bottom: var(--rule-width) solid var(--rule); }
+  .cmp thead th { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--fw-body-semi); color: var(--ink-50); }
+  .cmp tbody td:first-child { font-family: var(--font-serif); font-size: var(--fs-body); color: var(--ink); }
+  .cmp__mkt { text-align: right; color: var(--ink-70); white-space: nowrap; }
+  .cmp__me { text-align: right; color: var(--accent-deep); font-weight: var(--fw-body-bold); white-space: nowrap; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .cmp tfoot td { border-bottom: 0; border-top: var(--rule-thick) solid var(--ink); font-size: var(--fs-bodyL); font-weight: var(--fw-body-bold); color: var(--ink); }
+  .cmp tfoot td:first-child { text-transform: uppercase; letter-spacing: 0.02em; }
+  .cmp tfoot .cmp__me { color: var(--accent-deep); }
+  .cmp__sub { display: block; font-family: var(--font-body); font-size: var(--fs-caption); font-weight: var(--fw-body); color: var(--ink-50); }
   .seo2-price { margin-top: var(--space-4); font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; letter-spacing: var(--tracking-display); font-size: var(--fs-h2); line-height: 1.1; color: var(--ink); }
+
+  /* proof — be the next success story */
+  .seo2-proof__h { text-align: center; font-size: var(--fs-h3); }
+  .seo2-proof__showcase { margin-top: var(--space-8); }
+
+  /* faq */
+  .seo2-faq__h { font-size: var(--fs-h3); max-width: none; }
+  .seo2-faq__list { margin-top: var(--space-8); }
 
   /* session (dark) */
   .seo2-session__inner { text-align: center; }
