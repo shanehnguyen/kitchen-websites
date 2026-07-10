@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en" data-astro-cid-hmod34gv> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#F4F1EA"><title>Booking pulse | Kitchen Websites</title><meta name="description" content="Private booking-funnel dashboard."><link rel="canonical" href="https://kitchenwebsites.com/pulse"><meta name="robots" content="noindex, nofollow"><meta property="og:title" content="Booking pulse"><meta property="og:description" content="Private booking-funnel dashboard."><meta property="og:image" content="https://kitchenwebsites.com/assets/images/og-cover.svg"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg"><script>(function(){const metaPixelId = "1460315575868963";
+
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', metaPixelId); fbq('track', 'PageView');
+  })();</script><script>
+  // Internal funnel telemetry → GA4 only. Meta events go through
+  // src/utils/track.js so the Pixel receives just the named conversion events.
+  window.kwTrack = function (name, params) {
+    try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
+  };
+  // Preserve UTM params across same-origin nav to /book and /scorecard.
+  (function () {
+    var qs = window.location.search;
+    if (!qs || qs.indexOf('utm_') === -1) return;
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="/"]');
+      if (!a) return;
+      var href = a.getAttribute('href');
+      if (/\/(book|scorecard)/.test(href) && href.indexOf('utm_') === -1) {
+        a.setAttribute('href', href + (href.indexOf('?') > -1 ? '&' : '?') + qs.slice(1));
+      }
+    });
+  })();
+</script><script type="module" src="/_astro/TrackBoot.astro_astro_type_script_index_0_lang.P50xUNz3.js"></script><link rel="stylesheet" href="/_astro/pulse.CxroEyNI.css">
+<link rel="stylesheet" href="/_astro/book.CKjNtev0.css">
+<style>.bare-legal[data-astro-cid-hmod34gv]{max-width:var(--container-standard);margin-inline:auto;padding:var(--space-8) var(--gutter);display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);font-size:var(--fs-caption);color:var(--ink-50)}.bare-legal[data-astro-cid-hmod34gv] a[data-astro-cid-hmod34gv]{color:var(--ink-50)}
+</style></head> <body data-astro-cid-hmod34gv> <main id="main" data-astro-cid-hmod34gv>  <section class="pl" data-astro-cid-oxi3sj7z> <div class="pl-wrap" data-astro-cid-oxi3sj7z> <header class="pl-head" data-astro-cid-oxi3sj7z> <h1 class="pl-title" data-astro-cid-oxi3sj7z>Booking&nbsp;pulse</h1> <div class="pl-meta" data-astro-cid-oxi3sj7z> <span data-pl-updated class="pl-updated" data-astro-cid-oxi3sj7z></span> <button type="button" class="pl-btn" data-pl-refresh data-astro-cid-oxi3sj7z>Refresh</button> <button type="button" class="pl-btn pl-btn--ghost" data-pl-signout hidden data-astro-cid-oxi3sj7z>Sign out</button> </div> </header> <!-- token gate --> <form class="pl-gate" data-pl-gate hidden data-astro-cid-oxi3sj7z> <label class="pl-gate__label" for="pl-token" data-astro-cid-oxi3sj7z>Dashboard password</label> <div class="pl-gate__row" data-astro-cid-oxi3sj7z> <input class="pl-gate__input" id="pl-token" type="password" autocomplete="off" placeholder="PULSE_TOKEN" data-astro-cid-oxi3sj7z> <button type="submit" class="pl-btn" data-astro-cid-oxi3sj7z>Open</button> </div> <p class="pl-gate__err" data-pl-gate-err hidden data-astro-cid-oxi3sj7z></p> </form> <div data-pl-body hidden data-astro-cid-oxi3sj7z> <!-- funnel --> <div class="pl-card" data-astro-cid-oxi3sj7z> <h2 class="pl-h2" data-astro-cid-oxi3sj7z>Funnel <span class="pl-dim" data-pl-window data-astro-cid-oxi3sj7z></span></h2> <div class="pl-funnel" data-pl-funnel data-astro-cid-oxi3sj7z></div> </div> <!-- recent visitors --> <div class="pl-card" data-astro-cid-oxi3sj7z> <h2 class="pl-h2" data-astro-cid-oxi3sj7z>Recent visitors <span class="pl-dim" data-pl-count data-astro-cid-oxi3sj7z></span></h2> <div class="pl-list" data-pl-list data-astro-cid-oxi3sj7z></div> </div> </div> <p class="pl-note" data-pl-note hidden data-astro-cid-oxi3sj7z></p> </div> </section>  </main>   </body> </html> <script type="module" src="/_astro/pulse.astro_astro_type_script_index_0_lang.CU7K2yFN.js"></script> 

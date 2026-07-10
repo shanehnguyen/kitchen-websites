@@ -121,6 +121,7 @@ const minutes = site.callLengthMinutes;
 
 <script>
   import { site } from '../data/site.config';
+  import { pulseId, pulseSource, pulseSend } from '../utils/pulse.js';
   const bookingUrl = site.bookingUrl;
 
   const form = document.querySelector<HTMLFormElement>('[data-book-form]');
@@ -224,6 +225,35 @@ const minutes = site.callLengthMinutes;
       });
     };
 
+    // ---- booking pulse: report how far each visitor gets, so drop-offs email
+    //      Shane and the /pulse dashboard shows the funnel. Stage only moves
+    //      forward; the beacon carries whatever they've filled in so far. ----
+    const PULSE = { id: pulseId(), stage: 'landed', landedAt: Date.now(), ...pulseSource() };
+    const PSTAGES = ['landed', 'started', 'contact', 'details', 'obstacle', 'submitted', 'booked'];
+    const prank = (s) => PSTAGES.indexOf(s);
+    const pulsePayload = (final) => {
+      collectAll();
+      return {
+        id: PULSE.id, stage: PULSE.stage,
+        name: answers.name || '', email: answers.email || '', phone: answers.mobile || '',
+        website: answers.website || '', customers: answers.customers || '', jobs: answers.jobs || '',
+        obstacle: answers.obstacle || '',
+        source: PULSE.source, referrer: PULSE.referrer, query: PULSE.query,
+        landedAt: PULSE.landedAt, final: !!final,
+      };
+    };
+    // Advance the stage (never backward) and beacon. Repeats at the same stage
+    // are dropped unless it's the "leaving" (final) ping.
+    const setStage = (s, final = false) => {
+      const up = prank(s) > prank(PULSE.stage);
+      if (up) PULSE.stage = s;
+      if (up || final) pulseSend(pulsePayload(final), final);
+    };
+    // Furthest step revealed → stage. Step 0 is 'started' only once a name exists.
+    const stageForCurrent = () =>
+      current >= 3 ? 'obstacle' : current >= 2 ? 'details' : current >= 1 ? 'contact'
+      : ((answers.name || form.querySelector('[name="name"]')?.value || '').trim() ? 'started' : 'landed');
+
     // ---- progressive reveal: keep steps 0..current visible, only the current
     //      step shows its Continue/Submit button ----
     const reveal = (n: number, scroll = false) => {
@@ -243,6 +273,7 @@ const minutes = site.callLengthMinutes;
     const advance = () => {
       setFirst((form.querySelector<HTMLInputElement>('[name="name"]')?.value || '').trim());
       if (current < steps.length - 1) reveal(current + 1, true);
+      setStage(stageForCurrent());
     };
 
     const showCalendar = () => {
@@ -270,7 +301,12 @@ const minutes = site.callLengthMinutes;
     // clear error + persist as the user types OR autofills (autofill often fires
     // 'change' rather than 'input', so listen for both)
     form.querySelectorAll<HTMLInputElement>('input[name], textarea[name]').forEach((f) => {
-      const onEdit = () => { clearErr((f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name); persist(); };
+      const onEdit = () => {
+        clearErr((f.closest('[data-field]') as HTMLElement)?.dataset.field || f.name);
+        persist();
+        // first keystroke in the name field flips landed → started
+        if (f.name === 'name' && PULSE.stage === 'landed' && f.value.trim()) setStage('started');
+      };
       f.addEventListener('input', onEdit);
       f.addEventListener('change', onEdit);
     });
@@ -301,6 +337,7 @@ const minutes = site.callLengthMinutes;
       if (document.referrer) fd.append('Referrer', document.referrer);
       fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
       (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
+      setStage('submitted'); // no drop-off email for submitters — the lead email covers them
 
       try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
       showCalendar();
@@ -385,6 +422,7 @@ const minutes = site.callLengthMinutes;
       if (data?.event === 'calendly.event_scheduled') {
         (window as any).kwTrack?.('CallBooked', { via: 'calendly' });
         if ((window as any).fbq) (window as any).fbq('track', 'CallBooked');
+        setStage('booked', true);
         setFirst((answers.name as string) || '');
         if (flow) flow.hidden = true;
         if (done) done.hidden = false;
@@ -397,6 +435,16 @@ const minutes = site.callLengthMinutes;
     reveal(0);           // first question is always visible
     // resume: fast-forward past any steps already answered from a prior visit
     while (current < steps.length - 1 && stepValid(steps[current])) reveal(current + 1);
+
+    // booking pulse: first ping (landed, or resumed further), then report as
+    // they leave. visibilitychange keeps the dashboard fresh; pagehide is the
+    // real exit and is what may trigger the drop-off email.
+    PULSE.stage = stageForCurrent();
+    pulseSend(pulsePayload(false));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') pulseSend(pulsePayload(false));
+    });
+    window.addEventListener('pagehide', () => pulseSend(pulsePayload(true), true));
   }
 </script>
 
