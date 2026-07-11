@@ -53,7 +53,7 @@ const STAGE_LABEL = {
   contact: 'Name done — on contact info',
   details: 'Gave phone, email & website',
   obstacle: 'Answered everything — on the final question',
-  submitted: 'Submitted — details sent to you',
+  submitted: 'Reached the calendar — didn’t pick a time',
   booked: 'Booked a time',
 };
 const stageIndex = (s) => {
@@ -143,8 +143,17 @@ async function ingest(req, res) {
     console.warn('pulse store failed:', err.message);
   }
 
-  // Email the drop-offs: they're leaving (final) and never submitted.
-  if (b.final && stageIndex(stage) < stageIndex('submitted')) {
+  // Partial-lead capture: the moment we have a real email, dedupe-write a lead
+  // record keyed by email with a status field. This runs on every beacon (so
+  // it's saved on step-advance, long before booking), never fires a Pixel, and
+  // is upgraded partial → booked when they complete Calendly.
+  await upsertLead(redis, journey, now);
+
+  // Email the drop-offs: they're leaving (final) and never BOOKED a time. The
+  // lead email now fires on booking (client-side), so anyone short of 'booked'
+  // — including people who filled everything and reached the calendar but never
+  // picked a slot — is a drop-off worth knowing about.
+  if (b.final && stageIndex(stage) < stageIndex('booked')) {
     await maybeEmail(redis, journey);
   }
 
@@ -203,6 +212,51 @@ async function maybeEmail(redis, j) {
 function fmtDwell(ms) {
   const s = Math.max(0, Math.round(ms / 1000));
   return s < 60 ? `${s}s` : `${Math.round(s / 60)} min`;
+}
+
+// Dedupe leads on email in Redis — the same `lead:<email>` convention the audit
+// path (email-report.js) already uses. ONE record per person: status is
+// 'partial' the moment we have their contact info, upgraded to 'booked' when
+// Calendly completes, and never downgraded. Internal follow-up data only — this
+// writes no Pixel and sends no email.
+const LEADS_KEY = 'pulse:leads';
+const LEAD_TTL_S = 60 * 60 * 24 * 90; // keep booking leads 90 days
+export async function upsertLead(redis, j, now) {
+  if (!redis || !isEmail(j.email)) return; // no valid email yet → nothing to dedupe on
+  const email = j.email.trim().toLowerCase();
+  const key = `pulse:lead:${email}`;
+
+  let prev = null;
+  try { prev = await redis.get(key); } catch { /* treat as new */ }
+  prev = prev && typeof prev === 'object' ? prev : null;
+
+  // Status only ever climbs: partial → booked, never back to partial.
+  const booked = stageIndex(j.stage) >= stageIndex('booked') || (prev && prev.status === 'booked');
+  const keep = (v, k) => v || (prev ? prev[k] : '') || '';
+  const record = {
+    email,
+    name: keep(j.name, 'name'),
+    phone: keep(j.phone, 'phone'),
+    website: keep(j.website, 'website'),
+    customers: keep(j.customers, 'customers'),
+    jobs: keep(j.jobs, 'jobs'),
+    obstacle: keep(j.obstacle, 'obstacle'),
+    source: keep(j.source, 'source'),
+    referrer: keep(j.referrer, 'referrer'),
+    query: keep(j.query, 'query'),
+    status: booked ? 'booked' : 'partial',
+    journeyId: j.id,
+    ip: (prev && prev.ip) || j.ip || '',
+    createdAt: (prev && prev.createdAt) || now,
+    updatedAt: now,
+  };
+
+  try {
+    await redis.set(key, record, { ex: LEAD_TTL_S });
+    await redis.zadd(LEADS_KEY, { score: now, member: email });
+  } catch (err) {
+    console.warn('pulse lead upsert failed:', err.message);
+  }
 }
 
 // ------------------------------------------------------------- dashboard (GET)

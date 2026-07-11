@@ -22,8 +22,8 @@ const minutes = site.callLengthMinutes;
         <header class="bk-intro">
           <p class="eyebrow">For kitchen &amp; bath businesses</p>
           <h1 class="bk-intro__h1">Your free {minutes}-minute game plan</h1>
-          <p class="bk-intro__lede">Thirty minutes with me, and you walk off with a plan to get found by the homeowners already looking and chosen over the business down the road. The kind of plan I’d normally only put together for a paying client.</p>
-          <p class="bk-intro__sub">It’s for owners who do good work and are done watching it go to businesses that do worse.</p>
+          <p class="bk-intro__lede">Thirty minutes with me, and you walk off with a plan to get found by the homeowners already searching, and picked when they look you up. The kind of plan I’d normally only build for a paying client.</p>
+          <p class="bk-intro__sub">It’s for owners who do great work and are tired of losing homeowners at the screen, before the phone ever rings.</p>
         </header>
 
         <form class="bk-form" data-book-form novalidate>
@@ -100,6 +100,7 @@ const minutes = site.callLengthMinutes;
         <!-- CALENDAR — revealed beneath the answers once the form is submitted -->
         <div class="bk-step bk-step--cal" data-step="cal" hidden>
           <h2 class="bk-cal__h">Got your details. Pick a time that works.</h2>
+          <p class="bk-cal__note">You leave with the written plan whether we ever work together or not.</p>
           <div class="bk-cal__widget" data-calendly></div>
           <a class="bk-cal__direct" href={site.bookingUrl} target="_blank" rel="noopener">Calendar not loading? Open it in a new tab →</a>
         </div>
@@ -311,17 +312,19 @@ const minutes = site.callLengthMinutes;
       f.addEventListener('change', onEdit);
     });
 
-    const doSubmit = () => {
-      const last = steps[steps.length - 1];
-      if (!validStep(last)) return;                 // obstacle is optional, so this passes
-      if (form.querySelector<HTMLInputElement>('[name="hp_confirm"]')?.checked) return; // honeypot — autofill/managers never tick a checkbox
+    // Send the qualified lead to Web3Forms. This fires when they actually BOOK a
+    // time (Calendly) — a lead is only real once a call is on the calendar, not
+    // when the form is merely filled in. Fire-and-forget; guarded so it can't
+    // double-send within a page load.
+    let leadSent = false;
+    const sendLead = () => {
+      if (leadSent) return;
+      leadSent = true;
       collectAll();
-
-      // send the lead to Web3Forms — fire-and-forget
       const fd = new FormData();
       fd.append('access_key', site.web3formsBookingKey);
       fd.append('from_name', 'Kitchen Websites');
-      fd.append('subject', `📅 Session request — ${answers.website || answers.name || 'new owner'}`);
+      fd.append('subject', `📅 Call booked — ${answers.website || answers.name || 'new owner'}`);
       fd.append('Name', answers.name || '');
       fd.append('email', answers.email || '');
       fd.append('Phone', answers.mobile || '');
@@ -331,15 +334,22 @@ const minutes = site.callLengthMinutes;
       if (answers.obstacle) fd.append('Biggest gripe', answers.obstacle);
       const params = new URLSearchParams(window.location.search);
       if (params.get('from')) fd.append('Came from', String(params.get('from')));
-      // Full attribution — not just `from`, every UTM/click-id param plus the
-      // referring page, so a lead can be traced back to the exact ad/campaign.
+      // Full attribution — every UTM/click-id param plus the referring page, so
+      // a booked call can be traced back to the exact ad/campaign.
       if (window.location.search) fd.append('Query params', window.location.search);
       if (document.referrer) fd.append('Referrer', document.referrer);
       fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
-      (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
-      setStage('submitted'); // no drop-off email for submitters — the lead email covers them
+    };
 
-      try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
+    const doSubmit = () => {
+      const last = steps[steps.length - 1];
+      if (!validStep(last)) return;                 // obstacle is optional, so this passes
+      if (form.querySelector<HTMLInputElement>('[name="hp_confirm"]')?.checked) return; // honeypot — autofill/managers never tick a checkbox
+      collectAll();
+      (window as any).kwTrack?.('DetailsSubmitted', { via: 'session-funnel' });
+      // They've reached the calendar. The lead email only fires once they pick a
+      // time; if they leave here, it counts as a (hot) drop-off instead.
+      setStage('submitted');
       showCalendar();
     };
 
@@ -381,10 +391,40 @@ const minutes = site.callLengthMinutes;
     // hard safety net: the form can never natively submit (which would reload + reset it)
     form.addEventListener('submit', (e) => { e.preventDefault(); });
 
+    // Prefill payload for Calendly, read LIVE from what they just entered so the
+    // calendar step is confirm-and-pick, not re-type. `name`/`email` are
+    // Calendly's built-in fields (always safe). customAnswers a1..aN map to the
+    // event type's Invitee Questions *in order* — VERIFY that order in Calendly
+    // (event type → Invitee Questions); a mismatch is a one-line fix right here,
+    // not a code hunt. Calendly ignores answer keys the event type doesn't have.
+    const calendlyPrefill = () => {
+      collectAll();
+      const customAnswers: Record<string, string> = {};
+      if (answers.mobile)    customAnswers.a1 = answers.mobile;    // Q1 · phone / mobile
+      if (answers.customers) customAnswers.a2 = answers.customers; // Q2 · customer mix
+      if (answers.jobs)      customAnswers.a3 = answers.jobs;      // Q3 · jobs per month
+      if (answers.obstacle)  customAnswers.a4 = answers.obstacle;  // Q4 · biggest obstacle
+      return { name: answers.name || '', email: answers.email || '', customAnswers };
+    };
+    // Keep the "open in a new tab" fallback prefilled too (URL query-param form),
+    // so a failed embed still lands them on a filled calendar.
+    const syncDirectLink = () => {
+      const link = document.querySelector<HTMLAnchorElement>('.bk-cal__direct');
+      if (!link) return;
+      const p = calendlyPrefill();
+      const qs = new URLSearchParams();
+      if (p.name) qs.set('name', p.name);
+      if (p.email) qs.set('email', p.email);
+      Object.entries(p.customAnswers).forEach(([k, v]) => qs.set(k, v));
+      const base = bookingUrl.split('?')[0];
+      link.href = qs.toString() ? `${base}?${qs.toString()}` : bookingUrl;
+    };
+
     // ---- Calendly inline embed (loaded lazily when the calendar reveals) ----
     function initCalendly() {
       const host = document.querySelector<HTMLElement>('[data-calendly]');
       if (!host || host.dataset.ready) return;
+      syncDirectLink(); // fallback link is prefilled the moment the calendar shows
       const w = window as any;
       const go = () => {
         if (!w.Calendly) return;
@@ -392,7 +432,7 @@ const minutes = site.callLengthMinutes;
         w.Calendly.initInlineWidget({
           url: bookingUrl,
           parentElement: host,
-          prefill: { name: answers.name || '', email: answers.email || '' },
+          prefill: calendlyPrefill(),
         });
       };
       if (w.Calendly) { go(); return; }
@@ -420,9 +460,18 @@ const minutes = site.callLengthMinutes;
         return;
       }
       if (data?.event === 'calendly.event_scheduled') {
+        sendLead();                                   // a time is on the calendar → NOW send the lead
+        (window as any).kwTrack?.('LeadQualified', { via: 'calendly' });
         (window as any).kwTrack?.('CallBooked', { via: 'calendly' });
-        if ((window as any).fbq) (window as any).fbq('track', 'CallBooked');
+        // Meta Pixel Lead — fires ONLY here, on a real booking, so ad
+        // optimization is never polluted by partial captures. CallBooked is the
+        // custom detail event alongside it.
+        if ((window as any).fbq) {
+          (window as any).fbq('track', 'Lead');
+          (window as any).fbq('track', 'CallBooked');
+        }
         setStage('booked', true);
+        try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
         setFirst((answers.name as string) || '');
         if (flow) flow.hidden = true;
         if (done) done.hidden = false;
@@ -501,7 +550,8 @@ const minutes = site.callLengthMinutes;
      the whole calendar fits with no inner scrollbar; the height here is the
      pre-message fallback (generous so it still fits). */
   .bk-step--cal { text-align: center; }
-  .bk-cal__h { font-size: var(--fs-h3); margin-bottom: var(--space-6); }
+  .bk-cal__h { font-size: var(--fs-h3); margin-bottom: var(--space-3); }
+  .bk-cal__note { margin: 0 auto var(--space-6); max-width: 46ch; font-family: var(--font-serif); font-size: var(--fs-body); font-style: italic; color: var(--ink-70); }
   .bk-cal__widget { position: relative; left: 50%; transform: translateX(-50%); width: 96vw; max-width: 70rem; height: 820px; }
   .bk-cal__widget :global(iframe) { width: 100%; height: 100%; border: 0; }
   @media (max-width: 48em) { .bk-cal__widget { width: 100vw; height: 1180px; } }
