@@ -1,1 +1,0 @@
-const e={bookingUrl:"https://calendly.com/kitchenwebsites/30-min-strategy-session",web3formsKey:"5dcc1132-3dba-43aa-8df8-9b2a841e2bec",web3formsBookingKey:"43b3a69b-e565-48c2-bc12-d5c00c863d10"};export{e as s};

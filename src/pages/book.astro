@@ -21,22 +21,31 @@ const minutes = site.callLengthMinutes;
 
         <header class="bk-intro">
           <p class="eyebrow">For kitchen &amp; bath businesses</p>
-          <h1 class="bk-intro__h1">Your free {minutes}-minute game plan</h1>
-          <p class="bk-intro__lede">Thirty minutes with me, and you walk off with a plan to get found by the homeowners already searching, and picked when they look you up. The kind of plan I’d normally only build for a paying client.</p>
-          <p class="bk-intro__sub">It’s for owners who do great work and are tired of losing homeowners at the screen, before the phone ever rings.</p>
+          <h1 class="bk-intro__h1">Your free <span class="bk-nowrap">{minutes}-minute</span> game plan</h1>
+          <p class="bk-intro__sub">This is for owners who do great work but are tired of losing homeowners online. Here’s exactly what you get:</p>
         </header>
+
+        <div class="bk-stack">
+          <ul class="bk-stack__list">
+            <li>The exact fixes your website needs to increase your homeowner conversion rate</li>
+            <li>Your exact rank on Google homeowner searches, and how to climb it</li>
+            <li>The exact steps to start ranking in AI searches <span class="bk-stack__tag">(new)</span></li>
+            <li>Where exactly homeowners click off your website and Google profile</li>
+            <li>The exact 90-day gameplan to get your business winning jobs <span class="bk-stack__tag">(yours free)</span></li>
+          </ul>
+        </div>
 
         <form class="bk-form" data-book-form novalidate>
 
-          <!-- Q1 — NAME (shown first) -->
+          <!-- START — capture the first name (no question heading), then launch -->
           <fieldset class="bk-step" data-step data-field="name">
-            <h2 class="bk-q">What do I call you?</h2>
-            <input class="bk-input" name="name" type="text" autocomplete="given-name" placeholder="First name" required />
-            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+            <input class="bk-input" name="name" type="text" autocomplete="given-name" placeholder="Your first name" aria-label="Your first name" required />
+            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Let’s start <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
           <!-- Q2 — CONTACT -->
           <fieldset class="bk-step" data-step hidden>
+            <p class="bk-count">1/3</p>
             <h2 class="bk-q">A few quick details, <span data-first>there</span>.</h2>
             <div class="bk-fields">
               <label class="bk-field" data-field="mobile">
@@ -57,6 +66,7 @@ const minutes = site.callLengthMinutes;
 
           <!-- Q3 — YOUR WORK -->
           <fieldset class="bk-step" data-step hidden>
+            <p class="bk-count">2/3</p>
             <h2 class="bk-q">A little about your work.</h2>
             <div class="bk-field" data-field="customers">
               <p class="bk-sub">Is your work mostly for homeowners, or builder and contractor accounts?</p>
@@ -80,6 +90,7 @@ const minutes = site.callLengthMinutes;
 
           <!-- Q4 — THE OBSTACLE (optional) → submit -->
           <fieldset class="bk-step" data-step hidden>
+            <p class="bk-count">3/3</p>
             <h2 class="bk-q"><span data-first>There</span>, what’s the one thing about getting found and getting picked online that’s eating at you most? <span class="bk-opt">(optional)</span></h2>
             <p class="bk-why">Don’t tidy it up. Give me the real version, in your own words. It’s the first thing I read before we talk.</p>
             <textarea class="bk-input" name="obstacle" rows="4"></textarea>
@@ -123,6 +134,7 @@ const minutes = site.callLengthMinutes;
 <script>
   import { site } from '../data/site.config';
   import { pulseId, pulseSource, pulseSend } from '../utils/pulse.js';
+  import { track } from '../utils/track.js';
   const bookingUrl = site.bookingUrl;
 
   const form = document.querySelector<HTMLFormElement>('[data-book-form]');
@@ -341,12 +353,19 @@ const minutes = site.callLengthMinutes;
       fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd }).catch(() => { /* best-effort */ });
     };
 
+    // Meta intent event. Moved OFF the raw "Book" link click (too low, and a
+    // link is easy to spam) to the moment they complete the whole qualifying
+    // form and reach the calendar — a strong pre-booking intent signal, one step
+    // below an actual booking. Fires once per completed form; the real Lead
+    // still fires only when they pick a time.
+    let bookIntentSent = false;
     const doSubmit = () => {
       const last = steps[steps.length - 1];
       if (!validStep(last)) return;                 // obstacle is optional, so this passes
       if (form.querySelector<HTMLInputElement>('[name="hp_confirm"]')?.checked) return; // honeypot — autofill/managers never tick a checkbox
       collectAll();
       (window as any).kwTrack?.('DetailsSubmitted', { via: 'session-funnel' });
+      if (!bookIntentSent) { bookIntentSent = true; track('BookClicked'); } // reached-the-calendar intent
       // They've reached the calendar. The lead email only fires once they pick a
       // time; if they leave here, it counts as a (hot) drop-off instead.
       setStage('submitted');
@@ -498,14 +517,20 @@ const minutes = site.callLengthMinutes;
 </script>
 
 <style>
-  .bk-funnel { padding-block: var(--space-10) var(--space-16); }
+  .bk-funnel { padding-block: var(--space-6) var(--space-16); }
 
-  .bk-intro { text-align: center; max-width: 54ch; margin-inline: auto; }
-  .bk-intro__h1 { margin-top: var(--space-4); font-size: var(--fs-h2); }
-  .bk-intro__lede { margin: var(--space-5) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); }
+  .bk-intro { text-align: center; max-width: 40rem; margin-inline: auto; }
+  .bk-intro__h1 { margin-top: var(--space-4); font-size: var(--fs-h2); text-wrap: balance; }
+  .bk-nowrap { white-space: nowrap; }
   .bk-intro__sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); }
 
-  .bk-form { margin-top: var(--space-10); text-align: center; }
+  /* value stack — what they walk away with, before they start the form */
+  .bk-stack { margin: var(--space-6) auto 0; max-width: 48rem; text-align: left; }
+  .bk-stack__list { display: grid; gap: var(--space-2); }
+  .bk-stack__list li { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.5; color: var(--ink); }
+  .bk-stack__tag { font-family: var(--font-body); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--ink-50); }
+
+  .bk-form { margin-top: var(--space-5); text-align: center; }
   .bk-step { border: 0; padding: 0; margin: 0; animation: bk-in 320ms cubic-bezier(.2,.7,.2,1); }
   /* a hairline + breathing room between stacked questions (and before the calendar) */
   .bk-step + .bk-step, .bk-step--cal { margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--line); }
@@ -513,6 +538,7 @@ const minutes = site.callLengthMinutes;
   .bk-step--err { animation: bk-shake 320ms; }
   @keyframes bk-shake { 10%,90%{transform:translateX(-1px)} 30%,70%{transform:translateX(3px)} 50%{transform:translateX(-4px)} }
 
+  .bk-count { font-family: var(--font-mono); font-size: var(--fs-caption); font-weight: var(--fw-body-semi); letter-spacing: 0.05em; color: var(--ink-50); margin-bottom: var(--space-2); }
   .bk-q { font-size: var(--fs-h4); line-height: 1.3; max-width: 40ch; margin-inline: auto; }
   .bk-opt { font-size: var(--fs-body); font-weight: var(--fw-body); color: var(--ink-50); }
   .bk-sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); max-width: 54ch; }

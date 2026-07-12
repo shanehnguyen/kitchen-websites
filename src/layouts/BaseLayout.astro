@@ -5,7 +5,6 @@ import { site } from '../data/site.config';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import Analytics from '../components/Analytics.astro';
-import TrackBoot from '../components/TrackBoot.astro';
 import '@fontsource-variable/archivo';
 import '@fontsource-variable/source-serif-4';
 import '@fontsource-variable/jetbrains-mono';
@@ -55,7 +54,6 @@ const fullTitle = title.includes(site.brand) ? title : `${title} | ${site.brand}
     <link rel="manifest" href="/site.webmanifest" />
 
     <Analytics />
-    <TrackBoot />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
