@@ -41,6 +41,7 @@ export const site = {
   analytics: {
     metaPixelId: '1460315575868963',
     ga4Id: '', // optional — leave blank to disable GA4
+    clarityId: 'xmofy84bqy', // Microsoft Clarity — heatmaps, scroll depth, session replays (public id)
   },
 } as const;
 

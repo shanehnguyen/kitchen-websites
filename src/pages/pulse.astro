@@ -15,6 +15,7 @@ import BareLayout from '../layouts/BareLayout.astro';
       <header class="pl-head">
         <h1 class="pl-title">Booking&nbsp;pulse</h1>
         <div class="pl-meta">
+          <span data-pl-redis class="pl-redis" hidden></span>
           <span data-pl-updated class="pl-updated"></span>
           <button type="button" class="pl-btn" data-pl-refresh>Refresh</button>
           <button type="button" class="pl-btn pl-btn--ghost" data-pl-signout hidden>Sign out</button>
@@ -60,9 +61,16 @@ import BareLayout from '../layouts/BareLayout.astro';
   const funnelEl = $('[data-pl-funnel]');
   const listEl = $('[data-pl-list]');
   const updatedEl = $('[data-pl-updated]');
+  const redisEl = $('[data-pl-redis]');
   const countEl = $('[data-pl-count]');
   const windowEl = $('[data-pl-window]');
   const signout = $('[data-pl-signout]') as HTMLButtonElement;
+
+  const REDIS_STATE: Record<string, { label: string; cls: string }> = {
+    connected: { label: '● database connected', cls: 'is-ok' },
+    unreachable: { label: '● database not reachable', cls: 'is-bad' },
+    'not-configured': { label: '● database not configured', cls: 'is-bad' },
+  };
 
   const STAGE_TONE: Record<string, string> = {
     landed: 'cool', started: 'cool', contact: 'mid', details: 'mid',
@@ -189,6 +197,19 @@ import BareLayout from '../layouts/BareLayout.astro';
     renderList(j);
     windowEl.textContent = '· last 7 days';
     updatedEl.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+    // database health — so an all-zero board can't hide a dead/misconfigured DB
+    const rs = REDIS_STATE[data.redisStatus as string];
+    if (rs) {
+      redisEl.textContent = rs.label;
+      redisEl.className = `pl-redis ${rs.cls}`;
+      redisEl.hidden = false;
+      if (data.redisStatus !== 'connected') {
+        note.innerHTML = 'The booking database isn’t connected, so nothing can be recorded. Add an Upstash Redis in Vercel (Storage), set <code>UPSTASH_REDIS_REST_URL</code> + <code>UPSTASH_REDIS_REST_TOKEN</code>, and redeploy.';
+        note.hidden = false;
+      }
+    } else {
+      redisEl.hidden = true;
+    }
   }
 
   // token gate submit
@@ -219,6 +240,9 @@ import BareLayout from '../layouts/BareLayout.astro';
   .pl-title { font-size: var(--fs-h3); }
   .pl-meta { display: flex; align-items: center; gap: var(--space-3); }
   .pl-updated { font-size: var(--fs-caption); color: var(--ink-50); font-family: var(--font-mono); }
+  .pl-redis { font-size: var(--fs-caption); font-family: var(--font-mono); font-weight: var(--fw-body-semi); }
+  .pl-redis.is-ok { color: #3F7F4F; }
+  .pl-redis.is-bad { color: #C0392B; }
   .pl-btn { font-family: var(--font-body); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); padding: var(--space-2) var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); cursor: pointer; }
   .pl-btn:hover { border-color: var(--ink); }
   .pl-btn--ghost { border-color: transparent; color: var(--ink-50); }

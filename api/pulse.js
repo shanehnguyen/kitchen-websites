@@ -64,8 +64,8 @@ const stageIndex = (s) => {
 let redisClient = null;
 function getRedis() {
   if (redisClient) return redisClient;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   if (!url || !token) return null;
   redisClient = new Redis({ url, token });
   return redisClient;
@@ -273,13 +273,15 @@ async function dashboard(req, res) {
   }
 
   const redis = getRedis();
-  if (!redis) return res.status(200).json({ ok: true, journeys: [], funnel: buildFunnel([]), stages: STAGES });
+  if (!redis) return res.status(200).json({ ok: true, redisStatus: 'not-configured', journeys: [], funnel: buildFunnel([]), stages: STAGES });
 
   let ids = [];
+  let redisStatus = 'connected';
   try {
     ids = await redis.zrange(RECENT_KEY, 0, 199, { rev: true }); // newest first
   } catch (err) {
     console.warn('pulse zrange failed:', err.message);
+    redisStatus = 'unreachable'; // DB is dead / creds wrong — surfaced on the dashboard
   }
   ids = Array.isArray(ids) ? ids : [];
 
@@ -293,7 +295,7 @@ async function dashboard(req, res) {
     }
   }
 
-  return res.status(200).json({ ok: true, journeys, funnel: buildFunnel(journeys), stages: STAGES });
+  return res.status(200).json({ ok: true, redisStatus, journeys, funnel: buildFunnel(journeys), stages: STAGES });
 }
 
 // How many visitors reached AT LEAST each stage (the classic funnel shape).

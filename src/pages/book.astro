@@ -21,19 +21,21 @@ const minutes = site.callLengthMinutes;
 
         <header class="bk-intro">
           <p class="eyebrow">For kitchen &amp; bath businesses</p>
-          <h1 class="bk-intro__h1">Your free <span class="bk-nowrap">{minutes}-minute</span> game plan</h1>
-          <p class="bk-intro__sub">This is for owners who do great work but are tired of losing homeowners online. Here’s exactly what you get:</p>
+          <h1 class="bk-intro__h1">Your free <span class="bk-nowrap">{minutes}-minute</span> strategy session</h1>
+          <p class="bk-intro__sub" data-sub>This is for owners who do great work but keep losing homeowners online. Here’s the playbook I’d normally save for paying clients:</p>
         </header>
 
         <div class="bk-stack">
           <ul class="bk-stack__list">
-            <li>The exact fixes your website needs to increase your homeowner conversion rate</li>
-            <li>Your exact rank on Google homeowner searches, and how to climb it</li>
-            <li>The exact steps to start ranking in AI searches <span class="bk-stack__tag">(new)</span></li>
-            <li>Where exactly homeowners click off your website and Google profile</li>
-            <li>The exact 90-day gameplan to get your business winning jobs <span class="bk-stack__tag">(yours free)</span></li>
+            <li>The website secrets top kitchen &amp; bath companies use to convert more homeowners</li>
+            <li>The ranking moves that put you above the businesses homeowners see first</li>
+            <li>The fastest way to rank in AI searches in 2026</li>
+            <li>How to get more homeowners clicking your website and Google profile</li>
+            <li>The exact 90-day gameplan to get your business winning more jobs <span class="bk-stack__tag">(yours free)</span></li>
           </ul>
         </div>
+
+        <p class="bk-reassure" data-reassure>You leave with the plan — yours to keep, even if we never work together.</p>
 
         <form class="bk-form" data-book-form novalidate>
 
@@ -141,6 +143,19 @@ const minutes = site.callLengthMinutes;
   const flow = document.querySelector<HTMLElement>('[data-book-flow]');
   const done = document.querySelector<HTMLElement>('[data-book-done]');
   const calStep = document.querySelector<HTMLElement>('[data-step="cal"]');
+
+  // Tailor the intro to where they came from (?from=). Someone arriving from the
+  // done-for-you page is already sold, so warm the greeting and drop the re-pitch
+  // — the bullets still show what the session delivers.
+  {
+    const from = new URLSearchParams(location.search).get('from');
+    if (from && from.startsWith('dfy')) {
+      const subEl = document.querySelector<HTMLElement>('[data-sub]');
+      const reassureEl = document.querySelector<HTMLElement>('[data-reassure]');
+      if (subEl) subEl.textContent = 'You’ve seen how I work. This is where we build your plan:';
+      if (reassureEl) reassureEl.textContent = 'Yours to keep, even if we never work together.';
+    }
+  }
 
   // text/textarea answers live in the DOM; radios are tracked here too
   const answers: Record<string, string> = {};
@@ -525,9 +540,12 @@ const minutes = site.callLengthMinutes;
   .bk-intro__sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); }
 
   /* value stack — what they walk away with, before they start the form */
-  .bk-stack { margin: var(--space-6) auto 0; max-width: 48rem; text-align: left; }
-  .bk-stack__list { display: grid; gap: var(--space-2); }
+  .bk-stack { margin: var(--space-6) auto 0; max-width: 50rem; text-align: left; }
+  .bk-stack__list { display: grid; gap: var(--space-2); list-style: none; padding: 0; margin: 0; }
   .bk-stack__list li { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.5; color: var(--ink); }
+
+  /* compact reassurance right before the form */
+  .bk-reassure { margin: var(--space-6) auto 0; max-width: 44rem; text-align: center; font-family: var(--font-serif); font-size: var(--fs-body-sm); font-style: italic; color: var(--ink-50); }
   .bk-stack__tag { font-family: var(--font-body); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--ink-50); }
 
   .bk-form { margin-top: var(--space-5); text-align: center; }

@@ -66,7 +66,7 @@ export const homeFaqs: Faq[] = [
     a: [
       'Because a bigger agency has a hundred clients, and you’d be a line item.',
       'I only work with kitchen and bath businesses, and I take a handful at a time. I designed your homepage myself. I know your numbers by name.',
-      'The big agency sells you the same playbook they sell a dentist and a roofer. I know why a homeowner picks one remodeler over another, because it’s the only thing I do.',
+      'The big agency sells you the same playbook they sell a dentist and a roofer. I know why a homeowner picks one over another, because it’s the only thing I do.',
       'You’re not a ticket in a queue. You’re the work.',
     ],
   },
@@ -79,7 +79,7 @@ export const dfyFaqs: Faq[] = [
     q: 'What is Done For You, exactly?',
     a: [
       'One package that gets you found by the homeowners already searching, and picked when they look you up.',
-      'I rebuild and run your Google profile, build you a website that turns a curious click into a booked estimate, keep new reviews coming in, and set you up so AI names you when she asks for a remodeler nearby.',
+      'I rebuild and run your Google profile, build you a website that turns a curious click into a booked estimate, keep new reviews coming in, and set you up so AI names you when they ask for someone nearby.',
       'Built and run for you, every month. You stay on the tools. I handle the screen.',
     ],
   },
@@ -134,8 +134,8 @@ export const dfyFaqs: Faq[] = [
     q: 'Why you instead of a regular marketing agency?',
     a: [
       'Because most agencies run the same playbook for a dentist, a roofer, and you. You’re a template with the logo swapped.',
-      'I only do kitchen and bath. I know why a homeowner picks one remodeler over another, what she’s afraid of, and what makes her call. It’s the only thing I work on.',
-      'That’s the difference between marketing that could be for anyone and marketing built to win her, specifically.',
+      'I only do kitchen and bath. I know why a homeowner picks one over another, what they’re afraid of, and what makes them call. It’s the only thing I work on.',
+      'That’s the difference between marketing that could be for anyone and marketing built to win them, specifically.',
     ],
   },
 ];

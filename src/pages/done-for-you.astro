@@ -5,6 +5,7 @@
    "Things I won't do." One CTA: the session. */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CTAButton from '../components/CTAButton.astro';
+import FeaturedVideo from '../components/FeaturedVideo.astro';
 import StickyMobileCTA from '../components/StickyMobileCTA.astro';
 import ClientShowcase from '../components/ClientShowcase.astro';
 import FAQ from '../components/FAQ.astro';
@@ -12,7 +13,9 @@ import { dfyFaqs } from '../data/faqs';
 import { site } from '../data/site.config';
 
 const minutes = site.callLengthMinutes;
-const bookHref = '/book';
+// Per-CTA source tag (?from=dfy-<cta>) so /pulse shows exactly which button sent
+// them — and where that visitor then dropped in the booking funnel.
+const book = (cta) => `/book?from=dfy-${cta}`;
 ---
 <BaseLayout
   title="Done For You: Get Found & Get Picked | Kitchen Websites"
@@ -24,8 +27,13 @@ const bookHref = '/book';
       <p class="eyebrow">Done for you · Kitchen &amp; bath only</p>
       <h1 class="seo2-hero__h1">More homeowners calling you in 90 days, or I work for free.</h1>
       <p class="lede seo2-hero__sub">Done For You is everything in one package: your website, your Google, your reviews, and AI search, all built and run for you. I make you the one homeowners find, trust, and call.</p>
+    </div>
+    <div class="container seo2-hero__video">
+      <FeaturedVideo src="/video/kitchenwebsites-video1.mp4" poster="/video/kitchenwebsites-video1-poster.jpg" />
+    </div>
+    <div class="container container--narrow">
       <div class="seo2-hero__cta">
-        <CTAButton href={bookHref} label="Schedule your free strategy session" event="Dfy:HeroToBook" size="lg" />
+        <CTAButton href={book('hero')} label="Schedule your free strategy session" event="Dfy:HeroToBook" size="lg" />
       </div>
     </div>
   </section>
@@ -33,28 +41,23 @@ const bookHref = '/book';
   <!-- 2 — THE SEARCH -->
   <section class="section seo2-body">
     <div class="container container--prose seo2-prose">
-      <p class="seo2-date mono">Updated July 9, 2026</p>
+      <p class="seo2-date mono">Updated July 14, 2026</p>
 
       <h2 class="seo2-h">Homeowners near you are searching right now.</h2>
-      <p>Every day, people near you search “kitchen remodeler near me” on Google. Many are ready to spend twenty or thirty thousand dollars. They want to hire someone this week.</p>
+      <p>Every day, people near you go to Google looking for a kitchen. Many are ready to spend twenty or thirty thousand dollars. They want to hire someone this week.</p>
       <p>These are the customers you want. They are already looking for what you do.</p>
-      <p>To win them, two things have to go right. First she has to choose you out of the search. Then your website has to turn her into a phone call. I handle both.</p>
+      <p>To win them, two things have to go right. First they have to choose you out of the search. Then your website has to turn them into a phone call. I handle both.</p>
 
-      <h2 class="seo2-h">First, I make her choose you.</h2>
-      <p>Before she calls anyone, she looks you up. She checks your spot on the map, your reviews, your photos, and how you compare to the business two towns over. More and more, she also asks ChatGPT for a good remodeler nearby.</p>
-      <p>She decides in a few seconds, from what she sees.</p>
-      <p>So I make sure what she sees is you. I set up your Google profile the right way. I add fresh photos every month. I help you get more reviews. I get your name showing up in AI search. When she looks at her choices, you are the easy one to call.</p>
-      <ul class="seo2-stats">
-        <li><strong>97%</strong> of homeowners read reviews before they pick a local business.</li>
-        <li><strong>88%</strong> of local phone searches end in a call that same day.</li>
-        <li><strong>45%</strong> now ask AI for a local pro, up from 6% a year ago.</li>
-      </ul>
+      <h2 class="seo2-h">First, I make them choose you.</h2>
+      <p>Before they call anyone, they look you up. They check your spot on the map, your reviews, your photos, and how you compare to the business two towns over. More and more, they also ask ChatGPT who’s good nearby.</p>
+      <p>They decide in a few seconds, from what they see.</p>
+      <p>So I make sure what they see is you. I set up your Google profile the right way. I add fresh photos every month. I help you get more reviews. I get your name showing up in AI search. When they look at their choices, you are the easy one to call.</p>
 
       <h2 class="seo2-h">Then your website turns lookers into callers.</h2>
-      <p>She clicks to your site. This is where most contractors lose her.</p>
+      <p>They click to your site. This is where most sites lose them.</p>
       <p>Out of ten homeowners, only one is ready to call today. The other nine are still deciding. Most websites are built only for that one. They show a few photos, a phone number, and a form. They do nothing for the other nine.</p>
       <p>Those nine are most of your work for the year.</p>
-      <p>I build your site for the nine. It shows her the kitchen she has been picturing. It answers the questions she is worried about. It gives her enough proof to stop comparing and call you.</p>
+      <p>I build your site for the nine. It shows them the kitchen they’ve been picturing. It answers the questions they’re worried about. It gives them enough proof to stop comparing and call you.</p>
       <p class="seo2-beat"><span class="hl">She lands just looking. She leaves ready to call.</span></p>
 
       <h2 class="seo2-h">If your calls don’t go up in ninety days, we work for free.</h2>
@@ -76,8 +79,8 @@ const bookHref = '/book';
         <li><strong>A website built to convert.</strong> Your kitchens, your reviews, your services, on a site made to turn a homeowner who is just looking into one who calls. You see it before you pay a dollar.</li>
         <li><strong>Your Google profile, rebuilt and run.</strong> The right categories, every service filled in, fresh photos and posts each month. So you climb the map for people searching near you.</li>
         <li><strong>Local SEO that moves you up.</strong> Your site and profile built around what homeowners actually search, so you rise above the business two towns over.</li>
-        <li><strong>A steady stream of reviews.</strong> Every kitchen you finish becomes another five-star review, the first thing she reads before she calls.</li>
-        <li><strong>Set up for AI search.</strong> When she asks ChatGPT or Google’s AI for a remodeler nearby, you’re one of the names it gives her.</li>
+        <li><strong>A steady stream of reviews.</strong> Every kitchen you finish becomes another five-star review, the first thing they read before they call.</li>
+        <li><strong>Set up for AI search.</strong> When they ask ChatGPT or Google’s AI who to call nearby, you’re one of the names it gives them.</li>
       </ul>
       <p class="seo2-price__lead">Bought piece by piece, here’s what each one really costs:</p>
       <div class="seo2-compare">
@@ -107,7 +110,7 @@ const bookHref = '/book';
         </table>
       </div>
       <p class="seo2-price">$750 a month. Month to month. You own all of it.</p>
-      <div class="seo2-cta"><CTAButton href={bookHref} label="Schedule your free strategy session" event="Dfy:PlanToBook" size="lg" /></div>
+      <div class="seo2-cta"><CTAButton href={book('plan')} label="Book your free strategy session" event="Dfy:PlanToBook" size="lg" /></div>
     </div>
   </section>
 
@@ -119,29 +122,32 @@ const bookHref = '/book';
     <div class="seo2-proof__showcase"><ClientShowcase /></div>
   </section>
 
-  <!-- 5 — FAQ -->
-  <section class="section section--sm seo2-faq">
-    <div class="container container--narrow">
-      <h2 class="seo2-faq__h">The questions a burned owner actually asks.</h2>
-      <div class="seo2-faq__list"><FAQ items={dfyFaqs} /></div>
-    </div>
-  </section>
-
-  <!-- 6 — THE STRATEGY SESSION (dark) -->
-  <section class="section section--dark seo2-session">
+  <!-- 5 — THE STRATEGY SESSION -->
+  <section class="section seo2-session">
     <div class="container container--narrow seo2-session__inner">
       <h2 class="seo2-session__h">Anyone can promise you more calls. In {minutes} minutes, I’ll show you exactly how.</h2>
-      <p>We’ll fully audit the three things a homeowner checks before she picks anyone: your Google, your website, and whether AI names you when she asks. I show you where you’re losing her, and the exact steps to fix it, in order.</p>
+      <p>We’ll build your plan around the three things a homeowner checks before they pick anyone: your Google, your website, and whether AI names you when they ask. I’ll show you the exact moves to become the one they call, in the right order.</p>
       <p><span class="seo2-em">You leave with that plan written down.</span> Run it yourself or hand it to me.</p>
       <div class="seo2-session__cta">
-        <CTAButton href={bookHref} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Dfy:SessionToBook" size="lg" />
+        <CTAButton href={book('session')} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Dfy:SessionToBook" size="lg" />
       </div>
       <p class="seo2-sig">— Shane Nguyen, Kitchen Websites</p>
       <p class="seo2-ps">P.S. This is for owners doing great work but losing jobs online. If that’s you, it’s the best half hour you’ll spend on your business this month.</p>
     </div>
   </section>
 
-  <StickyMobileCTA href={bookHref} label="Book a Call" event="Dfy:StickyToBook" />
+  <!-- 6 — FAQ (dark) -->
+  <section class="section section--sm section--dark seo2-faq">
+    <div class="container container--narrow">
+      <h2 class="seo2-faq__h">The questions a burned owner actually asks.</h2>
+      <div class="seo2-faq__list"><FAQ items={dfyFaqs} /></div>
+      <div class="seo2-faq__cta">
+        <CTAButton href={book('faq')} label={`Book my ${minutes}-minute session`} derisk="Free. Kitchen and bath only. Keep the plan either way." event="Dfy:FaqToBook" size="lg" />
+      </div>
+    </div>
+  </section>
+
+  <StickyMobileCTA href={book('sticky')} label="Book a Call" event="Dfy:StickyToBook" />
 </BaseLayout>
 
 <style>
@@ -152,6 +158,7 @@ const bookHref = '/book';
   .seo2-hero { padding-top: var(--space-12); text-align: center; }
   .seo2-hero__h1 { margin: var(--space-4) auto 0; max-width: 20ch; }
   .seo2-hero__sub { margin: var(--space-5) auto 0; max-width: 50ch; }
+  .seo2-hero__video { margin-top: var(--space-8); }
   .seo2-hero__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
 
   /* letter body */
@@ -161,11 +168,6 @@ const bookHref = '/book';
   .seo2-prose h2 + p { margin-top: var(--space-5); }
   .seo2-beat { font-family: var(--font-serif); }
   .seo2-cta { margin-top: var(--space-6); }
-
-  /* stat list (gold numbers, real stats from extra-stats.md) */
-  .seo2-stats { list-style: none; padding: 0; margin: var(--space-5) 0; display: grid; gap: var(--space-3); }
-  .seo2-stats li { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.5; color: var(--ink); }
-  .seo2-stats strong { color: var(--accent-deep); font-weight: var(--fw-body-bold); }
 
   /* "exactly what you get" list */
   .seo2-gets { list-style: none; padding: 0; margin: var(--space-6) 0; display: grid; gap: var(--space-4); }
@@ -196,17 +198,23 @@ const bookHref = '/book';
   .seo2-proof__h { text-align: center; font-size: var(--fs-h3); }
   .seo2-proof__showcase { margin-top: var(--space-8); }
 
-  /* faq */
+  /* faq (dark section) — the FAQ component hard-codes ink text/borders, so lift
+     them to the dark palette here */
   .seo2-faq__h { font-size: var(--fs-h3); max-width: none; }
   .seo2-faq__list { margin-top: var(--space-8); }
+  .seo2-faq__cta { margin-top: var(--space-10); display: flex; justify-content: center; }
+  .seo2-faq :global(.faq__q) { color: var(--dark-ink); }
+  .seo2-faq :global(.faq__a p) { color: var(--dark-soft); }
+  .seo2-faq :global(.faq),
+  .seo2-faq :global(.faq__item) { border-color: var(--dark-line); }
 
-  /* session (dark) */
+  /* session (light) */
   .seo2-session__inner { text-align: center; }
   .seo2-session__h { font-family: var(--font-display); }
-  .seo2-session__inner p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.65; color: var(--paper-70); max-width: 56ch; margin-inline: auto; }
-  .seo2-em { color: var(--accent-strong); font-weight: var(--fw-body-bold); }
+  .seo2-session__inner p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.65; color: var(--ink-70); max-width: 56ch; margin-inline: auto; }
+  .seo2-em { color: var(--accent-deep); font-weight: var(--fw-body-bold); }
   .seo2-session__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
   .seo2-session__cta :global(.cta-block) { align-items: center; }
-  .seo2-sig { margin-top: var(--space-8); font-family: var(--font-display) !important; font-size: var(--fs-h4) !important; color: var(--porcelain) !important; }
-  .seo2-ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm) !important; color: var(--paper-50) !important; max-width: 56ch; }
+  .seo2-sig { margin-top: var(--space-8); font-family: var(--font-display) !important; font-size: var(--fs-h4) !important; color: var(--ink) !important; }
+  .seo2-ps { margin-top: var(--space-5); font-style: italic; font-size: var(--fs-body-sm) !important; color: var(--ink-50) !important; max-width: 56ch; }
 </style>
