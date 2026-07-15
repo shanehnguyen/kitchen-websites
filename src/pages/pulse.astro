@@ -39,6 +39,12 @@ import BareLayout from '../layouts/BareLayout.astro';
           <div class="pl-funnel" data-pl-funnel></div>
         </div>
 
+        <!-- which CTA / source converts -->
+        <div class="pl-card">
+          <h2 class="pl-h2">By CTA / source <span class="pl-dim">· visitors → booked</span></h2>
+          <div class="pl-sources" data-pl-sources></div>
+        </div>
+
         <!-- recent visitors -->
         <div class="pl-card">
           <h2 class="pl-h2">Recent visitors <span class="pl-dim" data-pl-count></span></h2>
@@ -59,6 +65,7 @@ import BareLayout from '../layouts/BareLayout.astro';
   const body = $('[data-pl-body]');
   const note = $('[data-pl-note]');
   const funnelEl = $('[data-pl-funnel]');
+  const sourcesEl = $('[data-pl-sources]');
   const listEl = $('[data-pl-list]');
   const updatedEl = $('[data-pl-updated]');
   const redisEl = $('[data-pl-redis]');
@@ -106,6 +113,16 @@ import BareLayout from '../layouts/BareLayout.astro';
     body.hidden = true;
     signout.hidden = true;
     if (msg) { gateErr.textContent = msg; gateErr.hidden = false; }
+  }
+
+  function renderSources(sources: any[]) {
+    if (!sources.length) { sourcesEl.innerHTML = '<p class="pl-empty">No tagged traffic yet.</p>'; return; }
+    sourcesEl.innerHTML =
+      '<table class="pl-src"><thead><tr><th>Source</th><th>Visitors</th><th>Booked</th><th>Rate</th></tr></thead><tbody>' +
+      sources.map((s) =>
+        `<tr><td>${esc(s.source)}</td><td>${s.total}</td><td>${s.booked}</td><td class="${s.booked ? 'is-good' : ''}">${s.rate}%</td></tr>`
+      ).join('') +
+      '</tbody></table>';
   }
 
   function renderFunnel(funnel: any[]) {
@@ -194,6 +211,7 @@ import BareLayout from '../layouts/BareLayout.astro';
     signout.hidden = false;
     const j = Array.isArray(data.journeys) ? data.journeys : [];
     renderFunnel(Array.isArray(data.funnel) ? data.funnel : []);
+    renderSources(Array.isArray(data.sources) ? data.sources : []);
     renderList(j);
     windowEl.textContent = '· last 7 days';
     updatedEl.textContent = `Updated ${new Date().toLocaleTimeString()}`;
@@ -271,6 +289,13 @@ import BareLayout from '../layouts/BareLayout.astro';
   .pl-tone--mid  { background: #A78B4F; }
   .pl-tone--warm { background: #C9803E; }
   .pl-tone--good { background: #3F7F4F; }
+
+  /* by-CTA table */
+  .pl-src { width: 100%; margin-top: var(--space-4); border-collapse: collapse; font-family: var(--font-mono); font-size: var(--fs-body-sm); }
+  .pl-src th, .pl-src td { text-align: right; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); }
+  .pl-src th:first-child, .pl-src td:first-child { text-align: left; }
+  .pl-src thead th { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-50); font-weight: var(--fw-body-semi); }
+  .pl-src td.is-good { color: #3F7F4F; font-weight: var(--fw-body-semi); }
 
   /* list */
   .pl-list { margin-top: var(--space-4); display: grid; gap: var(--space-3); }

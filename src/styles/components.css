@@ -118,7 +118,7 @@
 .nav__cta { display: inline-flex; }
 /* responsive CTA label: full text on desktop, compact "Schedule" on the mobile
    bar so the long label can't push the hamburger off-screen */
-.nav__cta-short { display: none; }
+.nav__cta-short, .nav__cta-mini { display: none; }
 @media (max-width: 55.99em) {
   .nav__cta-full { display: none; }
   .nav__cta-short { display: inline; }
@@ -127,6 +127,15 @@
    padding/font and wrapping to two lines, crowding the logo + hamburger) */
 @media (max-width: 480px) {
   .nav__cta { padding: 9px 14px; font-size: 13px; min-height: 44px; white-space: nowrap; }
+}
+/* very narrow phones (≤ ~416px): swap to the shortest label and trim the logo so
+   logo + button + hamburger never collide */
+@media (max-width: 26em) {
+  .nav__cta-short { display: none; }
+  .nav__cta-mini { display: inline; }
+  .nav__cta { padding: 9px 12px; }
+  .nav__logo-name { font-size: 1.12rem; }
+  .nav__actions { gap: var(--space-2); }
 }
 
 /* hamburger — mobile only, reveals the secondary links (never the CTA) */

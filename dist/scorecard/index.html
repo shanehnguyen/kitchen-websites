@@ -1,21 +1,50 @@
-<!DOCTYPE html><html lang="en" data-astro-cid-hmod34gv> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#F4F1EA"><title>The Google Scorecard for Kitchen &amp; Bath | Kitchen Websites</title><meta name="description" content="See the true, homeowner’s-eye read of your Google presence next to the businesses near you. One tap, your real listing, the three things to fix first."><link rel="canonical" href="https://kitchenwebsites.com/scorecard"><meta name="robots" content="noindex, nofollow"><meta property="og:title" content="The Google Scorecard for Kitchen &#38; Bath"><meta property="og:description" content="See the true, homeowner’s-eye read of your Google presence next to the businesses near you. One tap, your real listing, the three things to fix first."><meta property="og:image" content="https://kitchenwebsites.com/assets/images/og-cover.svg"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg"><script>(function(){const metaPixelId = "1460315575868963";
+<!DOCTYPE html><html lang="en" data-astro-cid-hmod34gv> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#F4F1EA"><title>The Google Scorecard for Kitchen &amp; Bath | Kitchen Websites</title><meta name="description" content="See the true, homeowner’s-eye read of your Google presence next to the businesses near you. One tap, your real listing, the three things to fix first."><link rel="canonical" href="https://kitchenwebsites.com/scorecard"><meta name="robots" content="noindex, nofollow"><meta property="og:title" content="The Google Scorecard for Kitchen &#38; Bath"><meta property="og:description" content="See the true, homeowner’s-eye read of your Google presence next to the businesses near you. One tap, your real listing, the three things to fix first."><meta property="og:image" content="https://kitchenwebsites.com/assets/images/og-cover.svg"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg"><link rel="preconnect" href="https://connect.facebook.net" crossorigin><link rel="preconnect" href="https://www.clarity.ms" crossorigin><script>(function(){const metaPixelId = "1460315575868963";
+const ga4Id = "";
+const clarityId = "xmofy84bqy";
 
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-    document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', metaPixelId); fbq('track', 'PageView');
-  })();</script><script>(function(){const clarityId = "xmofy84bqy";
+  (function () {
+    var booted = false;
+    function boot() {
+      if (booted) return; booted = true;
 
-    (function(c,l,a,r,i,t,y){
-      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", clarityId);
-  })();</script><script>
-  // Internal funnel telemetry → GA4 only. Meta events go through
-  // src/utils/track.js so the Pixel receives just the named conversion events.
+      if (metaPixelId) {
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+        n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+        document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', metaPixelId); fbq('track', 'PageView');
+      }
+
+      if (ga4Id) {
+        var g = document.createElement('script'); g.async = true;
+        g.src = 'https://www.googletagmanager.com/gtag/js?id=' + ga4Id;
+        document.head.appendChild(g);
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { dataLayer.push(arguments); };
+        gtag('js', new Date()); gtag('config', ga4Id);
+      }
+
+      if (clarityId) {
+        (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", clarityId);
+      }
+    }
+    // Load once the main thread is free — or the moment the user interacts,
+    // so recordings/events never miss an early action.
+    if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 3500 });
+    else setTimeout(boot, 1500);
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+      addEventListener(ev, boot, { once: true, passive: true });
+    });
+  })();
+})();</script><script>
+  // Internal funnel telemetry → GA4. Meta events go through src/utils/track.js
+  // so the Pixel receives just the named conversion events. (Loads immediately —
+  // it's tiny and must exist before any CTA click.)
   window.kwTrack = function (name, params) {
     try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
   };
@@ -32,7 +61,7 @@
       }
     });
   })();
-</script><link rel="stylesheet" href="/_astro/book.CKjNtev0.css">
+</script><link rel="stylesheet" href="/_astro/book.DxrHTP87.css">
 <link rel="stylesheet" href="/_astro/scorecard.DU1Bv3KO.css">
 <link rel="stylesheet" href="/_astro/index.CfLnUWvf.css">
 <link rel="stylesheet" href="/_astro/index.7cBIdQrM.css">

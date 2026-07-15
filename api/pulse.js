@@ -297,7 +297,24 @@ async function dashboard(req, res) {
     }
   }
 
-  return res.status(200).json({ ok: true, redisStatus, journeys, funnel: buildFunnel(journeys), stages: STAGES });
+  return res.status(200).json({ ok: true, redisStatus, journeys, funnel: buildFunnel(journeys), sources: buildSources(journeys), stages: STAGES });
+}
+
+// Per-CTA / source rollup: how many arrived from each ?from tag and how many of
+// them actually booked — so you see which button drives completed calls, not
+// just clicks. Sorted by volume.
+function buildSources(journeys) {
+  const map = new Map();
+  for (const j of journeys) {
+    const key = j.source || 'direct';
+    const e = map.get(key) || { source: key, total: 0, booked: 0 };
+    e.total += 1;
+    if (stageIndex(j.stage) >= stageIndex('booked')) e.booked += 1;
+    map.set(key, e);
+  }
+  return [...map.values()]
+    .map((e) => ({ ...e, rate: e.total ? Math.round((e.booked / e.total) * 100) : 0 }))
+    .sort((a, b) => b.total - a.total);
 }
 
 // How many visitors reached AT LEAST each stage (the classic funnel shape).
