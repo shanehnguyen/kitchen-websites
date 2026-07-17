@@ -134,7 +134,7 @@
   .nav__cta-short { display: none; }
   .nav__cta-mini { display: inline; }
   .nav__cta { padding: 9px 12px; }
-  .nav__logo-name { font-size: 1.12rem; }
+  .nav__logo-name { font-size: 1rem; }
   .nav__actions { gap: var(--space-2); }
 }
 
