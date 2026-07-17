@@ -80,8 +80,7 @@ import BareLayout from '../layouts/BareLayout.astro';
   };
 
   const STAGE_TONE: Record<string, string> = {
-    landed: 'cool', started: 'cool', contact: 'mid', details: 'mid',
-    obstacle: 'warm', submitted: 'good', booked: 'good',
+    landed: 'cool', type: 'cool', jobs: 'mid', details: 'warm', calendar: 'good', booked: 'good',
   };
 
   const esc = (s: string) => (s || '').replace(/[&<>"]/g, (c) =>
@@ -151,38 +150,83 @@ import BareLayout from '../layouts/BareLayout.astro';
       listEl.innerHTML = '<p class="pl-empty">No visitors in the last 7 days yet.</p>';
       return;
     }
+    // repeat-visit counts by IP — so one person's reloads read differently from many people
+    const ipCounts: Record<string, number> = {};
+    journeys.forEach((j) => { if (j.ip) ipCounts[j.ip] = (ipCounts[j.ip] || 0) + 1; });
     listEl.innerHTML = journeys.map((j) => {
       const tone = STAGE_TONE[j.stage] || 'cool';
-      const who = j.name || j.email || j.phone || 'Anonymous';
-      const contact = [j.email, j.phone].filter(Boolean).join(' · ');
-      const work = [j.customers, j.jobs && `${j.jobs}/mo`].filter(Boolean).join(' · ');
-      const src = j.source || j.referrer || 'direct';
+      const who = j.businessName || j.businessType || 'Anonymous';
+      const detail = [j.businessType, j.customers, j.jobs && `${j.jobs}/mo`].filter(Boolean).join(' · ');
+      const entry = entryOf(j);
+      const dev = deviceLabel(j.ua || '');
+      const repeat = j.ip && ipCounts[j.ip] > 1 ? ` · seen ${ipCounts[j.ip]}×` : '';
+      const refUrl = j.referrer && entry.kind !== 'ref' ? j.referrer : '';
       return `
         <div class="pl-row">
           <div class="pl-row__main">
             <span class="pl-who">${esc(who)}</span>
             <span class="pl-badge pl-tone--${tone}">${esc(stageLabel(j.stage))}</span>
           </div>
+          <div class="pl-entry pl-entry--${entry.kind}">${esc(entry.label)}</div>
           <div class="pl-row__sub">
-            ${contact ? `<span>${esc(contact)}</span>` : ''}
+            ${detail ? `<span>${esc(detail)}</span>` : ''}
             ${j.website ? `<span>${esc(j.website)}</span>` : ''}
-            ${work ? `<span>${esc(work)}</span>` : ''}
           </div>
-          ${j.obstacle ? `<div class="pl-row__gripe">“${esc(j.obstacle)}”</div>` : ''}
           <div class="pl-row__foot">
-            <span title="where they came from">from: ${esc(src)}</span>
+            ${refUrl ? `<span title="referring page">ref: ${esc(refUrl)}</span>` : ''}
+            ${dev ? `<span>${esc(dev)}</span>` : ''}
             <span>${dwell(j)} on page</span>
             <span>${ago(j.updatedAt || 0)}</span>
+            ${j.ip ? `<span title="IP address" class="pl-ip">${esc(j.ip)}${repeat}</span>` : ''}
           </div>
         </div>`;
     }).join('');
   }
 
   const STAGE_LABELS: Record<string, string> = {
-    landed: 'Landed', started: 'Typed name', contact: 'On contact',
-    details: 'Gave details', obstacle: 'Final question', submitted: 'At calendar', booked: 'Booked',
+    landed: 'Landed', type: 'Picked type', jobs: 'Jobs answered',
+    details: 'On business', calendar: 'At calendar', booked: 'Booked',
   };
   const stageLabel = (s: string) => STAGE_LABELS[s] || s;
+
+  // Turn a CTA event into a readable label — handles "Dfy:HeroToBook" →
+  // "Done-for-you · Hero" and colon-less homepage events "ReelToBook" → "Reel".
+  const CTA_PAGES: Record<string, string> = { dfy: 'Done-for-you', home: 'Homepage', about: 'About', web: 'Websites', websites: 'Websites', sc: 'Scorecard', scorecard: 'Scorecard', nav: 'Nav bar' };
+  function prettyCta(s: string): string {
+    let page = '', locRaw = s;
+    const m = s.match(/^([A-Za-z]+):(.+)$/);
+    if (m) { page = CTA_PAGES[m[1].toLowerCase()] || m[1]; locRaw = m[2]; }
+    let loc = locRaw.replace(/ToBook$/i, '');
+    loc = loc.replace(/([a-z])([A-Z])/g, '$1 $2'); // camelCase → words
+    if (/^faq$/i.test(loc)) loc = 'FAQ';
+    if (!loc || /^book$/i.test(loc)) return page || 'button';
+    return page ? page + ' · ' + loc : loc;
+  }
+  // Classify how a visitor arrived: on-site CTA click, paid ad, referral, or direct.
+  function entryOf(j: any): { kind: string; label: string } {
+    const s = j.source || '';
+    const isCta = /:/.test(s) ? /^[A-Za-z]+:[A-Za-z]+$/.test(s) : /ToBook$/i.test(s);
+    if (s && isCta) return { kind: 'cta', label: 'clicked · ' + prettyCta(s) };
+    if (s) return { kind: 'ad', label: 'ad · ' + s };
+    if (j.referrer) {
+      let d = j.referrer;
+      try { d = new URL(j.referrer).hostname.replace(/^www\./, ''); } catch {}
+      return { kind: 'ref', label: 'referral · ' + d };
+    }
+    return { kind: 'direct', label: 'direct — typed the URL or no referrer' };
+  }
+
+  function deviceLabel(ua: string): string {
+    if (!ua) return '';
+    const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+    let b = '';
+    if (/Edg\//i.test(ua)) b = 'Edge';
+    else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) b = 'Opera';
+    else if (/Chrome\//i.test(ua)) b = 'Chrome';
+    else if (/Firefox\//i.test(ua)) b = 'Firefox';
+    else if (/Safari\//i.test(ua)) b = 'Safari';
+    return (mobile ? 'Mobile' : 'Desktop') + (b ? ' · ' + b : '');
+  }
 
   async function load() {
     const t = token();
@@ -301,6 +345,12 @@ import BareLayout from '../layouts/BareLayout.astro';
   .pl-list { margin-top: var(--space-4); display: grid; gap: var(--space-3); }
   .pl-row { padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-sm); }
   .pl-row__main { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+  /* prominent "how they arrived" line */
+  .pl-entry { margin-top: var(--space-2); font-family: var(--font-mono); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); }
+  .pl-entry--cta { color: #3F7F4F; }
+  .pl-entry--ad { color: #A9722B; }
+  .pl-entry--ref { color: var(--ink-70); }
+  .pl-entry--direct { color: var(--ink-50); font-weight: var(--fw-body); }
   .pl-who { font-weight: var(--fw-body-semi); }
   .pl-badge { font-size: var(--fs-caption); font-weight: var(--fw-body-semi); color: #fff; padding: 2px 8px; border-radius: 999px; }
   .pl-row__sub { margin-top: var(--space-2); display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: var(--fs-body-sm); color: var(--ink-70); }

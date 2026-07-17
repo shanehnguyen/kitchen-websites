@@ -46,14 +46,13 @@ const WRITE_RATE_WINDOW_S = 60;
 const MIN_DWELL_FOR_EMAIL_MS = 1500;
 
 // Funnel stages, in order. A journey's stage only ever moves forward.
-const STAGES = ['landed', 'started', 'contact', 'details', 'obstacle', 'submitted', 'booked'];
+const STAGES = ['landed', 'type', 'jobs', 'details', 'calendar', 'booked'];
 const STAGE_LABEL = {
   landed: 'Just landed on the page',
-  started: 'Typed their name',
-  contact: 'Name done — on contact info',
-  details: 'Gave phone, email & website',
-  obstacle: 'Answered everything — on the final question',
-  submitted: 'Reached the calendar — didn’t pick a time',
+  type: 'Picked their business type',
+  jobs: 'Answered where jobs come from & how many',
+  details: 'On business name / website',
+  calendar: 'Completed the form — reached the calendar',
   booked: 'Booked a time',
 };
 const stageIndex = (s) => {
@@ -122,19 +121,18 @@ async function ingest(req, res) {
   const journey = {
     id: b.id,
     stage,
-    name: pick('name', 120),
-    email: pick('email', 200),
-    phone: pick('phone', 60),
+    businessType: pick('businessType', 80),
+    businessName: pick('businessName', 160),
     website: pick('website', 200),
     customers: pick('customers', 60),
     jobs: pick('jobs', 40),
-    obstacle: pick('obstacle', 1000),
     source: pick('source', 200),
     referrer: pick('referrer', 300),
     query: pick('query', 500),
     landedAt: (prev && prev.landedAt) || Number(b.landedAt) || now,
     updatedAt: now,
     ip: (prev && prev.ip) || ip,
+    ua: (prev && prev.ua) || clean(req.headers['user-agent'], 300),
   };
 
   try {
@@ -145,17 +143,14 @@ async function ingest(req, res) {
     console.warn('pulse store failed:', err.message);
   }
 
-  // Partial-lead capture: the moment we have a real email, dedupe-write a lead
-  // record keyed by email with a status field. This runs on every beacon (so
-  // it's saved on step-advance, long before booking), never fires a Pixel, and
-  // is upgraded partial → booked when they complete Calendly.
+  // Partial-lead capture: once we have a business name, dedupe-write a lead
+  // record keyed by business with a status field, upgraded partial → booked.
   await upsertLead(redis, journey, now);
 
-  // Email the drop-offs: they're leaving (final) and never BOOKED a time. The
-  // lead email now fires on booking (client-side), so anyone short of 'booked'
-  // — including people who filled everything and reached the calendar but never
-  // picked a slot — is a drop-off worth knowing about.
-  if (b.final && stageIndex(stage) < stageIndex('booked')) {
+  // Email the drop-offs: they're leaving (final) and never COMPLETED the form
+  // (never reached the calendar). The lead notification fires on form completion,
+  // so a drop-off here is someone who quit the qualifying questions partway.
+  if (b.final && stageIndex(stage) < stageIndex('calendar')) {
     await maybeEmail(redis, journey);
   }
 
@@ -168,7 +163,7 @@ async function maybeEmail(redis, j) {
   if (!redis) return;
 
   const dwell = (j.updatedAt || 0) - (j.landedAt || 0);
-  const engaged = j.name || j.email || j.phone || stageIndex(j.stage) > 0;
+  const engaged = j.businessType || j.businessName || stageIndex(j.stage) > 0;
   if (dwell < MIN_DWELL_FOR_EMAIL_MS && !engaged) return; // prefetch/bot bounce
 
   try {
@@ -178,26 +173,23 @@ async function maybeEmail(redis, j) {
     return;
   }
 
-  const idLabel = j.name || j.email || j.phone || 'Anonymous visitor';
+  const idLabel = j.businessName || j.businessType || 'Anonymous visitor';
   const reached = STAGE_LABEL[j.stage] || j.stage;
 
-  // Web3Forms renders every extra field into the email body; `subject`,
-  // `from_name`, and `email` (reply-to) are the special ones.
+  // Web3Forms renders every extra field into the email body.
   const fields = {
     access_key: WEB3FORMS_KEY,
     from_name: 'Booking pulse',
     subject: `🚪 Booking drop-off — ${idLabel} · ${reached}`,
     'How far they got': reached,
     'Time on page': fmtDwell(dwell),
-    Name: j.name || '—',
-    Phone: j.phone || '—',
+    Business: j.businessName || '—',
+    Type: j.businessType || '—',
     Website: j.website || '—',
     'Came from': j.source || j.referrer || 'direct',
   };
-  if (isEmail(j.email)) fields.email = j.email; // reply goes straight to them
-  if (j.customers) fields['Customer mix'] = j.customers;
+  if (j.customers) fields['Jobs come from'] = j.customers;
   if (j.jobs) fields['Jobs / month'] = j.jobs;
-  if (j.obstacle) fields['Biggest gripe'] = j.obstacle;
   if (j.query) fields['Query params'] = j.query;
 
   try {
@@ -216,17 +208,16 @@ function fmtDwell(ms) {
   return s < 60 ? `${s}s` : `${Math.round(s / 60)} min`;
 }
 
-// Dedupe leads on email in Redis — the same `lead:<email>` convention the audit
-// path (email-report.js) already uses. ONE record per person: status is
-// 'partial' the moment we have their contact info, upgraded to 'booked' when
-// Calendly completes, and never downgraded. Internal follow-up data only — this
-// writes no Pixel and sends no email.
+// Dedupe leads in Redis keyed by business name (the form no longer collects an
+// email — Calendly does — so business is the natural key). ONE record per
+// business: status 'partial' once they name the business, upgraded to 'booked'
+// when Calendly completes, never downgraded. Internal follow-up data only.
 const LEADS_KEY = 'pulse:leads';
 const LEAD_TTL_S = 60 * 60 * 24 * 90; // keep booking leads 90 days
 export async function upsertLead(redis, j, now) {
-  if (!redis || !isEmail(j.email)) return; // no valid email yet → nothing to dedupe on
-  const email = j.email.trim().toLowerCase();
-  const key = `pulse:lead:${email}`;
+  if (!redis || !j.businessName) return; // no business name yet → nothing to key on
+  const biz = j.businessName.trim().toLowerCase().slice(0, 120);
+  const key = `pulse:lead:${biz}`;
 
   let prev = null;
   try { prev = await redis.get(key); } catch { /* treat as new */ }
@@ -236,13 +227,11 @@ export async function upsertLead(redis, j, now) {
   const booked = stageIndex(j.stage) >= stageIndex('booked') || (prev && prev.status === 'booked');
   const keep = (v, k) => v || (prev ? prev[k] : '') || '';
   const record = {
-    email,
-    name: keep(j.name, 'name'),
-    phone: keep(j.phone, 'phone'),
+    business: j.businessName,
+    businessType: keep(j.businessType, 'businessType'),
     website: keep(j.website, 'website'),
     customers: keep(j.customers, 'customers'),
     jobs: keep(j.jobs, 'jobs'),
-    obstacle: keep(j.obstacle, 'obstacle'),
     source: keep(j.source, 'source'),
     referrer: keep(j.referrer, 'referrer'),
     query: keep(j.query, 'query'),
@@ -255,7 +244,7 @@ export async function upsertLead(redis, j, now) {
 
   try {
     await redis.set(key, record, { ex: LEAD_TTL_S });
-    await redis.zadd(LEADS_KEY, { score: now, member: email });
+    await redis.zadd(LEADS_KEY, { score: now, member: biz });
   } catch (err) {
     console.warn('pulse lead upsert failed:', err.message);
   }

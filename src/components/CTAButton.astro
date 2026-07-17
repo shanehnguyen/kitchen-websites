@@ -13,11 +13,17 @@ interface Props {
 }
 const { href, label, variant = 'primary', size = 'md', derisk, event, class: cls = '' } = Astro.props;
 const sizeClass = size === 'lg' ? 'btn--lg' : '';
+// Auto-tag internal /book links with the CTA's own event, so /pulse shows the
+// EXACT button that sent them — no per-CTA wiring. Won't clobber an existing
+// ?from, and only touches /book links.
+const tagged = (event && /^\/book(\/|\?|$)/.test(href) && !/[?&]from=/.test(href))
+  ? href + (href.includes('?') ? '&' : '?') + 'from=' + encodeURIComponent(event)
+  : href;
 ---
 <div class={`cta-block ${cls}`}>
   <a
     class={`btn btn--${variant} ${sizeClass}`}
-    href={href}
+    href={tagged}
     data-event={event}
   >
     {label}

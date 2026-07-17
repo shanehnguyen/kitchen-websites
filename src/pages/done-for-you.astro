@@ -13,9 +13,9 @@ import { dfyFaqs } from '../data/faqs';
 import { site } from '../data/site.config';
 
 const minutes = site.callLengthMinutes;
-// Per-CTA source tag (?from=dfy-<cta>) so /pulse shows exactly which button sent
-// them — and where that visitor then dropped in the booking funnel.
-const book = (cta) => `/book?from=dfy-${cta}`;
+// CTAs auto-tag themselves with their `event` (Dfy:HeroToBook, …) via CTAButton,
+// so /pulse shows exactly which button sent them. Just point them at /book.
+const bookHref = '/book';
 ---
 <BaseLayout
   title="Done For You: Get Found & Get Picked | Kitchen Websites"
@@ -33,7 +33,7 @@ const book = (cta) => `/book?from=dfy-${cta}`;
     </div>
     <div class="container container--narrow">
       <div class="seo2-hero__cta">
-        <CTAButton href={book('hero')} label="Schedule your free strategy session" event="Dfy:HeroToBook" size="lg" />
+        <CTAButton href={bookHref} label="Schedule your free strategy session" event="Dfy:HeroToBook" size="lg" />
       </div>
     </div>
   </section>
@@ -110,7 +110,7 @@ const book = (cta) => `/book?from=dfy-${cta}`;
         </table>
       </div>
       <p class="seo2-price">$750 a month. Month to month. You own all of it.</p>
-      <div class="seo2-cta"><CTAButton href={book('plan')} label="Book your free strategy session" event="Dfy:PlanToBook" size="lg" /></div>
+      <div class="seo2-cta"><CTAButton href={bookHref} label="Book your free strategy session" event="Dfy:PlanToBook" size="lg" /></div>
     </div>
   </section>
 
@@ -129,7 +129,7 @@ const book = (cta) => `/book?from=dfy-${cta}`;
       <p>We’ll build your plan around the three things a homeowner checks before they pick anyone: your Google, your website, and whether AI names you when they ask. I’ll show you the exact moves to become the one they call, in the right order.</p>
       <p><span class="seo2-em">You leave with that plan written down.</span> Run it yourself or hand it to me.</p>
       <div class="seo2-session__cta">
-        <CTAButton href={book('session')} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Dfy:SessionToBook" size="lg" />
+        <CTAButton href={bookHref} label={`Book your ${minutes}-minute strategy session`} derisk={`${minutes} minutes. Kitchen and bath only.`} event="Dfy:SessionToBook" size="lg" />
       </div>
       <p class="seo2-sig">— Shane Nguyen, Kitchen Websites</p>
       <p class="seo2-ps">P.S. This is for owners doing great work but losing jobs online. If that’s you, it’s the best half hour you’ll spend on your business this month.</p>
@@ -142,12 +142,12 @@ const book = (cta) => `/book?from=dfy-${cta}`;
       <h2 class="seo2-faq__h">The questions a burned owner actually asks.</h2>
       <div class="seo2-faq__list"><FAQ items={dfyFaqs} /></div>
       <div class="seo2-faq__cta">
-        <CTAButton href={book('faq')} label={`Book my ${minutes}-minute session`} derisk="Free. Kitchen and bath only. Keep the plan either way." event="Dfy:FaqToBook" size="lg" />
+        <CTAButton href={bookHref} label={`Book my ${minutes}-minute session`} derisk="Free. Kitchen and bath only. Keep the plan either way." event="Dfy:FaqToBook" size="lg" />
       </div>
     </div>
   </section>
 
-  <StickyMobileCTA href={book('sticky')} label="Book a Call" event="Dfy:StickyToBook" />
+  <StickyMobileCTA href={bookHref} label="Book a Call" event="Dfy:StickyToBook" />
 </BaseLayout>
 
 <style>

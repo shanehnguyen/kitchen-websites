@@ -10,9 +10,13 @@ interface Props {
   event?: string;
 }
 const { href = '/book', label = 'Book a Call', event } = Astro.props;
+// Auto-tag the /book link with the event so /pulse shows the sticky bar sent them.
+const tagged = (event && /^\/book(\/|\?|$)/.test(href) && !/[?&]from=/.test(href))
+  ? href + (href.includes('?') ? '&' : '?') + 'from=' + encodeURIComponent(event)
+  : href;
 ---
 <div class="smcta" data-smcta>
-  <a class="btn btn--primary" href={href} data-smcta-link data-event={event}>{label} <span aria-hidden="true">→</span></a>
+  <a class="btn btn--primary" href={tagged} data-smcta-link data-event={event}>{label} <span aria-hidden="true">→</span></a>
 </div>
 
 <script is:inline>
