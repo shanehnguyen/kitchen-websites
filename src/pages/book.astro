@@ -571,8 +571,10 @@ const portfolio = [
   .bk-cards { margin: var(--space-5) auto 0; display: grid; gap: var(--space-3); max-width: 32rem; }
   .bk-cards--row { grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 34em) { .bk-cards--row { grid-template-columns: repeat(4, 1fr); } }
-  /* horizontal row of 3 options (e.g. where jobs come from) */
-  .bk-cards--row3 { grid-template-columns: repeat(3, 1fr); }
+  /* horizontal row of 3 options (e.g. where jobs come from) — stacks on phones
+     so long labels aren't cramped or forced off-screen */
+  .bk-cards--row3 { grid-template-columns: 1fr; }
+  @media (min-width: 34em) { .bk-cards--row3 { grid-template-columns: repeat(3, 1fr); } }
   /* give longer-label options more room so text doesn't feel cramped */
   .bk-cards--wide { max-width: 46rem; }
   .bk-cards--wide .bk-card { padding-inline: var(--space-5); min-height: 68px; line-height: 1.25; }
@@ -617,6 +619,10 @@ const portfolio = [
     .bk-proof__grid { gap: 6px; max-width: 27rem; }
     .bk-reassure { margin-top: var(--space-3); }
     .bk-form { margin-top: var(--space-4); }
+    /* cards: keep within the viewport and readable on phones */
+    .bk-cards { max-width: 100%; }
+    .bk-cards--wide .bk-card { padding-inline: var(--space-3); min-height: 60px; font-size: var(--fs-body); }
+    .bk-input { padding: var(--space-3); }
   }
 
   @media (prefers-reduced-motion: reduce) {
