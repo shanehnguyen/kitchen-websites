@@ -311,6 +311,21 @@ const portfolio = [
       }
     };
 
+    // Meta "started booking" intent — fires ONCE the moment they answer the first
+    // question (business type). Form completion is too rare to optimise against, so
+    // BookClicked marks the top of the funnel; Lead still fires on completion below.
+    // Anti-spam: guarded within the page load AND persisted per session, so
+    // reloading + re-picking (or a bot hammering the option) can't refire it.
+    const BOOK_STARTED_KEY = 'kw_book_started_v1';
+    let bookStartedFired = false;
+    try { if (sessionStorage.getItem(BOOK_STARTED_KEY)) bookStartedFired = true; } catch { /* ignore */ }
+    const fireBookStarted = () => {
+      if (bookStartedFired) return;
+      bookStartedFired = true;
+      try { sessionStorage.setItem(BOOK_STARTED_KEY, '1'); } catch { /* ignore */ }
+      track('BookClicked');
+    };
+
     // single-choice cards
     form.querySelectorAll<HTMLElement>('[data-radio]').forEach((group) => {
       group.querySelectorAll<HTMLButtonElement>('.bk-card').forEach((card) => {
@@ -321,6 +336,7 @@ const portfolio = [
           clearErr(group.dataset.name!);
           persist();
           setStage(stageForCurrent()); // picking Q1 flips landed → type
+          if (group.dataset.name === 'businessType') fireBookStarted(); // first question answered
         });
       });
     });
@@ -374,7 +390,6 @@ const portfolio = [
         leadFired = true;
         sendLead();                                          // Web3Forms — the qualified lead
         (window as any).kwTrack?.('LeadQualified', { via: 'session-funnel' });
-        track('BookClicked');                                // Meta intent (reached calendar)
         if ((window as any).fbq) (window as any).fbq('track', 'Lead'); // Meta Lead — on form completion
       }
       setStage('calendar');
