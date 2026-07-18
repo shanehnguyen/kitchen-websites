@@ -256,9 +256,11 @@ const portfolio = [
     // ---- booking pulse: report how far each visitor gets, so drop-offs email
     //      Shane and the /pulse dashboard shows the funnel. Stage only moves
     //      forward; the beacon carries whatever they've filled in so far. ----
-    const PULSE = { id: pulseId(), stage: 'landed', landedAt: Date.now(), ...pulseSource() };
+    const nowMs = () => Date.now();
+    const PULSE = { id: pulseId(), stage: 'landed', landedAt: nowMs(), stageTimes: {}, ...pulseSource() };
     const PSTAGES = ['landed', 'type', 'jobs', 'details', 'calendar', 'booked'];
     const prank = (s) => PSTAGES.indexOf(s);
+    PULSE.stageTimes.landed = PULSE.landedAt; // stamp the landing as the first stage time
     const pulsePayload = (final) => {
       collectAll();
       return {
@@ -266,14 +268,21 @@ const portfolio = [
         businessType: answers.businessType || '', businessName: answers.businessName || '',
         website: answers.website || '', customers: answers.customers || '', jobs: answers.jobs || '',
         source: PULSE.source, referrer: PULSE.referrer, query: PULSE.query,
+        utmSource: PULSE.utmSource, utmMedium: PULSE.utmMedium, utmCampaign: PULSE.utmCampaign,
+        utmContent: PULSE.utmContent, utmTerm: PULSE.utmTerm, gclid: PULSE.gclid, fbclid: PULSE.fbclid,
+        stageTimes: PULSE.stageTimes,
         landedAt: PULSE.landedAt, final: !!final,
       };
     };
     // Advance the stage (never backward) and beacon. Repeats at the same stage
-    // are dropped unless it's the "leaving" (final) ping.
+    // are dropped unless it's the "leaving" (final) ping. The first time a stage
+    // is reached we stamp its timestamp, so /pulse can show the time to each step.
     const setStage = (s, final = false) => {
       const up = prank(s) > prank(PULSE.stage);
-      if (up) PULSE.stage = s;
+      if (up) {
+        PULSE.stage = s;
+        if (!PULSE.stageTimes[s]) PULSE.stageTimes[s] = nowMs();
+      }
       if (up || final) pulseSend(pulsePayload(final), final);
     };
     // Furthest step → stage: Q1 (type) · Q2 (jobs) · Q3 (business) · calendar · booked.

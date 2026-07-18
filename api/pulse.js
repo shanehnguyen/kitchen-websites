@@ -87,6 +87,39 @@ const clean = (v, max = 300) => (typeof v === 'string' ? v.slice(0, max).trim() 
 const validId = (id) => typeof id === 'string' && /^j_[a-z0-9_]{6,48}$/i.test(id);
 const isEmail = (v) => typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
+// Pull UTMs / click-ids out of a raw "?a=b&c=d" string. Camel-cased keys match
+// the journey record (utm_source → utmSource) so the fallback slots straight in.
+function parseQuery(qs) {
+  const out = { utmSource: '', utmMedium: '', utmCampaign: '', utmContent: '', utmTerm: '', gclid: '', fbclid: '' };
+  if (typeof qs !== 'string' || !qs) return out;
+  try {
+    const p = new URLSearchParams(qs.startsWith('?') ? qs.slice(1) : qs);
+    const g = (k) => (p.get(k) || '').slice(0, 200).trim();
+    out.utmSource = g('utm_source'); out.utmMedium = g('utm_medium'); out.utmCampaign = g('utm_campaign');
+    out.utmContent = g('utm_content'); out.utmTerm = g('utm_term');
+    out.gclid = g('gclid'); out.fbclid = g('fbclid');
+  } catch { /* leave blanks */ }
+  return out;
+}
+
+// Merge the per-stage timestamp maps from successive beacons. A stage keeps the
+// EARLIEST time it was ever reported (stage time never moves later), and only
+// sane millisecond timestamps are accepted. `seed` provides defaults (landed).
+function mergeStageTimes(prev, incoming, seed) {
+  const out = {};
+  const take = (src) => {
+    if (!src || typeof src !== 'object') return;
+    for (const s of STAGES) {
+      const t = Number(src[s]);
+      if (Number.isFinite(t) && t > 0 && (!out[s] || t < out[s])) out[s] = t;
+    }
+  };
+  take(seed);
+  take(prev);
+  take(incoming);
+  return out;
+}
+
 // ---------------------------------------------------------------- ingest (POST)
 async function ingest(req, res) {
   const b = req.body || {};
@@ -118,6 +151,11 @@ async function ingest(req, res) {
 
   // Merge: newest non-empty value wins, otherwise keep what we had.
   const pick = (k, max) => clean(b[k], max) || (prev ? prev[k] : '') || '';
+  // UTM / click ids come broken out from the client; fall back to parsing the raw
+  // query string so older records (and any beacon that missed them) still resolve.
+  const q = pick('query', 500);
+  const fromQuery = parseQuery(q);
+  const utm = (k, max = 200) => clean(b[k], max) || (prev && prev[k]) || fromQuery[k] || '';
   const journey = {
     id: b.id,
     stage,
@@ -128,7 +166,15 @@ async function ingest(req, res) {
     jobs: pick('jobs', 40),
     source: pick('source', 200),
     referrer: pick('referrer', 300),
-    query: pick('query', 500),
+    query: q,
+    utmSource: utm('utmSource'),
+    utmMedium: utm('utmMedium'),
+    utmCampaign: utm('utmCampaign'),
+    utmContent: utm('utmContent'),
+    utmTerm: utm('utmTerm'),
+    gclid: utm('gclid'),
+    fbclid: utm('fbclid'),
+    stageTimes: mergeStageTimes(prev && prev.stageTimes, b.stageTimes, { landed: (prev && prev.landedAt) || Number(b.landedAt) || now }),
     landedAt: (prev && prev.landedAt) || Number(b.landedAt) || now,
     updatedAt: now,
     ip: (prev && prev.ip) || ip,

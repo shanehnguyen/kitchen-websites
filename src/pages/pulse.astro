@@ -1,7 +1,10 @@
 ---
 /* /pulse — PRIVATE booking-funnel dashboard. Token-gated (PULSE_TOKEN, checked
-   server-side in /api/pulse). Shows the funnel with drop-off at each step and a
-   live list of recent visitors + how far each got. noindex; not linked anywhere. */
+   server-side in /api/pulse). Shows the funnel with drop-off at each step, a
+   per-source rollup, and a wide, scrollable, sortable, filterable TABLE of every
+   visitor — a column per question (with the time to reach each step) plus every
+   UTM / click-id from the URL. This is the source of truth for booking data.
+   noindex; not linked anywhere. */
 import BareLayout from '../layouts/BareLayout.astro';
 ---
 <BareLayout
@@ -33,6 +36,9 @@ import BareLayout from '../layouts/BareLayout.astro';
       </form>
 
       <div data-pl-body hidden>
+        <!-- summary tiles (reflect the CURRENT filter, so you can segment) -->
+        <div class="pl-tiles" data-pl-tiles></div>
+
         <!-- funnel -->
         <div class="pl-card">
           <h2 class="pl-h2">Funnel <span class="pl-dim" data-pl-window></span></h2>
@@ -45,10 +51,25 @@ import BareLayout from '../layouts/BareLayout.astro';
           <div class="pl-sources" data-pl-sources></div>
         </div>
 
-        <!-- recent visitors -->
+        <!-- visitors table -->
         <div class="pl-card">
-          <h2 class="pl-h2">Recent visitors <span class="pl-dim" data-pl-count></span></h2>
-          <div class="pl-list" data-pl-list></div>
+          <div class="pl-tbar">
+            <h2 class="pl-h2">Visitors <span class="pl-dim" data-pl-count></span></h2>
+            <div class="pl-tbar__controls">
+              <input class="pl-search" type="search" placeholder="Search anything…" data-pl-search />
+              <select class="pl-filter" data-pl-filter="stage"><option value="">All stages</option></select>
+              <select class="pl-filter" data-pl-filter="entryKind"><option value="">All entries</option></select>
+              <select class="pl-filter" data-pl-filter="utmSource"><option value="">All utm_source</option></select>
+              <select class="pl-filter" data-pl-filter="utmMedium"><option value="">All utm_medium</option></select>
+              <select class="pl-filter" data-pl-filter="utmCampaign"><option value="">All utm_campaign</option></select>
+              <button type="button" class="pl-btn pl-btn--ghost" data-pl-clear>Clear</button>
+              <button type="button" class="pl-btn" data-pl-export>Export CSV</button>
+            </div>
+          </div>
+          <p class="pl-hint">Click a column header to sort · click a row for the raw URL, referrer, timestamps &amp; device.</p>
+          <div class="pl-tscroll" data-pl-tscroll>
+            <table class="pl-table" data-pl-table></table>
+          </div>
         </div>
       </div>
 
@@ -64,9 +85,12 @@ import BareLayout from '../layouts/BareLayout.astro';
   const gateErr = $('[data-pl-gate-err]');
   const body = $('[data-pl-body]');
   const note = $('[data-pl-note]');
+  const tilesEl = $('[data-pl-tiles]');
   const funnelEl = $('[data-pl-funnel]');
   const sourcesEl = $('[data-pl-sources]');
-  const listEl = $('[data-pl-list]');
+  const tableEl = $('[data-pl-table]');
+  const tscrollEl = $('[data-pl-tscroll]');
+  const searchEl = $('[data-pl-search]') as HTMLInputElement;
   const updatedEl = $('[data-pl-updated]');
   const redisEl = $('[data-pl-redis]');
   const countEl = $('[data-pl-count]');
@@ -79,14 +103,23 @@ import BareLayout from '../layouts/BareLayout.astro';
     'not-configured': { label: '● database not configured', cls: 'is-bad' },
   };
 
+  const STAGE_ORDER = ['landed', 'type', 'jobs', 'details', 'calendar', 'booked'];
+  const STAGE_LABELS: Record<string, string> = {
+    landed: 'Landed', type: 'Picked type', jobs: 'Jobs answered',
+    details: 'On business', calendar: 'At calendar', booked: 'Booked',
+  };
   const STAGE_TONE: Record<string, string> = {
     landed: 'cool', type: 'cool', jobs: 'mid', details: 'warm', calendar: 'good', booked: 'good',
   };
+  const ENTRY_LABEL: Record<string, string> = { cta: 'On-site CTA', ad: 'Ad / tagged', ref: 'Referral', direct: 'Direct' };
+  const stageLabel = (s: string) => STAGE_LABELS[s] || s;
+  const stageRankOf = (s: string) => { const i = STAGE_ORDER.indexOf(s); return i < 0 ? 0 : i; };
 
-  const esc = (s: string) => (s || '').replace(/[&<>"]/g, (c) =>
+  const esc = (s: any) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 
   function ago(ts: number): string {
+    if (!ts) return '';
     const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
     if (s < 60) return `${s}s ago`;
     const m = Math.round(s / 60);
@@ -95,23 +128,247 @@ import BareLayout from '../layouts/BareLayout.astro';
     if (h < 24) return `${h}h ago`;
     return `${Math.round(h / 24)}d ago`;
   }
-  function dwell(j: any): string {
-    const s = Math.max(0, Math.round(((j.updatedAt || 0) - (j.landedAt || 0)) / 1000));
-    return s < 60 ? `${s}s` : `${Math.round(s / 60)}m`;
+  // ms → compact "12s" / "1m 30s" / "2h 5m"; null/undefined → em dash
+  function fmtElapsed(ms: any): string {
+    if (ms == null || !Number.isFinite(ms)) return '—';
+    let s = Math.max(0, Math.round(ms / 1000));
+    if (s < 60) return `${s}s`;
+    const m = Math.floor(s / 60); s = s % 60;
+    if (m < 60) return s ? `${m}m ${s}s` : `${m}m`;
+    const h = Math.floor(m / 60); const mm = m % 60;
+    return mm ? `${h}h ${mm}m` : `${h}h`;
+  }
+  const secs = (ms: any) => (ms == null || !Number.isFinite(ms)) ? '' : Math.round(ms / 1000);
+  function refHost(u: string): string {
+    if (!u) return '';
+    try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; }
   }
 
-  function token(): string {
-    try { return localStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; }
+  // ---- arrival classification (kept from the old list) ----
+  const CTA_PAGES: Record<string, string> = { dfy: 'Done-for-you', home: 'Homepage', about: 'About', web: 'Websites', websites: 'Websites', sc: 'Scorecard', scorecard: 'Scorecard', nav: 'Nav bar' };
+  function prettyCta(s: string): string {
+    let page = '', locRaw = s;
+    const m = s.match(/^([A-Za-z]+):(.+)$/);
+    if (m) { page = CTA_PAGES[m[1].toLowerCase()] || m[1]; locRaw = m[2]; }
+    let loc = locRaw.replace(/ToBook$/i, '');
+    loc = loc.replace(/([a-z])([A-Z])/g, '$1 $2');
+    if (/^faq$/i.test(loc)) loc = 'FAQ';
+    if (!loc || /^book$/i.test(loc)) return page || 'button';
+    return page ? page + ' · ' + loc : loc;
   }
-  function setToken(t: string) {
-    try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch {}
+  function entryOf(j: any): { kind: string; label: string } {
+    const s = j.source || '';
+    const isCta = /:/.test(s) ? /^[A-Za-z]+:[A-Za-z]+$/.test(s) : /ToBook$/i.test(s);
+    if (s && isCta) return { kind: 'cta', label: 'clicked · ' + prettyCta(s) };
+    if (s) return { kind: 'ad', label: 'ad · ' + s };
+    if (j.referrer) return { kind: 'ref', label: 'referral · ' + refHost(j.referrer) };
+    return { kind: 'direct', label: 'direct' };
+  }
+  function deviceLabel(ua: string): string {
+    if (!ua) return '';
+    const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+    let b = '';
+    if (/Edg\//i.test(ua)) b = 'Edge';
+    else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) b = 'Opera';
+    else if (/Chrome\//i.test(ua)) b = 'Chrome';
+    else if (/Firefox\//i.test(ua)) b = 'Firefox';
+    else if (/Safari\//i.test(ua)) b = 'Safari';
+    return (mobile ? 'Mobile' : 'Desktop') + (b ? ' · ' + b : '');
   }
 
+  // ---- normalise a stored journey into a flat row with derived timings ----
+  function toRow(j: any): any {
+    const st = (j.stageTimes && typeof j.stageTimes === 'object') ? j.stageTimes : {};
+    const landed = Number(j.landedAt) || Number(st.landed) || 0;
+    const elapsed = (s: string) => (st[s] && landed) ? (Number(st[s]) - landed) : null;
+    const entry = entryOf(j);
+    return {
+      j,
+      when: landed,
+      business: j.businessName || '',
+      stage: j.stage || 'landed',
+      stageRank: stageRankOf(j.stage || 'landed'),
+      type: j.businessType || '',
+      customers: j.customers || '',
+      jobs: j.jobs || '',
+      website: j.website || '',
+      tType: elapsed('type'), tJobs: elapsed('jobs'), tDetails: elapsed('details'),
+      tCal: elapsed('calendar'), tBooked: elapsed('booked'),
+      dwell: (Number(j.updatedAt) || landed) - landed,
+      entryKind: entry.kind, entryLabel: entry.label,
+      utmSource: j.utmSource || '', utmMedium: j.utmMedium || '', utmCampaign: j.utmCampaign || '',
+      utmContent: j.utmContent || '', utmTerm: j.utmTerm || '',
+      from: j.source || '',
+      paid: j.gclid ? 'Google' : (j.fbclid ? 'Meta' : ''),
+      referrer: refHost(j.referrer || ''),
+      device: deviceLabel(j.ua || ''),
+      ip: j.ip || '',
+    };
+  }
+
+  // ---- cell renderers ----
+  const txt = (v: any) => v ? esc(v) : '<span class="pl-dash">—</span>';
+  const elapsedCell = (ms: any) => (ms == null) ? '<span class="pl-dash">—</span>' : esc(fmtElapsed(ms));
+  const bizCell = (r: any) => r.business ? esc(r.business) : '<span class="pl-anon">Anonymous</span>';
+  const badgeCell = (r: any) => `<span class="pl-badge pl-tone--${STAGE_TONE[r.stage] || 'cool'}">${esc(stageLabel(r.stage))}</span>`;
+  const whenCell = (r: any) => r.when ? `<span title="${esc(new Date(r.when).toLocaleString())}">${esc(ago(r.when))}</span>` : '<span class="pl-dash">—</span>';
+  const entryCell = (r: any) => r.entryLabel ? `<span class="pl-entry--${r.entryKind}">${esc(r.entryLabel)}</span>` : '<span class="pl-dash">—</span>';
+
+  // ---- column model. order = left→right; first is sticky. ----
+  const COLUMNS: any[] = [
+    { key: 'business',    label: 'Business',      type: 'text',    cls: 'col-biz', get: (r: any) => r.business.toLowerCase(),   cell: bizCell },
+    { key: 'reached',     label: 'Reached',       type: 'num',                     get: (r: any) => r.stageRank,               cell: badgeCell },
+    { key: 'when',        label: 'Landed',        type: 'num',                     get: (r: any) => r.when,                    cell: whenCell },
+    { key: 'type',        label: 'Type · Q1',     type: 'text',                    get: (r: any) => r.type.toLowerCase(),      cell: (r: any) => txt(r.type) },
+    { key: 'customers',   label: 'Jobs from · Q2',type: 'text',                    get: (r: any) => r.customers.toLowerCase(), cell: (r: any) => txt(r.customers) },
+    { key: 'jobs',        label: 'Per mo · Q2',   type: 'text',                    get: (r: any) => r.jobs.toLowerCase(),      cell: (r: any) => txt(r.jobs) },
+    { key: 'website',     label: 'Website · Q3',  type: 'text',                    get: (r: any) => r.website.toLowerCase(),   cell: (r: any) => txt(r.website) },
+    { key: 'tType',       label: '→ Type',        type: 'numNull',                 get: (r: any) => r.tType,                   cell: (r: any) => elapsedCell(r.tType) },
+    { key: 'tJobs',       label: '→ Jobs',        type: 'numNull',                 get: (r: any) => r.tJobs,                   cell: (r: any) => elapsedCell(r.tJobs) },
+    { key: 'tDetails',    label: '→ Details',     type: 'numNull',                 get: (r: any) => r.tDetails,                cell: (r: any) => elapsedCell(r.tDetails) },
+    { key: 'tCal',        label: '→ Calendar',    type: 'numNull',                 get: (r: any) => r.tCal,                    cell: (r: any) => elapsedCell(r.tCal) },
+    { key: 'tBooked',     label: '→ Booked',      type: 'numNull',                 get: (r: any) => r.tBooked,                 cell: (r: any) => elapsedCell(r.tBooked) },
+    { key: 'dwell',       label: 'On page',       type: 'num',                     get: (r: any) => r.dwell,                   cell: (r: any) => txt(fmtElapsed(r.dwell)) },
+    { key: 'entry',       label: 'Entry',         type: 'text',                    get: (r: any) => r.entryLabel.toLowerCase(),cell: entryCell },
+    { key: 'utmSource',   label: 'utm_source',    type: 'text',                    get: (r: any) => r.utmSource.toLowerCase(), cell: (r: any) => txt(r.utmSource) },
+    { key: 'utmMedium',   label: 'utm_medium',    type: 'text',                    get: (r: any) => r.utmMedium.toLowerCase(), cell: (r: any) => txt(r.utmMedium) },
+    { key: 'utmCampaign', label: 'utm_campaign',  type: 'text',                    get: (r: any) => r.utmCampaign.toLowerCase(),cell: (r: any) => txt(r.utmCampaign) },
+    { key: 'utmContent',  label: 'utm_content',   type: 'text',                    get: (r: any) => r.utmContent.toLowerCase(),cell: (r: any) => txt(r.utmContent) },
+    { key: 'utmTerm',     label: 'utm_term',      type: 'text',                    get: (r: any) => r.utmTerm.toLowerCase(),   cell: (r: any) => txt(r.utmTerm) },
+    { key: 'from',        label: 'from',          type: 'text',                    get: (r: any) => r.from.toLowerCase(),      cell: (r: any) => txt(r.from) },
+    { key: 'paid',        label: 'Paid click',    type: 'text',                    get: (r: any) => r.paid.toLowerCase(),      cell: (r: any) => txt(r.paid) },
+    { key: 'referrer',    label: 'Referrer',      type: 'text',                    get: (r: any) => r.referrer.toLowerCase(),  cell: (r: any) => txt(r.referrer) },
+    { key: 'device',      label: 'Device',        type: 'text',                    get: (r: any) => r.device.toLowerCase(),    cell: (r: any) => txt(r.device) },
+    { key: 'ip',          label: 'IP',            type: 'text',                    get: (r: any) => r.ip,                      cell: (r: any) => txt(r.ip) },
+  ];
+  const COL_BY_KEY: Record<string, any> = {};
+  COLUMNS.forEach((c) => { COL_BY_KEY[c.key] = c; });
+
+  let ALL_ROWS: any[] = [];
+  const state = { sortKey: 'when', sortDir: 'desc' as 'asc' | 'desc' };
+
+  function cmp(a: any, b: any, col: any, dir: string): number {
+    const va = col.get(a), vb = col.get(b);
+    let r = 0;
+    if (col.type === 'numNull') {
+      const an = va == null, bn = vb == null;
+      if (an && bn) return 0;
+      if (an) return 1;   // empties always sink to the bottom, regardless of dir
+      if (bn) return -1;
+      r = va - vb;
+    } else if (col.type === 'num') {
+      r = (va || 0) - (vb || 0);
+    } else {
+      r = String(va).localeCompare(String(vb));
+    }
+    return dir === 'asc' ? r : -r;
+  }
+
+  function token(): string { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; } }
+  function setToken(t: string) { try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch {} }
   function showGate(msg?: string) {
-    gate.hidden = false;
-    body.hidden = true;
-    signout.hidden = true;
+    gate.hidden = false; body.hidden = true; signout.hidden = true;
     if (msg) { gateErr.textContent = msg; gateErr.hidden = false; }
+  }
+
+  // ---------- filtering ----------
+  function currentFilters(): Record<string, string> {
+    const fs: Record<string, string> = {};
+    document.querySelectorAll<HTMLSelectElement>('[data-pl-filter]').forEach((s) => {
+      const k = s.getAttribute('data-pl-filter')!;
+      if (s.value) fs[k] = s.value;
+    });
+    return fs;
+  }
+  function filterRows(rows: any[]): any[] {
+    const q = (searchEl.value || '').trim().toLowerCase();
+    const fs = currentFilters();
+    return rows.filter((r) => {
+      for (const k in fs) { if (String(r[k] || '') !== fs[k]) return false; }
+      if (q) {
+        const hay = [r.business, r.type, r.customers, r.jobs, r.website, r.utmSource, r.utmMedium,
+          r.utmCampaign, r.utmContent, r.utmTerm, r.from, r.paid, r.referrer, r.device, r.ip,
+          r.entryLabel, r.j.query, r.j.id].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  const distinct = (arr: any[]) => [...new Set(arr.filter(Boolean))].sort();
+  function fillSelect(key: string, pairs: any[][]) {
+    const sel = document.querySelector<HTMLSelectElement>(`[data-pl-filter="${key}"]`);
+    if (!sel) return;
+    const cur = sel.value;
+    const allLabel = sel.querySelector('option')?.textContent || 'All';
+    sel.innerHTML = `<option value="">${esc(allLabel)}</option>` +
+      pairs.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('');
+    if (cur && pairs.some(([v]) => v === cur)) sel.value = cur;
+  }
+  function populateFilters(rows: any[]) {
+    fillSelect('stage', STAGE_ORDER.map((s) => [s, stageLabel(s)]));
+    fillSelect('entryKind', distinct(rows.map((r) => r.entryKind)).map((v) => [v, ENTRY_LABEL[v] || v]));
+    ['utmSource', 'utmMedium', 'utmCampaign'].forEach((k) =>
+      fillSelect(k, distinct(rows.map((r) => r[k])).map((v) => [v, v])));
+  }
+
+  // ---------- render ----------
+  function renderTiles(rows: any[]) {
+    const total = rows.length;
+    const started = rows.filter((r) => r.stageRank >= 1).length;
+    const cal = rows.filter((r) => r.stageRank >= 4).length;
+    const booked = rows.filter((r) => r.stage === 'booked').length;
+    const bookTimes = rows.map((r) => r.tBooked).filter((v) => v != null);
+    const avgBook = bookTimes.length ? bookTimes.reduce((a, b) => a + b, 0) / bookTimes.length : null;
+    const pct = (n: number) => total ? `${Math.round((n / total) * 100)}%` : '0%';
+    const tiles = [
+      ['Visitors', String(total), ''],
+      ['Started Q1', String(started), pct(started)],
+      ['Reached calendar', String(cal), pct(cal)],
+      ['Booked', String(booked), pct(booked)],
+      ['Avg time to book', fmtElapsed(avgBook), ''],
+    ];
+    tilesEl.innerHTML = tiles.map((t, i) =>
+      `<div class="pl-tile ${i === 3 ? 'is-booked' : ''}"><span class="pl-tile__n">${esc(t[1])}</span><span class="pl-tile__l">${esc(t[0])}${t[2] ? ` · ${t[2]}` : ''}</span></div>`
+    ).join('');
+  }
+
+  function detailRow(r: any): string {
+    const st = (r.j.stageTimes && typeof r.j.stageTimes === 'object') ? r.j.stageTimes : {};
+    const times = STAGE_ORDER.filter((s) => st[s]).map((s) => `${stageLabel(s)} ${new Date(Number(st[s])).toLocaleString()}`).join('  ·  ');
+    const bits: string[] = [];
+    bits.push(`id ${esc(r.j.id || '')}`);
+    if (r.j.query) bits.push(`url ${esc(r.j.query)}`);
+    if (r.j.referrer) bits.push(`referrer ${esc(r.j.referrer)}`);
+    if (r.j.ua) bits.push(`ua ${esc(r.j.ua)}`);
+    return `<tr class="pl-detail" hidden><td colspan="${COLUMNS.length}"><div class="pl-detail__in">`
+      + (times ? `<div class="pl-detail__times">${times}</div>` : '')
+      + `<div class="pl-detail__raw">${bits.join('  —  ')}</div></div></td></tr>`;
+  }
+
+  function renderTable(rows: any[]) {
+    const col = COL_BY_KEY[state.sortKey] || COL_BY_KEY.when;
+    const sorted = rows.slice().sort((a, b) => cmp(a, b, col, state.sortDir));
+    const head = '<thead><tr>' + COLUMNS.map((c) => {
+      const active = c.key === state.sortKey;
+      const arrow = active ? (state.sortDir === 'asc' ? ' ▲' : ' ▼') : '';
+      return `<th data-key="${c.key}" class="${c.cls || ''} ${active ? 'is-sorted' : ''}">${esc(c.label)}${arrow}</th>`;
+    }).join('') + '</tr></thead>';
+    const bodyHtml = '<tbody>' + (sorted.length ? sorted.map((r) => {
+      const cells = COLUMNS.map((c) => `<td class="${c.cls || ''}">${c.cell(r)}</td>`).join('');
+      return `<tr class="pl-tr ${r.stage === 'booked' ? 'is-booked' : ''}">${cells}</tr>` + detailRow(r);
+    }).join('') : `<tr><td colspan="${COLUMNS.length}" class="pl-empty">No visitors match.</td></tr>`) + '</tbody>';
+    const sl = tscrollEl.scrollLeft, stp = tscrollEl.scrollTop;
+    tableEl.innerHTML = head + bodyHtml;
+    tscrollEl.scrollLeft = sl; tscrollEl.scrollTop = stp;
+  }
+
+  function applyAndRender() {
+    populateFilters(ALL_ROWS);
+    const filtered = filterRows(ALL_ROWS);
+    renderTiles(filtered);
+    renderTable(filtered);
+    countEl.textContent = `· ${filtered.length} of ${ALL_ROWS.length}`;
   }
 
   function renderSources(sources: any[]) {
@@ -120,8 +377,7 @@ import BareLayout from '../layouts/BareLayout.astro';
       '<table class="pl-src"><thead><tr><th>Source</th><th>Visitors</th><th>Booked</th><th>Rate</th></tr></thead><tbody>' +
       sources.map((s) =>
         `<tr><td>${esc(s.source)}</td><td>${s.total}</td><td>${s.booked}</td><td class="${s.booked ? 'is-good' : ''}">${s.rate}%</td></tr>`
-      ).join('') +
-      '</tbody></table>';
+      ).join('') + '</tbody></table>';
   }
 
   function renderFunnel(funnel: any[]) {
@@ -144,90 +400,34 @@ import BareLayout from '../layouts/BareLayout.astro';
     }).join('');
   }
 
-  function renderList(journeys: any[]) {
-    countEl.textContent = journeys.length ? `· ${journeys.length}` : '';
-    if (!journeys.length) {
-      listEl.innerHTML = '<p class="pl-empty">No visitors in the last 7 days yet.</p>';
-      return;
-    }
-    // repeat-visit counts by IP — so one person's reloads read differently from many people
-    const ipCounts: Record<string, number> = {};
-    journeys.forEach((j) => { if (j.ip) ipCounts[j.ip] = (ipCounts[j.ip] || 0) + 1; });
-    listEl.innerHTML = journeys.map((j) => {
-      const tone = STAGE_TONE[j.stage] || 'cool';
-      const who = j.businessName || j.businessType || 'Anonymous';
-      const detail = [j.businessType, j.customers, j.jobs && `${j.jobs}/mo`].filter(Boolean).join(' · ');
-      const entry = entryOf(j);
-      const dev = deviceLabel(j.ua || '');
-      const repeat = j.ip && ipCounts[j.ip] > 1 ? ` · seen ${ipCounts[j.ip]}×` : '';
-      const refUrl = j.referrer && entry.kind !== 'ref' ? j.referrer : '';
-      return `
-        <div class="pl-row">
-          <div class="pl-row__main">
-            <span class="pl-who">${esc(who)}</span>
-            <span class="pl-badge pl-tone--${tone}">${esc(stageLabel(j.stage))}</span>
-          </div>
-          <div class="pl-entry pl-entry--${entry.kind}">${esc(entry.label)}</div>
-          <div class="pl-row__sub">
-            ${detail ? `<span>${esc(detail)}</span>` : ''}
-            ${j.website ? `<span>${esc(j.website)}</span>` : ''}
-          </div>
-          <div class="pl-row__foot">
-            ${refUrl ? `<span title="referring page">ref: ${esc(refUrl)}</span>` : ''}
-            ${dev ? `<span>${esc(dev)}</span>` : ''}
-            <span>${dwell(j)} on page</span>
-            <span>${ago(j.updatedAt || 0)}</span>
-            ${j.ip ? `<span title="IP address" class="pl-ip">${esc(j.ip)}${repeat}</span>` : ''}
-          </div>
-        </div>`;
-    }).join('');
+  // ---------- CSV export (current filtered view) ----------
+  function exportCsv() {
+    const rows = filterRows(ALL_ROWS);
+    const cols: [string, (r: any) => any][] = [
+      ['Business', (r) => r.business], ['Reached', (r) => stageLabel(r.stage)],
+      ['Landed', (r) => r.when ? new Date(r.when).toISOString() : ''],
+      ['Type', (r) => r.type], ['Jobs from', (r) => r.customers], ['Per month', (r) => r.jobs], ['Website', (r) => r.website],
+      ['t_to_type_s', (r) => secs(r.tType)], ['t_to_jobs_s', (r) => secs(r.tJobs)], ['t_to_details_s', (r) => secs(r.tDetails)],
+      ['t_to_calendar_s', (r) => secs(r.tCal)], ['t_to_booked_s', (r) => secs(r.tBooked)], ['on_page_s', (r) => secs(r.dwell)],
+      ['Entry', (r) => r.entryLabel],
+      ['utm_source', (r) => r.utmSource], ['utm_medium', (r) => r.utmMedium], ['utm_campaign', (r) => r.utmCampaign],
+      ['utm_content', (r) => r.utmContent], ['utm_term', (r) => r.utmTerm],
+      ['from', (r) => r.from], ['Paid', (r) => r.paid], ['Referrer', (r) => r.j.referrer || ''],
+      ['Device', (r) => r.device], ['IP', (r) => r.ip], ['Query', (r) => r.j.query || ''], ['Journey id', (r) => r.j.id || ''],
+    ];
+    const q = (v: any) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [cols.map((c) => q(c[0])).join(',')];
+    rows.forEach((r) => lines.push(cols.map((c) => q(c[1](r))).join(',')));
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const d = new Date(); const p = (n: number) => String(n).padStart(2, '0');
+    const a = document.createElement('a');
+    a.download = `pulse-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.csv`;
+    a.href = URL.createObjectURL(blob);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
 
-  const STAGE_LABELS: Record<string, string> = {
-    landed: 'Landed', type: 'Picked type', jobs: 'Jobs answered',
-    details: 'On business', calendar: 'At calendar', booked: 'Booked',
-  };
-  const stageLabel = (s: string) => STAGE_LABELS[s] || s;
-
-  // Turn a CTA event into a readable label — handles "Dfy:HeroToBook" →
-  // "Done-for-you · Hero" and colon-less homepage events "ReelToBook" → "Reel".
-  const CTA_PAGES: Record<string, string> = { dfy: 'Done-for-you', home: 'Homepage', about: 'About', web: 'Websites', websites: 'Websites', sc: 'Scorecard', scorecard: 'Scorecard', nav: 'Nav bar' };
-  function prettyCta(s: string): string {
-    let page = '', locRaw = s;
-    const m = s.match(/^([A-Za-z]+):(.+)$/);
-    if (m) { page = CTA_PAGES[m[1].toLowerCase()] || m[1]; locRaw = m[2]; }
-    let loc = locRaw.replace(/ToBook$/i, '');
-    loc = loc.replace(/([a-z])([A-Z])/g, '$1 $2'); // camelCase → words
-    if (/^faq$/i.test(loc)) loc = 'FAQ';
-    if (!loc || /^book$/i.test(loc)) return page || 'button';
-    return page ? page + ' · ' + loc : loc;
-  }
-  // Classify how a visitor arrived: on-site CTA click, paid ad, referral, or direct.
-  function entryOf(j: any): { kind: string; label: string } {
-    const s = j.source || '';
-    const isCta = /:/.test(s) ? /^[A-Za-z]+:[A-Za-z]+$/.test(s) : /ToBook$/i.test(s);
-    if (s && isCta) return { kind: 'cta', label: 'clicked · ' + prettyCta(s) };
-    if (s) return { kind: 'ad', label: 'ad · ' + s };
-    if (j.referrer) {
-      let d = j.referrer;
-      try { d = new URL(j.referrer).hostname.replace(/^www\./, ''); } catch {}
-      return { kind: 'ref', label: 'referral · ' + d };
-    }
-    return { kind: 'direct', label: 'direct — typed the URL or no referrer' };
-  }
-
-  function deviceLabel(ua: string): string {
-    if (!ua) return '';
-    const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
-    let b = '';
-    if (/Edg\//i.test(ua)) b = 'Edge';
-    else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) b = 'Opera';
-    else if (/Chrome\//i.test(ua)) b = 'Chrome';
-    else if (/Firefox\//i.test(ua)) b = 'Firefox';
-    else if (/Safari\//i.test(ua)) b = 'Safari';
-    return (mobile ? 'Mobile' : 'Desktop') + (b ? ' · ' + b : '');
-  }
-
+  // ---------- load ----------
   async function load() {
     const t = token();
     if (!t) { showGate(); return; }
@@ -236,30 +436,26 @@ import BareLayout from '../layouts/BareLayout.astro';
       r = await fetch(`/api/pulse?token=${encodeURIComponent(t)}`, { cache: 'no-store' });
     } catch {
       note.textContent = 'Could not reach the server. Retrying on next refresh.';
-      note.hidden = false;
-      return;
+      note.hidden = false; return;
     }
     if (r.status === 401) { setToken(''); showGate('That password didn’t work. Try again.'); return; }
     if (r.status === 503) {
       gate.hidden = true; body.hidden = true; signout.hidden = true;
       note.innerHTML = 'The dashboard is off. Set a <code>PULSE_TOKEN</code> environment variable in Vercel, redeploy, then reload this page.';
-      note.hidden = false;
-      return;
+      note.hidden = false; return;
     }
     if (!r.ok) { note.textContent = `Server error (${r.status}).`; note.hidden = false; return; }
 
     const data = await r.json();
-    note.hidden = true;
-    gate.hidden = true;
-    body.hidden = false;
-    signout.hidden = false;
-    const j = Array.isArray(data.journeys) ? data.journeys : [];
+    note.hidden = true; gate.hidden = true; body.hidden = false; signout.hidden = false;
+    const journeys = Array.isArray(data.journeys) ? data.journeys : [];
+    ALL_ROWS = journeys.map(toRow);
     renderFunnel(Array.isArray(data.funnel) ? data.funnel : []);
     renderSources(Array.isArray(data.sources) ? data.sources : []);
-    renderList(j);
+    applyAndRender();
     windowEl.textContent = '· last 7 days';
     updatedEl.textContent = `Updated ${new Date().toLocaleTimeString()}`;
-    // database health — so an all-zero board can't hide a dead/misconfigured DB
+
     const rs = REDIS_STATE[data.redisStatus as string];
     if (rs) {
       redisEl.textContent = rs.label;
@@ -269,35 +465,57 @@ import BareLayout from '../layouts/BareLayout.astro';
         note.innerHTML = 'The booking database isn’t connected, so nothing can be recorded. Add an Upstash Redis in Vercel (Storage), set <code>UPSTASH_REDIS_REST_URL</code> + <code>UPSTASH_REDIS_REST_TOKEN</code>, and redeploy.';
         note.hidden = false;
       }
-    } else {
-      redisEl.hidden = true;
-    }
+    } else { redisEl.hidden = true; }
   }
 
-  // token gate submit
+  // ---------- events ----------
+  // sort (header click) + row expand — delegated on the persistent table element
+  tableEl.addEventListener('click', (e) => {
+    const th = (e.target as HTMLElement).closest('th[data-key]');
+    if (th) {
+      const k = th.getAttribute('data-key')!;
+      const col = COL_BY_KEY[k];
+      if (state.sortKey === k) state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+      else { state.sortKey = k; state.sortDir = (col.type === 'num') ? 'desc' : 'asc'; }
+      applyAndRender();
+      return;
+    }
+    const tr = (e.target as HTMLElement).closest('tr.pl-tr') as HTMLElement | null;
+    if (tr && !(e.target as HTMLElement).closest('a')) {
+      const d = tr.nextElementSibling as HTMLElement | null;
+      if (d && d.classList.contains('pl-detail')) d.hidden = !d.hidden;
+    }
+  });
+
+  searchEl.addEventListener('input', () => applyAndRender());
+  document.querySelectorAll('[data-pl-filter]').forEach((s) => s.addEventListener('change', () => applyAndRender()));
+  $('[data-pl-clear]').addEventListener('click', () => {
+    searchEl.value = '';
+    document.querySelectorAll<HTMLSelectElement>('[data-pl-filter]').forEach((s) => { s.value = ''; });
+    applyAndRender();
+  });
+  $('[data-pl-export]').addEventListener('click', () => exportCsv());
+
   gate.addEventListener('submit', (e) => {
     e.preventDefault();
     const inp = document.getElementById('pl-token') as HTMLInputElement;
     const val = (inp.value || '').trim();
     if (!val) return;
-    setToken(val);
-    gateErr.hidden = true;
-    load();
+    setToken(val); gateErr.hidden = true; load();
   });
   $('[data-pl-refresh]').addEventListener('click', () => load());
   signout.addEventListener('click', () => { setToken(''); showGate(); });
 
-  // allow ?token=... in the URL for a one-tap bookmark
   const urlToken = new URLSearchParams(location.search).get('token');
   if (urlToken) { setToken(urlToken); history.replaceState(null, '', location.pathname); }
 
   load();
-  setInterval(() => { if (!body.hidden) load(); }, 20000); // live-ish refresh
+  setInterval(() => { if (!body.hidden) load(); }, 20000); // live-ish refresh (keeps your sort/filter)
 </script>
 
-<style>
+<style is:global>
   .pl { padding: var(--space-8) 0 var(--space-16); min-height: 70vh; }
-  .pl-wrap { max-width: 60rem; margin-inline: auto; padding-inline: var(--gutter); }
+  .pl-wrap { max-width: 88rem; margin-inline: auto; padding-inline: var(--gutter); }
   .pl-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); }
   .pl-title { font-size: var(--fs-h3); }
   .pl-meta { display: flex; align-items: center; gap: var(--space-3); }
@@ -315,7 +533,14 @@ import BareLayout from '../layouts/BareLayout.astro';
   .pl-gate__input { flex: 1; font-family: var(--font-mono); font-size: var(--fs-body); padding: var(--space-3); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
   .pl-gate__err { margin-top: var(--space-3); font-size: var(--fs-body-sm); color: var(--warn); }
 
-  .pl-card { margin-top: var(--space-6); padding: var(--space-6); border: 1px solid var(--line); border-radius: var(--radius-md); background: color-mix(in srgb, var(--paper, #fff) 100%, transparent); }
+  /* summary tiles */
+  .pl-tiles { margin-top: var(--space-6); display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--space-3); }
+  .pl-tile { padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: #fff; display: grid; gap: 4px; }
+  .pl-tile.is-booked { border-color: #3F7F4F; }
+  .pl-tile__n { font-family: var(--font-mono); font-size: var(--fs-h4); font-weight: var(--fw-body-semi); }
+  .pl-tile__l { font-size: var(--fs-caption); color: var(--ink-50); text-transform: uppercase; letter-spacing: 0.03em; }
+
+  .pl-card { margin-top: var(--space-6); padding: var(--space-6); border: 1px solid var(--line); border-radius: var(--radius-md); background: #fff; }
   .pl-h2 { font-size: var(--fs-h5, var(--fs-body)); font-weight: var(--fw-body-semi); }
   .pl-dim { color: var(--ink-50); font-weight: var(--fw-body); font-size: var(--fs-caption); font-family: var(--font-mono); }
 
@@ -341,23 +566,47 @@ import BareLayout from '../layouts/BareLayout.astro';
   .pl-src thead th { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-50); font-weight: var(--fw-body-semi); }
   .pl-src td.is-good { color: #3F7F4F; font-weight: var(--fw-body-semi); }
 
-  /* list */
-  .pl-list { margin-top: var(--space-4); display: grid; gap: var(--space-3); }
-  .pl-row { padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-sm); }
-  .pl-row__main { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
-  /* prominent "how they arrived" line */
-  .pl-entry { margin-top: var(--space-2); font-family: var(--font-mono); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); }
-  .pl-entry--cta { color: #3F7F4F; }
-  .pl-entry--ad { color: #A9722B; }
+  /* visitors toolbar */
+  .pl-tbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+  .pl-tbar__controls { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+  .pl-search, .pl-filter { font-family: var(--font-body); font-size: var(--fs-body-sm); padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .pl-search { min-width: 12rem; }
+  .pl-hint { margin-top: var(--space-2); font-size: var(--fs-caption); color: var(--ink-50); }
+
+  /* scrollable data table */
+  .pl-tscroll { margin-top: var(--space-4); overflow: auto; max-height: 74vh; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .pl-table { border-collapse: separate; border-spacing: 0; font-family: var(--font-mono); font-size: var(--fs-caption); white-space: nowrap; min-width: 100%; }
+  .pl-table th, .pl-table td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .pl-table thead th { position: sticky; top: 0; z-index: 2; background: #fff; cursor: pointer; user-select: none; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-50); font-weight: var(--fw-body-semi); box-shadow: 0 1px 0 var(--line); }
+  .pl-table thead th:hover { color: var(--ink); }
+  .pl-table th.is-sorted { color: var(--ink); }
+  .col-biz { position: sticky; left: 0; z-index: 1; background: #fff; min-width: 11rem; box-shadow: 1px 0 0 var(--line); }
+  .pl-table thead th.col-biz { z-index: 3; }
+  .pl-tr { cursor: pointer; }
+  .pl-tr:hover td { background: color-mix(in srgb, var(--accent) 6%, #fff); }
+  .pl-tr:hover .col-biz { background: color-mix(in srgb, var(--accent) 6%, #fff); }
+  .pl-tr.is-booked td, .pl-tr.is-booked .col-biz { background: color-mix(in srgb, #3F7F4F 9%, #fff); }
+  .pl-badge { font-size: var(--fs-caption); font-weight: var(--fw-body-semi); color: #fff; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+  .pl-dash { color: color-mix(in srgb, var(--ink) 25%, #fff); }
+  .pl-anon { color: var(--ink-50); font-style: italic; }
+  .pl-entry--cta { color: #3F7F4F; font-weight: var(--fw-body-semi); }
+  .pl-entry--ad { color: #A9722B; font-weight: var(--fw-body-semi); }
   .pl-entry--ref { color: var(--ink-70); }
-  .pl-entry--direct { color: var(--ink-50); font-weight: var(--fw-body); }
-  .pl-who { font-weight: var(--fw-body-semi); }
-  .pl-badge { font-size: var(--fs-caption); font-weight: var(--fw-body-semi); color: #fff; padding: 2px 8px; border-radius: 999px; }
-  .pl-row__sub { margin-top: var(--space-2); display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: var(--fs-body-sm); color: var(--ink-70); }
-  .pl-row__gripe { margin-top: var(--space-2); font-style: italic; font-size: var(--fs-body-sm); color: var(--ink); font-family: var(--font-serif); }
-  .pl-row__foot { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--fs-caption); color: var(--ink-50); font-family: var(--font-mono); }
-  .pl-empty { color: var(--ink-50); font-size: var(--fs-body-sm); }
+  .pl-entry--direct { color: var(--ink-50); }
+
+  /* row-expand detail */
+  .pl-detail td { white-space: normal; background: color-mix(in srgb, var(--ink) 4%, #fff); }
+  .pl-detail__in { display: grid; gap: 4px; font-size: var(--fs-caption); }
+  .pl-detail__times { color: var(--ink-70); }
+  .pl-detail__raw { color: var(--ink-50); word-break: break-all; }
+
+  .pl-empty { color: var(--ink-50); font-size: var(--fs-body-sm); text-align: center; padding: var(--space-6); }
 
   .pl-note { margin-top: var(--space-6); font-size: var(--fs-body-sm); color: var(--ink-70); }
   .pl-note code { font-family: var(--font-mono); background: var(--line); padding: 1px 5px; border-radius: 4px; }
 </style>
+
+<!-- Global (not scoped): the tiles, table, funnel bars and badges are built with
+     innerHTML in the script, so they never carry Astro's scope attribute — scoped
+     rules would silently skip them. Every selector here is pl-* prefixed and this
+     page stands alone, so global is safe. -->
