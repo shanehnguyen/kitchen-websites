@@ -76,14 +76,6 @@ export const homeFaqs: Faq[] = [
    on its own with the same strength as the homepage. Same voice, same schema. */
 export const dfyFaqs: Faq[] = [
   {
-    q: 'What is Done For You, exactly?',
-    a: [
-      'One package that gets you found by the homeowners already searching, and picked when they look you up.',
-      'I rebuild and run your Google profile, build you a website that turns a curious click into a booked estimate, keep new reviews coming in, and set you up so AI names you when they ask for someone nearby.',
-      'Built and run for you, every month. You stay on the tools. I handle the screen.',
-    ],
-  },
-  {
     q: 'How is this different from the SEO company that took $1,500 and mailed me charts?',
     a: [
       'They billed you for effort. I’m on the hook for a result.',
@@ -95,7 +87,7 @@ export const dfyFaqs: Faq[] = [
     q: 'Do you buy me leads?',
     a: [
       'No. I’m not the Angi game, selling you the same homeowner four other businesses already bought.',
-      'I get you the homeowners already searching for your work, by pushing your rankings up so they find you and building the site that turns them into phone calls once they do.',
+      'I get you the homeowners already searching for your work, by pushing your rankings up so they find you and building the site that turns them into calls once they do.',
       'What I guarantee is the number that matters: more homeowners finding you and calling than do today. Beat that in ninety days, or you stop paying and I keep going.',
     ],
   },
@@ -103,39 +95,28 @@ export const dfyFaqs: Faq[] = [
     q: 'What happens if it doesn’t work?',
     a: [
       'Then you don’t pay, and I don’t stop.',
-      'Day one, we write down your numbers. Ninety days in, more homeowners are calling than the day we started, or you stop paying and I keep working until that number moves.',
-      'Still flat three months later? We shake hands and you keep all of it. The profile, the reviews, the site. Yours. And I haven’t earned a dollar.',
+      'Day one, we write down your numbers. Ninety days in, more homeowners are calling than the day we started, or you stop paying and I keep working until that number moves. Still flat three months later? We shake hands and you keep all of it. And I haven’t earned a dollar.',
     ],
   },
   {
     q: 'Do I own my website and Google profile?',
     a: [
       'All of it. Always.',
-      'The site, the domain, the Google profile, the photos, the content. It’s yours from day one.',
-      'Most agencies hold it hostage so you can’t leave. Cancel any month and it all walks out the door with you.',
+      'The site, the domain, the Google profile, the photos, the content. It’s yours from day one. Cancel any month and it all walks out the door with you.',
     ],
   },
   {
     q: 'I’m slammed on jobs. How much of my time does this take?',
     a: [
       'Almost none. That’s the point.',
-      'I need about an hour up front to learn your business and your work. After that, I do the building.',
-      'The only thing I ask is that you call back the homeowners who reach out. You’re doing that part anyway.',
+      'I need about an hour up front to learn your business and your work. After that, I do the building. The only thing I ask is that you call back the homeowners who reach out. You’re doing that part anyway.',
     ],
   },
   {
-    q: 'What do I actually get for $750 a month?',
-    a: [
-      'The whole plan. A website built to convert, your Google rebuilt and run every month, local SEO, a steady stream of new five-star reviews, AI search setup, and the ninety-day guarantee behind all of it.',
-      'Hired out piece by piece, the same work stacks into thousands a month, an SEO firm alone runs $1,000 to $2,500. You get all of it for $750, month to month, and you own every piece.',
-    ],
-  },
-  {
-    q: 'Why you instead of a regular marketing agency?',
+    q: 'Why you instead of a regular agency, and why only $750?',
     a: [
       'Because most agencies run the same playbook for a dentist, a roofer, and you. You’re a template with the logo swapped.',
-      'I only do kitchen and bath. I know why a homeowner picks one over another, what they’re afraid of, and what makes them call. It’s the only thing I work on.',
-      'That’s the difference between marketing that could be for anyone and marketing built to win them, specifically.',
+      'I only do kitchen and bath. I know why a homeowner picks one business over another, what they’re afraid of, and what makes them call. Because it’s the only thing I build, I’m not starting from scratch on your business, which is how the same work that stacks into thousands a month hired out runs $750 with me.',
     ],
   },
 ];

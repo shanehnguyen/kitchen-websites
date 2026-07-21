@@ -43,6 +43,12 @@ const year = 2026;
     <Analytics />
   </head>
   <body>
+    <header class="bare-head">
+      <a class="nav__logo" href="/done-for-you" aria-label={`${site.brand} — back to Done For You`}>
+        <span class="nav__logo-name">Kitchen <span>Websites</span></span>
+        <span class="nav__logo-by">by FlipFix Digital</span>
+      </a>
+    </header>
     <main id="main">
       <slot />
     </main>
@@ -53,6 +59,12 @@ const year = 2026;
       </footer>
     )}
     <style>
+      .bare-head {
+        max-width: var(--container-standard);
+        margin-inline: auto;
+        padding: var(--space-5) var(--gutter) 0;
+        display: flex; justify-content: center;
+      }
       .bare-legal {
         max-width: var(--container-standard);
         margin-inline: auto;

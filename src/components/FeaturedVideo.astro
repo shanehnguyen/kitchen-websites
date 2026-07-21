@@ -8,12 +8,17 @@ interface Props {
   src: string;
   poster: string;
   class?: string;
+  /* optional prompt shown beneath the play button (e.g. "Click here to learn more"). */
+  playLabel?: string;
 }
-const { src, poster, class: className } = Astro.props;
+const { src, poster, class: className, playLabel } = Astro.props;
 ---
 <div class:list={['reel-video', className]}>
   <video class="reel-video__media" playsinline preload="metadata" poster={poster} data-src={src}></video>
-  <button type="button" class="reel-video__play" aria-label="Play video"><span aria-hidden="true">▶</span></button>
+  <div class="reel-video__cue">
+    <button type="button" class="reel-video__play" aria-label={playLabel || 'Play video'}><span aria-hidden="true">▶</span></button>
+    {playLabel && <span class="reel-video__hint" role="button" tabindex="0">{playLabel}</span>}
+  </div>
 </div>
 
 <script>
@@ -24,13 +29,20 @@ const { src, poster, class: className } = Astro.props;
     const btn = reel.querySelector<HTMLButtonElement>('.reel-video__play');
     if (!vid || !btn) return;
     reel.dataset.wired = '1';
-    btn.addEventListener('click', () => {
+    const play = () => {
       const s = vid.getAttribute('data-src');
       if (s && !vid.getAttribute('src')) vid.src = s;
       vid.controls = true;
       reel.classList.add('is-playing');
       vid.play().catch(() => {});
-    });
+    };
+    btn.addEventListener('click', play);
+    // the text prompt (if present) plays too
+    const hint = reel.querySelector<HTMLElement>('.reel-video__hint');
+    if (hint) {
+      hint.addEventListener('click', play);
+      hint.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } });
+    }
   });
 </script>
 
@@ -48,7 +60,20 @@ const { src, poster, class: className } = Astro.props;
     text-transform: uppercase; color: var(--paper-50); pointer-events: none;
   }
   .reel-video.is-playing::after { display: none; }
-  .reel-video.is-playing .reel-video__play { display: none; }
+  .reel-video.is-playing .reel-video__cue { display: none; }
+
+  /* play button + optional text prompt, stacked and centered over the poster */
+  .reel-video__cue { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
+  .reel-video__hint {
+    font-family: var(--font-body); font-weight: var(--fw-body-semi);
+    font-size: var(--fs-body); letter-spacing: 0.01em;
+    color: var(--porcelain); cursor: pointer; text-align: center;
+    padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill, 999px);
+    background: color-mix(in srgb, var(--cabinet) 55%, transparent);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+    transition: background var(--duration-fast) var(--ease-out);
+  }
+  .reel-video__hint:hover { background: color-mix(in srgb, var(--cabinet) 75%, transparent); }
   .reel-video__play {
     position: relative; z-index: 1;
     width: 84px; height: 84px; border-radius: 50%;

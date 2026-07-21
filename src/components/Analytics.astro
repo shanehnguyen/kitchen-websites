@@ -63,7 +63,27 @@ const { metaPixelId, ga4Id, clarityId } = site.analytics;
   window.kwTrack = function (name, params) {
     try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
   };
-  // Preserve UTM params across same-origin nav to /book and /scorecard.
+  // FIRST-TOUCH ATTRIBUTION. Stash the UTMs / click-ids from the very first page
+  // the visitor lands on, so the booking beacon can report them even when they
+  // entered on the homepage (or any page) and only reached /book after several
+  // clicks — by which point the URL no longer carries the tags. First hit wins;
+  // sessionStorage = one visit. This is what /pulse reads for utm_source etc.
+  (function () {
+    try {
+      var KEY = 'kw_attr_v1';
+      if (sessionStorage.getItem(KEY)) return; // already captured this visit
+      var p = new URLSearchParams(window.location.search);
+      var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid'];
+      var cur = {}, has = false;
+      keys.forEach(function (k) { var v = (p.get(k) || '').slice(0, 200); if (v) { cur[k] = v; has = true; } });
+      if (!has) return; // nothing to remember yet — a later utm-tagged page can still be the first touch
+      cur._landing = window.location.pathname;
+      cur._ref = document.referrer || '';
+      sessionStorage.setItem(KEY, JSON.stringify(cur));
+    } catch (e) {}
+  })();
+  // Belt-and-suspenders: also carry UTMs straight through same-origin links to
+  // /book & /scorecard, so the destination URL itself shows them (handy for GA).
   (function () {
     var qs = window.location.search;
     if (!qs || qs.indexOf('utm_') === -1) return;

@@ -9,14 +9,6 @@
 import BareLayout from '../layouts/BareLayout.astro';
 import { site } from '../data/site.config';
 const minutes = site.callLengthMinutes;
-// Small static proof row — real client sites, all shown at once, no animation.
-const portfolio = [
-  { img: '/assets/images/portfolio/absolute-kitchen-distributors-website-design.png', brand: 'Absolute Kitchen Distributors', alt: 'Absolute Kitchen Distributors website' },
-  { img: '/assets/images/portfolio/austin-home-creations-website-design.png', brand: 'Austin Home Creations', alt: 'Austin Home Creations website' },
-  { img: '/assets/images/portfolio/kitch-cabinetry-website-design.png', brand: 'Kitch Cabinetry', alt: 'Kitch Cabinetry website' },
-  { img: '/assets/images/portfolio/pk-cabinet-website-design.png', brand: 'PK Cabinet', alt: 'PK Cabinet website' },
-  { img: '/assets/images/portfolio/texas-remodelers-build-website-design.png', brand: 'Texas Remodelers Build', alt: 'Texas Remodelers Build website' },
-];
 ---
 <BareLayout
   title={`Book your ${minutes}-minute strategy session`}
@@ -28,25 +20,8 @@ const portfolio = [
       <div class="container container--narrow">
 
         <header class="bk-intro">
-          <p class="eyebrow">For kitchen &amp; bath businesses</p>
-          <h1 class="bk-intro__h1">Your free <span class="bk-nowrap">{minutes}-minute</span> strategy session</h1>
-          <p class="bk-intro__sub" data-sub>In {minutes} minutes we break down the three things that decide who homeowners call: your website, your Google ranking, and AI search. Then I study your biggest competitors and hand you the exact gameplan to beat them.</p>
+          <h1 class="bk-intro__h1">Let’s see if we’re a good fit.</h1>
         </header>
-
-        <!-- proof: real client sites, small, all visible, no animation -->
-        <div class="bk-proof">
-          <p class="bk-proof__h">Join the owners already winning their market.</p>
-          <div class="bk-proof__grid">
-            {portfolio.map((p) => (
-              <figure class="bk-shot">
-                <img src={p.img} alt={p.alt} loading="lazy" decoding="async" />
-                <figcaption class="bk-shot__brand">{p.brand}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-
-        <p class="bk-reassure" data-reassure>You leave with the plan — yours to keep, even if we never work together.</p>
 
         <form class="bk-form" data-book-form novalidate>
 
@@ -66,7 +41,7 @@ const portfolio = [
 
           <!-- Q2 — WHERE JOBS COME FROM + HOW MANY -->
           <fieldset class="bk-step" data-step hidden>
-            <p class="bk-count">2/3</p>
+            <p class="bk-count">2/5</p>
             <h2 class="bk-q">A little about your jobs.</h2>
             <div class="bk-field" data-field="customers">
               <p class="bk-sub">Where do your jobs mainly come from?</p>
@@ -88,10 +63,45 @@ const portfolio = [
             <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
-          <!-- Q3 — BUSINESS NAME + WEBSITE → submit -->
+          <!-- Q3 — WHICH ARE YOU MORE INTERESTED IN -->
           <fieldset class="bk-step" data-step hidden>
-            <p class="bk-count">3/3</p>
-            <h2 class="bk-q">Last thing — your business.</h2>
+            <p class="bk-count">3/5</p>
+            <h2 class="bk-q">Which are you more interested in?</h2>
+            <div class="bk-field" data-field="interest">
+              <div class="bk-choice" data-name="interest" data-radio>
+                <button type="button" class="bk-card bk-pick" data-value="Done for you">
+                  <span class="bk-pick__title">Done for you</span>
+                  <span class="bk-pick__price">$750/mo · month to month</span>
+                  <span class="bk-pick__desc">Everything that gets you found and chosen, built and run for you.</span>
+                  <ul class="bk-pick__list">
+                    <li>A website built to convert</li>
+                    <li>Your Google profile rebuilt &amp; run</li>
+                    <li>Local SEO every month</li>
+                    <li>A steady stream of new reviews</li>
+                    <li>Set up for AI search</li>
+                    <li>90-day guarantee — more calls or I work free</li>
+                  </ul>
+                </button>
+                <button type="button" class="bk-card bk-pick" data-value="Just a website">
+                  <span class="bk-pick__title">Just a website</span>
+                  <span class="bk-pick__price">Starts at $1,500 · you own it</span>
+                  <span class="bk-pick__desc">A conversion-built site, made to turn lookers into calls.</span>
+                  <ul class="bk-pick__list">
+                    <li>Built to turn just-looking into calling</li>
+                    <li>Your kitchens, reviews &amp; services</li>
+                    <li>See it before you pay a dollar</li>
+                    <li>Yours to keep, always</li>
+                  </ul>
+                </button>
+              </div>
+            </div>
+            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- Q4 — BUSINESS NAME + WEBSITE -->
+          <fieldset class="bk-step" data-step hidden>
+            <p class="bk-count">4/5</p>
+            <h2 class="bk-q">Now, about your business.</h2>
             <div class="bk-fields bk-fields--2">
               <div class="bk-field" data-field="businessName">
                 <label class="bk-label" for="bk-businessName">Business name</label>
@@ -100,6 +110,27 @@ const portfolio = [
               <div class="bk-field" data-field="website">
                 <label class="bk-label" for="bk-website">Website <span class="bk-opt">(optional)</span></label>
                 <input class="bk-input" id="bk-website" name="website" type="text" autocomplete="url" placeholder="yoursite.com" />
+              </div>
+            </div>
+            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+          </fieldset>
+
+          <!-- Q5 — NAME + EMAIL + PHONE → submit -->
+          <fieldset class="bk-step" data-step hidden>
+            <p class="bk-count">5/5</p>
+            <h2 class="bk-q">Last thing. How can I reach you?</h2>
+            <div class="bk-fields">
+              <div class="bk-field" data-field="fullName">
+                <label class="bk-label" for="bk-fullName">Full name</label>
+                <input class="bk-input" id="bk-fullName" name="fullName" type="text" autocomplete="name" placeholder="Your full name" required />
+              </div>
+              <div class="bk-field" data-field="email">
+                <label class="bk-label" for="bk-email">Email</label>
+                <input class="bk-input" id="bk-email" name="email" type="email" autocomplete="email" placeholder="you@email.com" required />
+              </div>
+              <div class="bk-field" data-field="phone">
+                <label class="bk-label" for="bk-phone">Phone</label>
+                <input class="bk-input" id="bk-phone" name="phone" type="tel" autocomplete="tel" placeholder="(555) 555-5555" required />
               </div>
             </div>
             <div class="bk-nav"><button type="button" class="btn btn--primary btn--lg" data-submit>Book my session <span aria-hidden="true">→</span></button></div>
@@ -149,17 +180,6 @@ const portfolio = [
   const flow = document.querySelector<HTMLElement>('[data-book-flow]');
   const done = document.querySelector<HTMLElement>('[data-book-done]');
   const calStep = document.querySelector<HTMLElement>('[data-step="cal"]');
-
-  // Tailor the intro to where they came from (?from=). Someone arriving from the
-  // done-for-you page is already sold, so warm the greeting and drop the re-pitch
-  // — the bullets still show what the session delivers.
-  {
-    const from = new URLSearchParams(location.search).get('from');
-    if (from && from.toLowerCase().startsWith('dfy')) {
-      const reassureEl = document.querySelector<HTMLElement>('[data-reassure]');
-      if (reassureEl) reassureEl.textContent = 'Yours to keep, even if we never work together.';
-    }
-  }
 
   // text/textarea answers live in the DOM; radios are tracked here too
   const answers: Record<string, string> = {};
@@ -266,6 +286,7 @@ const portfolio = [
       return {
         id: PULSE.id, stage: PULSE.stage,
         businessType: answers.businessType || '', businessName: answers.businessName || '',
+        interest: answers.interest || '',
         website: answers.website || '', customers: answers.customers || '', jobs: answers.jobs || '',
         source: PULSE.source, referrer: PULSE.referrer, query: PULSE.query,
         utmSource: PULSE.utmSource, utmMedium: PULSE.utmMedium, utmCampaign: PULSE.utmCampaign,
@@ -286,8 +307,9 @@ const portfolio = [
       if (up || final) pulseSend(pulsePayload(final), final);
     };
     // Furthest step → stage: Q1 (type) · Q2 (jobs) · Q3 (business) · calendar · booked.
+    // Q1 businessType (type) · Q2 jobs · Q3 interest (bucketed with jobs) · Q4 details.
     const stageForCurrent = () =>
-      current >= 2 ? 'details' : current >= 1 ? 'jobs'
+      current >= 3 ? 'details' : current >= 1 ? 'jobs'
       : (answers.businessType ? 'type' : 'landed');
 
     // ---- progressive reveal: keep steps 0..current visible, only the current
@@ -362,9 +384,9 @@ const portfolio = [
     });
 
     // Send the qualified lead to Web3Forms — fires when they COMPLETE the form and
-    // reach the calendar. Contact (name/email) is collected by Calendly at the
-    // booking step, so the lead carries the qualifying answers + attribution.
-    // Fire-and-forget; guarded against double-send within a page load.
+    // reach the calendar. The lead now carries their contact info (name/email/phone),
+    // the qualifying answers, and attribution. Fire-and-forget; guarded against
+    // double-send within a page load.
     let leadSent = false;
     const sendLead = () => {
       if (leadSent) return;
@@ -373,13 +395,17 @@ const portfolio = [
       const fd = new FormData();
       fd.append('access_key', site.web3formsBookingKey);
       fd.append('from_name', 'Kitchen Websites');
-      fd.append('subject', `📋 Session request — ${answers.businessName || 'new owner'}`);
+      if (answers.email) fd.append('replyto', answers.email); // replies go straight to the lead
+      fd.append('subject', `📋 Session request — ${answers.fullName || answers.businessName || 'new owner'}`);
+      fd.append('Name', answers.fullName || '');
+      fd.append('Email', answers.email || '');
+      fd.append('Phone', answers.phone || '');
       fd.append('Business', answers.businessName || '');
       fd.append('Website', answers.website || '');
       fd.append('Type', answers.businessType || '');
+      fd.append('Interested in', answers.interest || '');
       fd.append('Jobs come from', answers.customers || '');
       fd.append('Jobs / month', answers.jobs || '');
-      fd.append('Note', 'Name + email are collected in Calendly at booking.');
       const params = new URLSearchParams(window.location.search);
       if (params.get('from')) fd.append('Came from', String(params.get('from')));
       if (window.location.search) fd.append('Query params', window.location.search);
@@ -445,23 +471,28 @@ const portfolio = [
 
     // Prefill payload for Calendly, read LIVE from what they just entered so the
     // calendar step is confirm-and-pick, not re-type. `name`/`email` are
-    // Calendly's built-in fields (always safe). customAnswers a1..aN map to the
-    // event type's Invitee Questions *in order* — VERIFY that order in Calendly
-    // (event type → Invitee Questions); a mismatch is a one-line fix right here,
-    // not a code hunt. Calendly ignores answer keys the event type doesn't have.
-    // Prefill Calendly's custom questions with the qualifying answers so they're
-    // not re-asked. Calendly collects name + email itself, so we don't prefill
-    // those. customAnswers a1..aN map to the event type's Invitee Questions IN
-    // ORDER — verify that order in Calendly; a mismatch is a one-line fix here.
+    // Calendly's built-in invitee fields (always safe) and we now collect them in
+    // Q5, so we prefill them here. customAnswers a1..aN map to the event type's
+    // Invitee Questions *in order* — VERIFY that order in Calendly (event type →
+    // Invitee Questions); a mismatch is a one-line fix right here, not a code
+    // hunt. Calendly ignores answer keys the event type doesn't have.
     const calendlyPrefill = () => {
       collectAll();
       const customAnswers: Record<string, string> = {};
       if (answers.businessName) customAnswers.a1 = answers.businessName; // Q1 · business name
       if (answers.businessType) customAnswers.a2 = answers.businessType; // Q2 · business type
       if (answers.customers)    customAnswers.a3 = answers.customers;    // Q3 · jobs come from
-      if (answers.jobs)         customAnswers.a4 = answers.jobs;         // Q4 · jobs per year
+      if (answers.jobs)         customAnswers.a4 = answers.jobs;         // Q4 · jobs per month
       if (answers.website)      customAnswers.a5 = answers.website;      // Q5 · website
-      return { customAnswers };
+      if (answers.interest)     customAnswers.a6 = answers.interest;     // Q6 · interested in (add this question in Calendly to capture it)
+      // name/email are Calendly's built-in invitee fields; phone maps to its
+      // built-in SMS/phone field via `location` only when the event uses it, so
+      // we also pass it as a custom answer (a7) as a safe fallback.
+      return {
+        name: answers.fullName || '',
+        email: answers.email || '',
+        ...(answers.phone ? { customAnswers: { ...customAnswers, a7: answers.phone } } : { customAnswers }),
+      };
     };
     // Keep the "open in a new tab" fallback prefilled too (URL query-param form).
     const syncDirectLink = () => {
@@ -469,6 +500,8 @@ const portfolio = [
       if (!link) return;
       const p = calendlyPrefill();
       const qs = new URLSearchParams();
+      if (p.name) qs.set('name', p.name);
+      if (p.email) qs.set('email', p.email);
       Object.entries(p.customAnswers).forEach(([k, v]) => qs.set(k, v));
       const base = bookingUrl.split('?')[0];
       link.href = qs.toString() ? `${base}?${qs.toString()}` : bookingUrl;
@@ -544,26 +577,14 @@ const portfolio = [
 </script>
 
 <style>
-  .bk-funnel { padding-block: var(--space-6) var(--space-16); }
+  /* start the first screen lower so the headline + first question sit nearer the
+     middle on load; the form still grows and scrolls normally below it */
+  .bk-funnel { padding-block: clamp(var(--space-8), 15vh, 18vh) var(--space-16); }
 
   .bk-intro { text-align: center; max-width: 52rem; margin-inline: auto; }
-  .bk-intro__h1 { margin-top: var(--space-4); font-size: var(--fs-h2); text-wrap: balance; }
-  .bk-nowrap { white-space: nowrap; }
-  .bk-intro__sub { margin: var(--space-4) auto 0; font-family: var(--font-serif); font-size: var(--fs-bodyL); color: var(--ink-70); }
+  .bk-intro__h1 { font-size: var(--fs-h2); text-wrap: balance; }
 
-  /* proof — a compact static row of real client sites, all visible, no animation */
-  .bk-proof { margin: var(--space-6) auto 0; }
-  .bk-proof__h { text-align: center; max-width: 40ch; margin: 0 auto var(--space-3); font-family: var(--font-body); font-weight: var(--fw-body-semi); font-size: var(--fs-body); color: var(--ink-70); }
-  .bk-proof__grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-2); max-width: 38rem; margin-inline: auto; }
-  .bk-shot { position: relative; margin: 0; aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
-  .bk-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-  .bk-shot::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 48%; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0)); z-index: 1; pointer-events: none; }
-  .bk-shot__brand { position: absolute; top: 0; left: 0; right: 0; z-index: 2; padding: 5px 6px; font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; letter-spacing: -0.01em; font-size: clamp(0.44rem, 1.7vw, 0.7rem); line-height: 1.05; color: #fff; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75); }
-
-  /* compact reassurance right before the form */
-  .bk-reassure { margin: var(--space-6) auto 0; max-width: 44rem; text-align: center; font-family: var(--font-serif); font-size: var(--fs-body-sm); font-style: italic; color: var(--ink-50); }
-
-  .bk-form { margin-top: var(--space-5); text-align: center; }
+  .bk-form { margin-top: var(--space-8); text-align: center; }
   .bk-step { border: 0; padding: 0; margin: 0; animation: bk-in 320ms cubic-bezier(.2,.7,.2,1); }
   /* a hairline + breathing room between stacked questions (and before the calendar) */
   .bk-step + .bk-step, .bk-step--cal { margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--line); }
@@ -606,6 +627,18 @@ const portfolio = [
   .bk-card:hover { border-color: var(--ink-50); }
   .bk-card.is-on { border-color: var(--ink); background: var(--accent-wash, color-mix(in srgb, var(--accent) 16%, #fff)); }
 
+  /* Q1 "which are you more interested in" — two rich cards side by side, each
+     listing what that option includes. Reuses the .bk-card select logic. */
+  .bk-choice { margin: var(--space-5) auto 0; display: grid; grid-template-columns: 1fr; gap: var(--space-4); max-width: 48rem; text-align: left; }
+  @media (min-width: 40em) { .bk-choice { grid-template-columns: 1fr 1fr; } }
+  .bk-pick { flex-direction: column; align-items: stretch; justify-content: flex-start; text-align: left; min-height: 0; padding: var(--space-5); gap: var(--space-2); }
+  .bk-pick__title { font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; letter-spacing: -0.01em; font-size: var(--fs-h4); line-height: 1; }
+  .bk-pick__price { font-family: var(--font-mono); font-size: var(--fs-caption); font-weight: var(--fw-body-semi); text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent-deep); }
+  .bk-pick__desc { font-family: var(--font-serif); font-size: var(--fs-body); line-height: 1.4; color: var(--ink-70); }
+  .bk-pick__list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+  .bk-pick__list li { position: relative; padding-left: var(--space-5); font-size: var(--fs-body-sm); line-height: 1.35; color: var(--ink-70); }
+  .bk-pick__list li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 12px; height: 2px; background: var(--accent); }
+
   /* validation */
   .bk-field--err .bk-input, .bk-field--err .bk-card { border-color: var(--warn); }
   .bk-err { margin-top: var(--space-2); font-size: var(--fs-body-sm); font-weight: var(--fw-body-semi); color: var(--warn); }
@@ -635,14 +668,9 @@ const portfolio = [
   /* MOBILE: compact everything above the form so the FIRST question is visible
      without scrolling — smaller headline, tighter copy, thin proof row, tight gaps */
   @media (max-width: 40em) {
-    .bk-funnel { padding-block: var(--space-3) var(--space-12); }
-    .bk-intro__h1 { margin-top: var(--space-2); font-size: var(--fs-h3); }
-    .bk-intro__sub { margin-top: var(--space-3); font-size: var(--fs-body); line-height: 1.4; }
-    .bk-proof { margin-top: var(--space-4); }
-    .bk-proof__h { margin-bottom: var(--space-2); font-size: var(--fs-body-sm); }
-    .bk-proof__grid { gap: 6px; max-width: 27rem; }
-    .bk-reassure { margin-top: var(--space-3); }
-    .bk-form { margin-top: var(--space-4); }
+    .bk-funnel { padding-block: var(--space-6) var(--space-12); }
+    .bk-intro__h1 { font-size: var(--fs-h3); }
+    .bk-form { margin-top: var(--space-6); }
     /* cards: keep within the viewport and readable on phones */
     .bk-cards { max-width: 100%; }
     .bk-cards--wide .bk-card { padding-inline: var(--space-3); min-height: 60px; font-size: var(--fs-body); }

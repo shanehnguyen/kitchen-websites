@@ -48,7 +48,27 @@ const clarityId = "xmofy84bqy";
   window.kwTrack = function (name, params) {
     try { if (window.gtag) window.gtag('event', name, params || {}); } catch (e) {}
   };
-  // Preserve UTM params across same-origin nav to /book and /scorecard.
+  // FIRST-TOUCH ATTRIBUTION. Stash the UTMs / click-ids from the very first page
+  // the visitor lands on, so the booking beacon can report them even when they
+  // entered on the homepage (or any page) and only reached /book after several
+  // clicks — by which point the URL no longer carries the tags. First hit wins;
+  // sessionStorage = one visit. This is what /pulse reads for utm_source etc.
+  (function () {
+    try {
+      var KEY = 'kw_attr_v1';
+      if (sessionStorage.getItem(KEY)) return; // already captured this visit
+      var p = new URLSearchParams(window.location.search);
+      var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'gclid', 'fbclid'];
+      var cur = {}, has = false;
+      keys.forEach(function (k) { var v = (p.get(k) || '').slice(0, 200); if (v) { cur[k] = v; has = true; } });
+      if (!has) return; // nothing to remember yet — a later utm-tagged page can still be the first touch
+      cur._landing = window.location.pathname;
+      cur._ref = document.referrer || '';
+      sessionStorage.setItem(KEY, JSON.stringify(cur));
+    } catch (e) {}
+  })();
+  // Belt-and-suspenders: also carry UTMs straight through same-origin links to
+  // /book & /scorecard, so the destination URL itself shows them (handy for GA).
   (function () {
     var qs = window.location.search;
     if (!qs || qs.indexOf('utm_') === -1) return;
@@ -63,7 +83,7 @@ const clarityId = "xmofy84bqy";
   })();
 </script><style>.legal[data-astro-cid-y5py4vqc] h1[data-astro-cid-y5py4vqc]{font-family:var(--font-display)}.legal__date[data-astro-cid-y5py4vqc]{color:var(--ink-50);font-size:var(--fs-caption);margin-block:var(--space-2) var(--space-6)}.legal[data-astro-cid-y5py4vqc] h2[data-astro-cid-y5py4vqc]{font-family:var(--font-display);text-transform:none;font-size:var(--fs-h3);margin-top:var(--space-8)}.legal[data-astro-cid-y5py4vqc] p[data-astro-cid-y5py4vqc],.legal[data-astro-cid-y5py4vqc] li[data-astro-cid-y5py4vqc]{color:var(--ink-70);margin-top:var(--space-3);line-height:1.6}
 </style>
-<link rel="stylesheet" href="/_astro/book.Bv0EzvlC.css"></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="nav" data-nav> <div class="nav__inner"> <a class="nav__logo" href="/"> <span class="nav__logo-name">Kitchen <span>Websites</span></span> <span class="nav__logo-by">by FlipFix Digital</span> </a> <nav class="nav__menu" aria-label="Primary"> <ul class="nav__links" id="nav-menu"> <li><a href="/done-for-you">Done For You</a></li> <li><a href="/websites">Websites</a></li> <li><a href="/about">About</a></li> <li><a href="/scorecard">Your Map</a></li> </ul> </nav> <div class="nav__actions"> <a class="btn btn--primary nav__cta" href="/book?from=Nav:Book" data-event="Nav:Book"> <span class="nav__cta-full">Claim Strategy Session</span> <span class="nav__cta-short">Claim Strategy</span> <span class="nav__cta-mini">Claim Strategy</span> </a> <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu" data-nav-toggle> <span class="nav__toggle-box" aria-hidden="true"></span> </button> </div> </div> </header> <script type="module">const t=document.querySelector("[data-nav]"),n=t?.querySelector("[data-nav-toggle]"),s=t?.querySelector("#nav-menu");if(t&&n&&s){const a=e=>{t.classList.toggle("is-open",e),n.setAttribute("aria-expanded",String(e)),n.setAttribute("aria-label",e?"Close menu":"Open menu")};n.addEventListener("click",()=>a(!t.classList.contains("is-open"))),s.addEventListener("click",e=>{e.target.closest("a")&&a(!1)}),document.addEventListener("keydown",e=>{e.key==="Escape"&&a(!1)}),window.matchMedia("(min-width: 56em)").addEventListener("change",e=>{e.matches&&a(!1)})}</script> <main id="main">  <section class="section legal" data-astro-cid-y5py4vqc> <div class="container container--prose" data-astro-cid-y5py4vqc> <h1 data-astro-cid-y5py4vqc>Terms</h1> <p class="legal__date mono" data-astro-cid-y5py4vqc>Last updated June 2026</p> <!-- LEGAL REVIEW REQUIRED before launch. Plain-language draft only. --> <p data-astro-cid-y5py4vqc>
+<link rel="stylesheet" href="/_astro/book.Bv0EzvlC.css"></head> <body> <a class="skip-link" href="#main">Skip to content</a> <header class="nav" data-nav> <div class="nav__inner"> <a class="nav__logo" href="/"> <span class="nav__logo-name">Kitchen <span>Websites</span></span> <span class="nav__logo-by">by FlipFix Digital</span> </a> <nav class="nav__menu" aria-label="Primary"> <ul class="nav__links" id="nav-menu"> <li><a href="/done-for-you">Done For You</a></li> <li><a href="/websites">Websites</a></li> <li><a href="/about">About</a></li> <li><a href="/scorecard">Your Map</a></li> </ul> </nav> <div class="nav__actions"> <a class="btn btn--primary nav__cta" href="/book?from=Nav:Book" data-event="Nav:Book"> <span class="nav__cta-full">Get me more calls</span> <span class="nav__cta-short">Get more calls</span> <span class="nav__cta-mini">More calls</span> </a> <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu" data-nav-toggle> <span class="nav__toggle-box" aria-hidden="true"></span> </button> </div> </div> </header> <script type="module">const t=document.querySelector("[data-nav]"),n=t?.querySelector("[data-nav-toggle]"),s=t?.querySelector("#nav-menu");if(t&&n&&s){const a=e=>{t.classList.toggle("is-open",e),n.setAttribute("aria-expanded",String(e)),n.setAttribute("aria-label",e?"Close menu":"Open menu")};n.addEventListener("click",()=>a(!t.classList.contains("is-open"))),s.addEventListener("click",e=>{e.target.closest("a")&&a(!1)}),document.addEventListener("keydown",e=>{e.key==="Escape"&&a(!1)}),window.matchMedia("(min-width: 56em)").addEventListener("change",e=>{e.matches&&a(!1)})}</script> <main id="main">  <section class="section legal" data-astro-cid-y5py4vqc> <div class="container container--prose" data-astro-cid-y5py4vqc> <h1 data-astro-cid-y5py4vqc>Terms</h1> <p class="legal__date mono" data-astro-cid-y5py4vqc>Last updated June 2026</p> <!-- LEGAL REVIEW REQUIRED before launch. Plain-language draft only. --> <p data-astro-cid-y5py4vqc>
 These terms cover use of the Kitchen Websites website and its tools (the Google Scorecard, and the
         booking and contact forms). Using the site means you’re okay with them.
 </p> <h2 data-astro-cid-y5py4vqc>The tools are estimates</h2> <p data-astro-cid-y5py4vqc>

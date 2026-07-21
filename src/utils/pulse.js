@@ -29,7 +29,12 @@ export function pulseSource() {
   };
   try {
     const p = new URLSearchParams(location.search);
-    const g = (k) => (p.get(k) || '').slice(0, 200).trim();
+    // First-touch attribution stashed by Analytics.astro when they landed. The
+    // current /book URL usually won't carry UTMs (they entered elsewhere and
+    // clicked through), so fall back to what was captured on the landing page.
+    let stored = {};
+    try { stored = JSON.parse(sessionStorage.getItem('kw_attr_v1') || '{}') || {}; } catch { stored = {}; }
+    const g = (k) => ((p.get(k) || stored[k] || '') + '').slice(0, 200).trim();
     const utmSource = g('utm_source');
     const utmMedium = g('utm_medium');
     const utmCampaign = g('utm_campaign');
@@ -37,8 +42,10 @@ export function pulseSource() {
     const utmTerm = g('utm_term');
     const utm = [utmSource, utmMedium, utmCampaign, utmContent, utmTerm].filter(Boolean).join(' / ');
     return {
-      source: g('from') || utm || '',
-      referrer: document.referrer || '',
+      source: (p.get('from') || '').slice(0, 200).trim() || utm || '',
+      // the true entry referrer (captured at first touch) beats document.referrer,
+      // which after internal navigation is just the previous on-site page.
+      referrer: stored._ref || document.referrer || '',
       query: location.search || '',
       utmSource, utmMedium, utmCampaign, utmContent, utmTerm,
       gclid: g('gclid'), fbclid: g('fbclid'),
