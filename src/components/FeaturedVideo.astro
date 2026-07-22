@@ -1,24 +1,44 @@
 ---
-/* FeaturedVideo — the click-to-play featured video (the VSL). Self-contained:
-   markup, lazy click-to-play script, and styles travel together. The source is
-   fetched only on first click, so it never costs a visitor a download until they
-   ask for it, then it hands off to native controls. Same treatment as the
-   homepage reel; reused wherever the video should appear. */
+/* FeaturedVideo — the featured video (the VSL). Self-contained: markup, script,
+   and styles travel together. Two modes:
+   • default (click-to-play): source is fetched only on first click, so it never
+     costs a visitor a download until they ask for it.
+   • autoplay: loads immediately and autoplays MUTED with a big "Tap for sound"
+     unmute button (VSL pattern). Unmuting restarts from the top so they hear the
+     whole message with sound. Same component reused wherever a video appears. */
 interface Props {
   src: string;
   poster: string;
   class?: string;
-  /* optional prompt shown beneath the play button (e.g. "Click here to learn more"). */
+  /* optional prompt shown beneath the play button (click-to-play mode only). */
   playLabel?: string;
+  /* autoplay muted with a big unmute button (the VSL treatment). */
+  autoplay?: boolean;
 }
-const { src, poster, class: className, playLabel } = Astro.props;
+const { src, poster, class: className, playLabel, autoplay = false } = Astro.props;
 ---
-<div class:list={['reel-video', className]}>
-  <video class="reel-video__media" playsinline preload="metadata" poster={poster} data-src={src}></video>
-  <div class="reel-video__cue">
-    <button type="button" class="reel-video__play" aria-label={playLabel || 'Play video'}><span aria-hidden="true">▶</span></button>
-    {playLabel && <span class="reel-video__hint" role="button" tabindex="0">{playLabel}</span>}
-  </div>
+<div class:list={['reel-video', className, { 'reel-video--auto': autoplay }]} data-autoplay={autoplay ? '1' : undefined}>
+  <video
+    class="reel-video__media"
+    playsinline
+    poster={poster}
+    preload={autoplay ? 'auto' : 'metadata'}
+    autoplay={autoplay}
+    muted={autoplay}
+    src={autoplay ? src : undefined}
+    data-src={src}
+  ></video>
+  {autoplay ? (
+    <button type="button" class="reel-video__unmute" aria-label="Tap for sound">
+      <span class="reel-video__unmute-icon" aria-hidden="true">🔇</span>
+      <span class="reel-video__unmute-text">Tap for sound</span>
+    </button>
+  ) : (
+    <div class="reel-video__cue">
+      <button type="button" class="reel-video__play" aria-label={playLabel || 'Play video'}><span aria-hidden="true">▶</span></button>
+      {playLabel && <span class="reel-video__hint" role="button" tabindex="0">{playLabel}</span>}
+    </div>
+  )}
 </div>
 
 <script>
@@ -26,9 +46,29 @@ const { src, poster, class: className, playLabel } = Astro.props;
   document.querySelectorAll<HTMLElement>('.reel-video').forEach((reel) => {
     if (reel.dataset.wired) return;
     const vid = reel.querySelector<HTMLVideoElement>('.reel-video__media');
-    const btn = reel.querySelector<HTMLButtonElement>('.reel-video__play');
-    if (!vid || !btn) return;
+    if (!vid) return;
     reel.dataset.wired = '1';
+
+    // ---- autoplay-muted mode: big unmute button ----
+    if (reel.dataset.autoplay) {
+      const unmute = reel.querySelector<HTMLButtonElement>('.reel-video__unmute');
+      vid.muted = true;
+      vid.play().catch(() => { /* autoplay blocked; the unmute button will start it on tap */ });
+      if (unmute) {
+        unmute.addEventListener('click', () => {
+          vid.muted = false;
+          vid.currentTime = 0;   // restart so they hear the full message with sound
+          vid.controls = true;
+          reel.classList.add('is-unmuted');
+          vid.play().catch(() => {});
+        });
+      }
+      return;
+    }
+
+    // ---- default click-to-play mode ----
+    const btn = reel.querySelector<HTMLButtonElement>('.reel-video__play');
+    if (!btn) return;
     const play = () => {
       const s = vid.getAttribute('data-src');
       if (s && !vid.getAttribute('src')) vid.src = s;
@@ -59,7 +99,8 @@ const { src, poster, class: className, playLabel } = Astro.props;
     font-family: var(--font-mono); font-size: var(--fs-small); letter-spacing: var(--tracking-caps);
     text-transform: uppercase; color: var(--paper-50); pointer-events: none;
   }
-  .reel-video.is-playing::after { display: none; }
+  .reel-video.is-playing::after,
+  .reel-video--auto::after { display: none; }
   .reel-video.is-playing .reel-video__cue { display: none; }
 
   /* play button + optional text prompt, stacked and centered over the poster */
@@ -83,4 +124,28 @@ const { src, poster, class: className, playLabel } = Astro.props;
     transition: transform var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
   }
   .reel-video__play:hover { transform: scale(1.06); background: color-mix(in srgb, var(--porcelain) 22%, transparent); }
+
+  /* big "tap for sound" unmute button (autoplay mode). Sits over the video while
+     it plays muted; vanishes once the visitor turns sound on. */
+  .reel-video__unmute {
+    position: absolute; z-index: 2; inset: auto auto var(--space-5) 50%; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-3) var(--space-5); border-radius: var(--radius-pill, 999px);
+    border: 2px solid var(--porcelain);
+    background: color-mix(in srgb, var(--cabinet) 78%, transparent);
+    color: var(--porcelain); cursor: pointer;
+    font-family: var(--font-body); font-weight: var(--fw-body-bold);
+    font-size: var(--fs-bodyL); letter-spacing: 0.01em; line-height: 1;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
+    animation: reel-unmute-pulse 2.2s var(--ease-out) infinite;
+    transition: transform var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+  }
+  .reel-video__unmute:hover { transform: translateX(-50%) scale(1.04); background: color-mix(in srgb, var(--cabinet) 90%, transparent); animation: none; }
+  .reel-video__unmute-icon { font-size: 1.3em; line-height: 1; }
+  .reel-video.is-unmuted .reel-video__unmute { display: none; }
+  @keyframes reel-unmute-pulse {
+    0%, 100% { box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6), 0 0 0 0 color-mix(in srgb, var(--porcelain) 45%, transparent); }
+    50% { box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6), 0 0 0 10px color-mix(in srgb, var(--porcelain) 0%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) { .reel-video__unmute { animation: none; } }
 </style>
