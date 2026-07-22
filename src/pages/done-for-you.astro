@@ -17,6 +17,16 @@ const minutes = site.callLengthMinutes;
 // so /pulse shows exactly which button sent them. Just point them at /book.
 const bookHref = '/book';
 const ctaDerisk = 'Free. Kitchen and bath only. Keep the plan either way.';
+
+// "Ninety days from today" — computed at build so the deadline in the final CTA
+// stays real on every deploy instead of hardcoding a date that goes stale.
+const ninety = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+const ordinal = (n: number) => {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
+};
+const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${ordinal(ninety.getDate())}`;
 ---
 <BaseLayout
   title="Done For You: Get Found & Get Picked | Kitchen Websites"
@@ -54,26 +64,26 @@ const ctaDerisk = 'Free. Kitchen and bath only. Keep the plan either way.';
       </ul>
 
       <h2 class="seo2-h">Why this has worked for kitchen and bath businesses like yours.</h2>
+    </div>
+    <div class="seo2-proof__showcase"><ClientShowcase /></div>
+    <div class="container container--prose seo2-prose">
       <p>Homeowners near you are searching right now, ready to spend twenty or thirty thousand dollars this week. To win them, two things have to go right. They have to find you, then your website has to turn them into a call. I handle both.</p>
       <p>I get you showing up where they look, then build you a site that shows off your best work and answers their worries, so they stop comparing and call you.</p>
       <p class="seo2-beat"><span class="hl">She lands just looking. She leaves ready to call.</span></p>
     </div>
   </section>
 
-  <!-- 3 — PROOF: be the next success story -->
-  <section class="section section--sm seo2-proof">
-    <div class="container">
-      <h2 class="seo2-proof__h">Be the next success story.</h2>
-    </div>
-    <div class="seo2-proof__showcase"><ClientShowcase /></div>
-  </section>
-
-  <!-- 4 — THE OFFER: price + guarantee -->
+  <!-- 3 — THE OFFER: price + guarantee -->
   <section class="section seo2-body">
     <div class="container container--prose seo2-prose">
       <p class="seo2-price__lead">Bought piece by piece, here’s what each one really costs:</p>
       <div class="seo2-compare">
         <table class="cmp">
+          <colgroup>
+            <col class="cmp__col-piece" />
+            <col class="cmp__col-mkt" />
+            <col class="cmp__col-me" />
+          </colgroup>
           <thead>
             <tr>
               <th scope="col">The piece</th>
@@ -104,7 +114,7 @@ const ctaDerisk = 'Free. Kitchen and bath only. Keep the plan either way.';
     </div>
   </section>
 
-  <!-- 5 — THE PROCESS -->
+  <!-- 4 — THE PROCESS -->
   <section class="section seo2-steps">
     <div class="container container--narrow">
       <h2 class="seo2-steps__h">The simple steps to getting more calls.</h2>
@@ -137,10 +147,10 @@ const ctaDerisk = 'Free. Kitchen and bath only. Keep the plan either way.';
     </div>
   </section>
 
-  <!-- 6 — FAQ (light) -->
+  <!-- 5 — FAQ (light) -->
   <section class="section section--sm seo2-faq">
     <div class="container container--narrow">
-      <h2 class="seo2-faq__h">The questions a burned owner actually asks.</h2>
+      <h2 class="seo2-faq__h">The answers to your burning questions.</h2>
       <div class="seo2-faq__list"><FAQ items={dfyFaqs} /></div>
       <div class="seo2-faq__cta">
         <CTAButton href={bookHref} label="Book my free call" derisk={ctaDerisk} event="Dfy:FaqToBook" size="lg" />
@@ -148,14 +158,15 @@ const ctaDerisk = 'Free. Kitchen and bath only. Keep the plan either way.';
     </div>
   </section>
 
-  <!-- 7 — FINAL CTA (dark footer) -->
+  <!-- 6 — FINAL CTA (dark footer) -->
   <section class="section section--dark seo2-session">
     <div class="container container--narrow seo2-session__inner">
-      <h2 class="seo2-session__h">In {minutes} minutes, I’ll show you exactly how.</h2>
-      <p>We’ll build your plan around the things a homeowner checks before she picks anyone: your Google, and your website. I’ll show you the exact moves to become the one she calls, in the right order.</p>
-      <p><span class="seo2-em">You leave with that plan written down.</span> Run it yourself or hand it to me.</p>
+      <h2 class="seo2-session__h">Ninety days from today is {ninetyLabel}.</h2>
+      <p>Between now and then, homeowners near you will search, look at three or four names, and call one of them. Your work is already good enough to win those jobs. What decides it is the few minutes she spends looking at you first, and ninety days is how long that takes to fix.</p>
+      <p>Tap the button, answer four questions, pick a time. The person who reads your answers and shows up to that call is me.</p>
+      <p class="seo2-session__phone">Prefer to skip the form? Call or text <a href={`tel:${site.phone.replace(/[^0-9]/g, '')}`}>{site.phone}</a>.</p>
       <div class="seo2-session__cta">
-        <CTAButton href={bookHref} label="Build my plan" derisk={ctaDerisk} event="Dfy:SessionToBook" size="lg" />
+        <CTAButton href={bookHref} label={`Book my ${minutes} minutes`} derisk="Free. Kitchen and bath only. You keep the plan either way." event="Dfy:SessionToBook" size="lg" />
       </div>
       <p class="seo2-sig">— Shane Nguyen, Kitchen Websites</p>
     </div>
@@ -196,22 +207,39 @@ const ctaDerisk = 'Free. Kitchen and bath only. Keep the plan either way.';
   /* price — the obvious part */
   .seo2-price__lead { margin-top: var(--space-6); }
 
-  /* à-la-carte vs. me comparison table */
+  /* à-la-carte vs. me comparison table — the "With me" column is the hero, the
+     hired-out prices are struck through so the deal reads at a glance. */
   .seo2-compare { margin-top: var(--space-5); overflow-x: auto; }
-  .cmp { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
-  .cmp th, .cmp td { padding: var(--space-3) var(--space-4); text-align: left; border-bottom: var(--rule-width) solid var(--rule); }
+  .cmp { width: 100%; border-collapse: collapse; font-family: var(--font-body); table-layout: fixed; }
+  .cmp th, .cmp td { padding: var(--space-3) var(--space-3); text-align: left; border-bottom: var(--rule-width) solid var(--rule); vertical-align: middle; }
+  .cmp col.cmp__col-piece { width: 46%; }
+  .cmp col.cmp__col-mkt { width: 27%; }
+  .cmp col.cmp__col-me { width: 27%; }
   .cmp thead th { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--fw-body-semi); color: var(--ink-50); }
-  .cmp tbody td:first-child { font-family: var(--font-serif); font-size: var(--fs-body); color: var(--ink); }
-  .cmp__mkt { text-align: right; color: var(--ink-70); white-space: nowrap; }
-  .cmp__me { text-align: right; color: var(--accent-deep); font-weight: var(--fw-body-bold); white-space: nowrap; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .cmp thead .cmp__me { color: var(--accent-deep); }
+  .cmp tbody td:first-child { font-family: var(--font-serif); font-size: var(--fs-body); color: var(--ink); line-height: 1.25; }
+  .cmp__mkt { text-align: right; color: var(--ink-50); }
+  /* strike the hired-out prices — what they DON'T pay */
+  .cmp tbody .cmp__mkt, .cmp tfoot .cmp__mkt { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--alarm) 70%, transparent); text-decoration-thickness: 2px; }
+  .cmp__me { text-align: right; color: var(--accent-deep); font-weight: var(--fw-body-bold); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .cmp tbody .cmp__me::before { content: "✓ "; }
   .cmp tfoot td { border-bottom: 0; border-top: var(--rule-thick) solid var(--ink); font-size: var(--fs-bodyL); font-weight: var(--fw-body-bold); color: var(--ink); }
   .cmp tfoot td:first-child { text-transform: uppercase; letter-spacing: 0.02em; }
-  .cmp tfoot .cmp__me { color: var(--accent-deep); }
-  .cmp__sub { display: block; font-family: var(--font-body); font-size: var(--fs-caption); font-weight: var(--fw-body); color: var(--ink-50); }
+  .cmp tfoot .cmp__me { color: var(--accent-deep); font-size: var(--fs-h4); }
+  .cmp__sub { display: block; font-family: var(--font-body); font-size: var(--fs-caption); font-weight: var(--fw-body); color: var(--ink-50); text-decoration: none; }
   .seo2-price { margin-top: var(--space-4); font-family: var(--font-display); font-weight: var(--fw-display); text-transform: uppercase; letter-spacing: var(--tracking-display); font-size: var(--fs-h2); line-height: 1.1; color: var(--ink); }
+  /* mobile: shrink so all three columns fit without a horizontal scroll */
+  @media (max-width: 40em) {
+    .cmp th, .cmp td { padding: var(--space-2) var(--space-1); }
+    .cmp thead th { font-size: 0.6rem; letter-spacing: 0.02em; }
+    .cmp tbody td:first-child { font-size: var(--fs-caption); }
+    .cmp__mkt, .cmp__me { font-size: var(--fs-caption); }
+    .cmp tfoot td { font-size: var(--fs-body-sm); }
+    .cmp tfoot .cmp__me { font-size: var(--fs-bodyL); }
+    .cmp__sub { font-size: 0.58rem; }
+  }
 
-  /* proof — be the next success story */
-  .seo2-proof__h { text-align: center; font-size: var(--fs-h3); }
+  /* proof — rotating client showcase, sits under the "why it works" beat */
   .seo2-proof__showcase { margin-top: var(--space-8); }
 
   /* the process — 3 numbered steps to start */
@@ -235,6 +263,9 @@ const ctaDerisk = 'Free. Kitchen and bath only. Keep the plan either way.';
   .seo2-session__h { font-family: var(--font-display); color: var(--dark-ink); }
   .seo2-session__inner p { margin-top: var(--space-4); font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.65; color: var(--dark-soft); max-width: 56ch; margin-inline: auto; }
   .seo2-em { color: var(--accent); font-weight: var(--fw-body-bold); }
+  .seo2-session__phone { font-size: var(--fs-body) !important; color: var(--dark-soft); }
+  .seo2-session__phone a { color: var(--dark-ink); font-weight: var(--fw-body-bold); text-decoration: underline; text-underline-offset: 3px; }
+  .seo2-session__phone a:hover { color: var(--accent); }
   .seo2-session__cta { margin-top: var(--space-8); display: flex; justify-content: center; }
   .seo2-session__cta :global(.cta-block) { align-items: center; }
   .seo2-sig { margin-top: var(--space-8); font-family: var(--font-display) !important; font-size: var(--fs-h4) !important; color: var(--dark-ink) !important; }

@@ -84,14 +84,6 @@ export const dfyFaqs: Faq[] = [
     ],
   },
   {
-    q: 'Do you buy me leads?',
-    a: [
-      'No. I’m not the Angi game, selling you the same homeowner four other businesses already bought.',
-      'I get you the homeowners already searching for your work, by pushing your rankings up so they find you and building the site that turns them into calls once they do.',
-      'What I guarantee is the number that matters: more homeowners finding you and calling than do today. Beat that in ninety days, or you stop paying and I keep going.',
-    ],
-  },
-  {
     q: 'What happens if it doesn’t work?',
     a: [
       'Then you don’t pay, and I don’t stop.',
@@ -110,13 +102,6 @@ export const dfyFaqs: Faq[] = [
     a: [
       'Almost none. That’s the point.',
       'I need about an hour up front to learn your business and your work. After that, I do the building. The only thing I ask is that you call back the homeowners who reach out. You’re doing that part anyway.',
-    ],
-  },
-  {
-    q: 'Why you instead of a regular agency, and why only $750?',
-    a: [
-      'Because most agencies run the same playbook for a dentist, a roofer, and you. You’re a template with the logo swapped.',
-      'I only do kitchen and bath. I know why a homeowner picks one business over another, what they’re afraid of, and what makes them call. Because it’s the only thing I build, I’m not starting from scratch on your business, which is how the same work that stacks into thousands a month hired out runs $750 with me.',
     ],
   },
 ];
