@@ -25,18 +25,16 @@ const minutes = site.callLengthMinutes;
 
         <form class="bk-form" data-book-form novalidate>
 
-          <!-- Q1 — WHICH SOUNDS LIKE YOU -->
+          <!-- Q1 — QUALIFIER: in the kitchen & bath industry? (yes/no) -->
           <fieldset class="bk-step" data-step>
-            <h2 class="bk-q">Which sounds like you?</h2>
+            <h2 class="bk-q">Are you in the kitchen and bath industry?</h2>
             <div class="bk-field" data-field="businessType">
-              <div class="bk-cards bk-cards--row bk-cards--wide" data-name="businessType" data-radio>
-                <button type="button" class="bk-card" data-value="Showroom or dealer">Showroom or dealer</button>
-                <button type="button" class="bk-card" data-value="Remodeler">Remodeler</button>
-                <button type="button" class="bk-card" data-value="Countertop or stone shop">Countertop or stone shop</button>
-                <button type="button" class="bk-card" data-value="A bit of everything">A bit of everything</button>
+              <div class="bk-cards bk-cards--yn" data-name="businessType" data-radio>
+                <button type="button" class="bk-card" data-value="Yes">Yes</button>
+                <button type="button" class="bk-card" data-value="No">No</button>
               </div>
             </div>
-            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
+            <p class="bk-gate" data-gate hidden>This one’s built just for kitchen and bath businesses, so it wouldn’t be the right fit. If that ever changes, come back anytime.</p>
           </fieldset>
 
           <!-- Q2 — WHERE JOBS COME FROM + HOW MANY -->
@@ -60,7 +58,6 @@ const minutes = site.callLengthMinutes;
                 <button type="button" class="bk-card" data-value="10+">10+</button>
               </div>
             </div>
-            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
           <!-- Q3 — WHICH ARE YOU MORE INTERESTED IN -->
@@ -95,7 +92,6 @@ const minutes = site.callLengthMinutes;
                 </button>
               </div>
             </div>
-            <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
           <!-- Q4 — BUSINESS NAME + WEBSITE -->
@@ -367,10 +363,37 @@ const minutes = site.callLengthMinutes;
           clearErr(group.dataset.name!);
           persist();
           setStage(stageForCurrent()); // picking Q1 flips landed → type
-          if (group.dataset.name === 'businessType') fireBookStarted(); // first question answered
+          // Q1 is the kitchen & bath qualifier. "No" gates the form (they can't
+          // continue) and does NOT fire the Meta event. "Yes" is the qualified
+          // intent — that's when BookClicked fires and the form opens up.
+          if (group.dataset.name === 'businessType') {
+            const gated = card.dataset.value === 'No';
+            const q1 = card.closest('[data-step]') as HTMLElement | null;
+            q1?.classList.toggle('is-gated', gated);
+            const gate = q1?.querySelector<HTMLElement>('[data-gate]');
+            if (gate) gate.hidden = !gated;
+            if (!gated) fireBookStarted(); // qualified "Yes" → Meta BookClicked
+          }
+          maybeAutoAdvance(card);
         });
       });
     });
+
+    // Auto-advance: once a pick completes a choice-only step, move on without a
+    // Continue click. Skips the gated "No", steps that still need a typed field
+    // (business name, contact), the final step, and any step with an unanswered
+    // second question (e.g. jobs: pick where AND how many first).
+    const maybeAutoAdvance = (card: HTMLElement) => {
+      const step = card.closest('[data-step]') as HTMLElement | null;
+      if (!step || step !== steps[current]) return;
+      if (step.classList.contains('is-gated')) return;
+      if (step.querySelector('input[required], textarea[required]')) return;
+      if (step.querySelector('[data-submit]')) return;
+      const groups = Array.from(step.querySelectorAll<HTMLElement>('[data-radio]'));
+      if (!groups.every((g) => g.querySelector('.is-on'))) return;
+      // brief pause so the selection highlight registers before we move on
+      setTimeout(() => { if (steps[current] === step && !step.classList.contains('is-gated') && validStep(step)) advance(); }, 280);
+    };
 
     // clear error + persist as the user types OR autofills (autofill often fires
     // 'change' rather than 'input', so listen for both)
@@ -402,7 +425,7 @@ const minutes = site.callLengthMinutes;
       fd.append('Phone', answers.phone || '');
       fd.append('Business', answers.businessName || '');
       fd.append('Website', answers.website || '');
-      fd.append('Type', answers.businessType || '');
+      fd.append('Kitchen & bath?', answers.businessType || '');
       fd.append('Interested in', answers.interest || '');
       fd.append('Jobs come from', answers.customers || '');
       fd.append('Jobs / month', answers.jobs || '');
@@ -449,7 +472,7 @@ const minutes = site.callLengthMinutes;
     form.addEventListener('click', (e) => {
       try {
         const t = e.target as HTMLElement;
-        if (t.closest('[data-next]')) { commitFields(); if (validStep(steps[current])) advance(); }
+        if (t.closest('[data-next]')) { if (steps[current].classList.contains('is-gated')) return; commitFields(); if (validStep(steps[current])) advance(); }
         else if (t.closest('[data-submit]')) { commitFields(); doSubmit(); }
       } catch (err) { console.error('[book] form interrupted:', err); bail(INTERRUPT_MSG); }
     });
@@ -460,6 +483,7 @@ const minutes = site.callLengthMinutes;
       e.preventDefault(); // Enter must never natively submit / reload the page
       try {
         const step = steps[current];
+        if (step.classList.contains('is-gated')) return; // "No" to kitchen & bath — blocked
         commitFields();
         if (step.querySelector('[data-submit]')) doSubmit();
         else if (validStep(step)) advance();
@@ -480,7 +504,7 @@ const minutes = site.callLengthMinutes;
       collectAll();
       const customAnswers: Record<string, string> = {};
       if (answers.businessName) customAnswers.a1 = answers.businessName; // Q1 · business name
-      if (answers.businessType) customAnswers.a2 = answers.businessType; // Q2 · business type
+      if (answers.businessType) customAnswers.a2 = answers.businessType; // Q2 · in kitchen & bath? (yes/no)
       if (answers.customers)    customAnswers.a3 = answers.customers;    // Q3 · jobs come from
       if (answers.jobs)         customAnswers.a4 = answers.jobs;         // Q4 · jobs per month
       if (answers.website)      customAnswers.a5 = answers.website;      // Q5 · website
@@ -560,9 +584,17 @@ const minutes = site.callLengthMinutes;
 
     // ---- boot ----
     restore();           // refill anything saved from a previous visit
+    // re-apply the kitchen & bath gate if they'd answered "No" last visit, so a
+    // reload can't skip past it
+    if (answers.businessType === 'No') {
+      steps[0].classList.add('is-gated');
+      const gate = steps[0].querySelector<HTMLElement>('[data-gate]');
+      if (gate) gate.hidden = false;
+    }
     reveal(0);           // first question is always visible
     // resume: fast-forward past any steps already answered from a prior visit
-    while (current < steps.length - 1 && stepValid(steps[current])) reveal(current + 1);
+    // (never past a gated step)
+    while (current < steps.length - 1 && !steps[current].classList.contains('is-gated') && stepValid(steps[current])) reveal(current + 1);
 
     // booking pulse: first ping (landed, or resumed further), then report as
     // they leave. visibilitychange keeps the dashboard fresh; pagehide is the
@@ -616,6 +648,8 @@ const minutes = site.callLengthMinutes;
   .bk-cards { margin: var(--space-5) auto 0; display: grid; gap: var(--space-3); max-width: 32rem; }
   .bk-cards--row { grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 34em) { .bk-cards--row { grid-template-columns: repeat(4, 1fr); } }
+  /* two-option yes/no — always side by side, kept narrow and centered */
+  .bk-cards--yn { grid-template-columns: 1fr 1fr; max-width: 26rem; }
   /* horizontal row of 3 options (e.g. where jobs come from) — stacks on phones
      so long labels aren't cramped or forced off-screen */
   .bk-cards--row3 { grid-template-columns: 1fr; }
@@ -626,6 +660,10 @@ const minutes = site.callLengthMinutes;
   .bk-card { text-align: center; font-family: var(--font-body); font-size: var(--fs-bodyL); padding: var(--space-4); border: var(--rule-thick) solid var(--line); border-radius: var(--radius-sm); background: #fff; color: var(--ink); cursor: pointer; min-height: 52px; display: flex; align-items: center; justify-content: center; transition: border-color 120ms, background 120ms, transform 120ms; }
   .bk-card:hover { border-color: var(--ink-50); }
   .bk-card.is-on { border-color: var(--ink); background: var(--accent-wash, color-mix(in srgb, var(--accent) 16%, #fff)); }
+
+  /* kitchen & bath gate: "No" shows this note and hides the Continue button */
+  .bk-gate { margin: var(--space-5) auto 0; max-width: 46ch; font-family: var(--font-serif); font-size: var(--fs-body); line-height: 1.5; color: var(--ink-70); }
+  .bk-step.is-gated .bk-nav { display: none; }
 
   /* Q1 "which are you more interested in" — two rich cards side by side, each
      listing what that option includes. Reuses the .bk-card select logic. */

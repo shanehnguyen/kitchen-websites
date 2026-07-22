@@ -27,12 +27,17 @@ const { src, poster, class: className, playLabel, autoplay = false } = Astro.pro
     muted={autoplay}
     src={autoplay ? src : undefined}
     data-src={src}
+    controlslist="nodownload noplaybackrate noremoteplayback"
+    disablepictureinpicture
   ></video>
   {autoplay ? (
-    <button type="button" class="reel-video__unmute" aria-label="Tap for sound">
-      <span class="reel-video__unmute-icon" aria-hidden="true">🔇</span>
-      <span class="reel-video__unmute-text">Tap for sound</span>
-    </button>
+    <>
+      <button type="button" class="reel-video__unmute" aria-label="Tap for sound">
+        <span class="reel-video__unmute-icon" aria-hidden="true">🔇</span>
+        <span class="reel-video__unmute-text">Tap for sound</span>
+      </button>
+      <span class="reel-video__resume" aria-hidden="true">▶</span>
+    </>
   ) : (
     <div class="reel-video__cue">
       <button type="button" class="reel-video__play" aria-label={playLabel || 'Play video'}><span aria-hidden="true">▶</span></button>
@@ -49,20 +54,39 @@ const { src, poster, class: className, playLabel, autoplay = false } = Astro.pro
     if (!vid) return;
     reel.dataset.wired = '1';
 
-    // ---- autoplay-muted mode: big unmute button ----
+    // ---- autoplay-muted mode: locked VSL player ----
+    // No native controls (no volume, no scrub bar, no skip-forward, no PiP, no
+    // download). Just autoplay muted → tap for sound, then tap to play/pause.
     if (reel.dataset.autoplay) {
       const unmute = reel.querySelector<HTMLButtonElement>('.reel-video__unmute');
       vid.muted = true;
-      vid.play().catch(() => { /* autoplay blocked; the unmute button will start it on tap */ });
-      if (unmute) {
-        unmute.addEventListener('click', () => {
-          vid.muted = false;
-          vid.currentTime = 0;   // restart so they hear the full message with sound
-          vid.controls = true;
-          reel.classList.add('is-unmuted');
-          vid.play().catch(() => {});
-        });
-      }
+      vid.play().catch(() => { /* autoplay blocked; tapping starts it */ });
+
+      // never expose native controls
+      vid.controls = false;
+      vid.addEventListener('contextmenu', (e) => e.preventDefault()); // no right-click download
+
+      // anti-skip: they can never jump ahead of what they've actually watched
+      let maxWatched = 0;
+      vid.addEventListener('timeupdate', () => { if (!vid.seeking) maxWatched = Math.max(maxWatched, vid.currentTime); });
+      vid.addEventListener('seeking', () => { if (vid.currentTime > maxWatched + 0.4) vid.currentTime = maxWatched; });
+
+      const doUnmute = () => {
+        vid.muted = false;
+        vid.currentTime = 0;   // restart so they hear the full message with sound
+        maxWatched = 0;
+        reel.classList.add('is-unmuted');
+        vid.play().catch(() => {});
+      };
+      if (unmute) unmute.addEventListener('click', (e) => { e.stopPropagation(); doUnmute(); });
+
+      // tap the video: turn sound on first, then it toggles play/pause
+      vid.addEventListener('click', () => {
+        if (!reel.classList.contains('is-unmuted')) { doUnmute(); return; }
+        if (vid.paused) vid.play().catch(() => {}); else vid.pause();
+      });
+      vid.addEventListener('pause', () => reel.classList.add('is-paused'));
+      vid.addEventListener('play', () => reel.classList.remove('is-paused'));
       return;
     }
 
@@ -143,6 +167,18 @@ const { src, poster, class: className, playLabel, autoplay = false } = Astro.pro
   .reel-video__unmute:hover { transform: translateX(-50%) scale(1.04); background: color-mix(in srgb, var(--cabinet) 90%, transparent); animation: none; }
   .reel-video__unmute-icon { font-size: 1.3em; line-height: 1; }
   .reel-video.is-unmuted .reel-video__unmute { display: none; }
+
+  /* locked player: tap the frame to play/pause; a ▶ shows only while paused */
+  .reel-video--auto .reel-video__media { cursor: pointer; }
+  .reel-video__resume {
+    position: absolute; inset: 0; margin: auto; z-index: 2;
+    width: 84px; height: 84px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    border: 2px solid var(--porcelain); background: color-mix(in srgb, var(--cabinet) 55%, transparent);
+    color: var(--porcelain); font-size: 1.6rem; line-height: 1; padding-left: 5px;
+    pointer-events: none;
+  }
+  .reel-video.is-paused .reel-video__resume { display: flex; }
   @keyframes reel-unmute-pulse {
     0%, 100% { box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6), 0 0 0 0 color-mix(in srgb, var(--porcelain) 45%, transparent); }
     50% { box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6), 0 0 0 10px color-mix(in srgb, var(--porcelain) 0%, transparent); }
