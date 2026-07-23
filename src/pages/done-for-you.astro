@@ -30,13 +30,14 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
 ---
 <BaseLayout
   title="Done For You: Get Found & Get Picked | Kitchen Websites"
-  description="One package that makes the homeowners already searching find you, trust you, and call you. More calls in 90 days or I work for free. $750 a month, month to month, you own all of it."
+  description="One package that makes the homeowners already searching find you, trust you, and reach out. 15+ homeowner inquiries in 90 days without a single ad, or I work free until you get there. $750 a month, month to month, you own all of it."
 >
   <!-- 1 — HERO -->
   <section class="section seo2-hero">
     <div class="container container--narrow">
       <p class="eyebrow">Done for you · Kitchen &amp; bath only</p>
-      <h1 class="seo2-hero__h1">More homeowners calling you in 90 days, or I work for free.</h1>
+      <h1 class="seo2-hero__h1">15+ homeowner inquiries in 90 days, without a single ad</h1>
+      <p class="seo2-hero__guarantee">or I work free until you get there.</p>
       <p class="lede seo2-hero__sub">The only thing your business needs to start winning homeowners’ trust and landing more jobs online.</p>
     </div>
     <div class="container seo2-hero__video">
@@ -44,7 +45,7 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
     </div>
     <div class="container container--narrow">
       <div class="seo2-hero__cta">
-        <CTAButton href={bookHref} label="Get me more calls" derisk={`Free ${minutes}-minute call. Kitchen & bath only.`} event="Dfy:HeroToBook" size="lg" />
+        <CTAButton href={bookHref} label="Get me more inquiries" derisk={`Free ${minutes}-minute call. Kitchen & bath only.`} event="Dfy:HeroToBook" size="lg" />
       </div>
     </div>
   </section>
@@ -109,7 +110,7 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
         </table>
       </div>
       <p class="seo2-price">$750 a month. Month to month. You own all of it.</p>
-      <p class="seo2-beat"><span class="hl">If more homeowners aren’t calling you within ninety days, you stop paying, and I keep working for free until they are.</span></p>
+      <p class="seo2-beat"><span class="hl">If you don’t get 15+ homeowner inquiries within ninety days, you stop paying, and I keep working for free until you get there.</span></p>
       <div class="seo2-cta"><CTAButton href={bookHref} label="Get me the whole plan" event="Dfy:PlanToBook" size="lg" /></div>
     </div>
   </section>
@@ -117,7 +118,7 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
   <!-- 4 — THE PROCESS -->
   <section class="section seo2-steps">
     <div class="container container--narrow">
-      <h2 class="seo2-steps__h">The simple steps to getting more calls.</h2>
+      <h2 class="seo2-steps__h">The simple steps to getting more inquiries.</h2>
       <ol class="seo2-steps__list">
         <li class="seo2-step">
           <span class="seo2-step__n">1</span>
@@ -137,12 +138,12 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
           <span class="seo2-step__n">3</span>
           <div class="seo2-step__body">
             <h3 class="seo2-step__t">We get to work.</h3>
-            <p>I build and run your website, your Google, your reviews, and your AI search, and within ninety days more homeowners are calling you, or I work for free.</p>
+            <p>I build and run your website, your Google, your reviews, and your AI search, and within ninety days you’ve got 15+ homeowner inquiries, or I work free until you get there.</p>
           </div>
         </li>
       </ol>
       <div class="seo2-steps__cta">
-        <CTAButton href={bookHref} label="Get me more calls" derisk={ctaDerisk} event="Dfy:StepsToBook" size="lg" />
+        <CTAButton href={bookHref} label="Get me more inquiries" derisk={ctaDerisk} event="Dfy:StepsToBook" size="lg" />
       </div>
     </div>
   </section>
@@ -172,7 +173,7 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
     </div>
   </section>
 
-  <StickyMobileCTA href={bookHref} label="Get me more calls" event="Dfy:StickyToBook" />
+  <StickyMobileCTA href={bookHref} label="Get me more inquiries" event="Dfy:StickyToBook" />
 </BaseLayout>
 
 <style>
@@ -181,7 +182,9 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
 
   /* hero */
   .seo2-hero { padding-top: var(--space-12); text-align: center; }
-  .seo2-hero__h1 { margin: var(--space-4) auto 0; max-width: 20ch; }
+  .seo2-hero__h1 { margin: var(--space-4) auto 0; max-width: 24ch; }
+  /* the guarantee tail, sitting unbolded under the headline */
+  .seo2-hero__guarantee { margin: var(--space-3) auto 0; max-width: 30ch; font-family: var(--font-display); font-weight: var(--fw-body); font-size: var(--fs-h4); line-height: 1.25; color: var(--ink-70); }
   .seo2-hero__sub { margin: var(--space-5) auto 0; max-width: 50ch; }
   .seo2-hero__video { margin-top: var(--space-6); }
   .seo2-hero__cta { margin-top: var(--space-5); display: flex; justify-content: center; }

@@ -79,7 +79,7 @@ export const dfyFaqs: Faq[] = [
     q: 'How is this different from the SEO company that took $1,500 and mailed me charts?',
     a: [
       'They billed you for effort. I’m on the hook for a result.',
-      'They swore they owned Google and sold you rankings nobody controls. I promise the one thing I can actually move, more homeowners finding you and calling than do today, and I put a ninety-day deadline on it.',
+      'They swore they owned Google and sold you rankings nobody controls. I promise the one thing that matters: 15+ homeowner inquiries in ninety days, without you running a single ad.',
       'They locked you in for a year. I earn next month, every month. You see the work every week, and you own every piece of it.',
     ],
   },
@@ -87,7 +87,7 @@ export const dfyFaqs: Faq[] = [
     q: 'What happens if it doesn’t work?',
     a: [
       'Then you don’t pay, and I don’t stop.',
-      'Day one, we write down your numbers. Ninety days in, more homeowners are calling than the day we started, or you stop paying and I keep working until that number moves. Still flat three months later? We shake hands and you keep all of it. And I haven’t earned a dollar.',
+      'Day one, we write down your numbers. Ninety days in, you’ve got 15+ homeowner inquiries, or you stop paying and I keep working until you get there. Still short three months later? We shake hands and you keep all of it. And I haven’t earned a dollar.',
     ],
   },
   {

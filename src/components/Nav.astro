@@ -15,7 +15,7 @@ const onDfy = isActive('/done-for-you');
 const ctaHref = onDfy ? '/book?from=Nav:Book' : '/done-for-you';
 const ctaEvent = onDfy ? 'Nav:Book' : 'Nav:Dfy';
 const ctaLabels = onDfy
-  ? { full: 'Get me more calls', short: 'Get more calls', mini: 'More calls' }
+  ? { full: 'Get me more inquiries', short: 'Get more inquiries', mini: 'More inquiries' }
   : { full: 'Get more jobs', short: 'Get more jobs', mini: 'More jobs' };
 ---
 <header class:list={['nav', { 'nav--overlay': overlay }]} data-nav>
