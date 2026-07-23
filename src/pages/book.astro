@@ -37,32 +37,9 @@ const minutes = site.callLengthMinutes;
             <p class="bk-gate" data-gate hidden>This one’s built just for kitchen and bath businesses, so it wouldn’t be the right fit. If that ever changes, come back anytime.</p>
           </fieldset>
 
-          <!-- Q2 — WHERE JOBS COME FROM + HOW MANY -->
+          <!-- Q2 — WHICH ARE YOU MORE INTERESTED IN -->
           <fieldset class="bk-step" data-step hidden>
-            <p class="bk-count">2/5</p>
-            <h2 class="bk-q">A little about your jobs.</h2>
-            <div class="bk-field" data-field="customers">
-              <p class="bk-sub">Where do your jobs mainly come from?</p>
-              <div class="bk-cards bk-cards--row3 bk-cards--wide" data-name="customers" data-radio>
-                <button type="button" class="bk-card" data-value="Mostly homeowners">Mostly homeowners</button>
-                <button type="button" class="bk-card" data-value="Mostly builder & contractor">Mostly builder &amp; contractor</button>
-                <button type="button" class="bk-card" data-value="A mix">A mix</button>
-              </div>
-            </div>
-            <div class="bk-field" data-field="jobs">
-              <p class="bk-sub bk-sub--gap">Roughly how many kitchens or baths a month?</p>
-              <div class="bk-cards bk-cards--row bk-cards--wide" data-name="jobs" data-radio>
-                <button type="button" class="bk-card" data-value="1–2">1–2</button>
-                <button type="button" class="bk-card" data-value="3–5">3–5</button>
-                <button type="button" class="bk-card" data-value="6–10">6–10</button>
-                <button type="button" class="bk-card" data-value="10+">10+</button>
-              </div>
-            </div>
-          </fieldset>
-
-          <!-- Q3 — WHICH ARE YOU MORE INTERESTED IN -->
-          <fieldset class="bk-step" data-step hidden>
-            <p class="bk-count">3/5</p>
+            <p class="bk-count">2/4</p>
             <h2 class="bk-q">Which are you more interested in?</h2>
             <div class="bk-field" data-field="interest">
               <div class="bk-choice" data-name="interest" data-radio>
@@ -94,9 +71,9 @@ const minutes = site.callLengthMinutes;
             </div>
           </fieldset>
 
-          <!-- Q4 — BUSINESS NAME + WEBSITE -->
+          <!-- Q3 — BUSINESS NAME + WEBSITE -->
           <fieldset class="bk-step" data-step hidden>
-            <p class="bk-count">4/5</p>
+            <p class="bk-count">3/4</p>
             <h2 class="bk-q">Now, about your business.</h2>
             <div class="bk-fields bk-fields--2">
               <div class="bk-field" data-field="businessName">
@@ -111,9 +88,9 @@ const minutes = site.callLengthMinutes;
             <div class="bk-nav"><button type="button" class="btn btn--primary" data-next>Continue <span aria-hidden="true">→</span></button></div>
           </fieldset>
 
-          <!-- Q5 — NAME + EMAIL + PHONE → submit -->
+          <!-- Q4 — NAME + EMAIL + PHONE → submit -->
           <fieldset class="bk-step" data-step hidden>
-            <p class="bk-count">5/5</p>
+            <p class="bk-count">4/4</p>
             <h2 class="bk-q">Last thing. How can I reach you?</h2>
             <div class="bk-fields">
               <div class="bk-field" data-field="fullName">
@@ -283,7 +260,7 @@ const minutes = site.callLengthMinutes;
         id: PULSE.id, stage: PULSE.stage,
         businessType: answers.businessType || '', businessName: answers.businessName || '',
         interest: answers.interest || '',
-        website: answers.website || '', customers: answers.customers || '', jobs: answers.jobs || '',
+        website: answers.website || '',
         source: PULSE.source, referrer: PULSE.referrer, query: PULSE.query,
         utmSource: PULSE.utmSource, utmMedium: PULSE.utmMedium, utmCampaign: PULSE.utmCampaign,
         utmContent: PULSE.utmContent, utmTerm: PULSE.utmTerm, gclid: PULSE.gclid, fbclid: PULSE.fbclid,
@@ -302,10 +279,10 @@ const minutes = site.callLengthMinutes;
       }
       if (up || final) pulseSend(pulsePayload(final), final);
     };
-    // Furthest step → stage: Q1 (type) · Q2 (jobs) · Q3 (business) · calendar · booked.
-    // Q1 businessType (type) · Q2 jobs · Q3 interest (bucketed with jobs) · Q4 details.
+    // Furthest step → stage. Q1 businessType (type) · Q2 interest (bucketed as
+    // "jobs") · Q3 business + Q4 contact (details) · calendar · booked.
     const stageForCurrent = () =>
-      current >= 3 ? 'details' : current >= 1 ? 'jobs'
+      current >= 2 ? 'details' : current >= 1 ? 'jobs'
       : (answers.businessType ? 'type' : 'landed');
 
     // ---- progressive reveal: keep steps 0..current visible, only the current
@@ -372,7 +349,14 @@ const minutes = site.callLengthMinutes;
             q1?.classList.toggle('is-gated', gated);
             const gate = q1?.querySelector<HTMLElement>('[data-gate]');
             if (gate) gate.hidden = !gated;
-            if (!gated) fireBookStarted(); // qualified "Yes" → Meta BookClicked
+            if (gated) {
+              // "No" is final for this visit — the cards lock (CSS) so they can't
+              // flip to "Yes". Clear saved progress so a fresh /book reload lets
+              // them start the form over.
+              try { sessionStorage.removeItem(STORE); } catch { /* ignore */ }
+            } else {
+              fireBookStarted(); // qualified "Yes" → Meta BookClicked
+            }
           }
           maybeAutoAdvance(card);
         });
@@ -427,8 +411,6 @@ const minutes = site.callLengthMinutes;
       fd.append('Website', answers.website || '');
       fd.append('Kitchen & bath?', answers.businessType || '');
       fd.append('Interested in', answers.interest || '');
-      fd.append('Jobs come from', answers.customers || '');
-      fd.append('Jobs / month', answers.jobs || '');
       const params = new URLSearchParams(window.location.search);
       if (params.get('from')) fd.append('Came from', String(params.get('from')));
       if (window.location.search) fd.append('Query params', window.location.search);
@@ -503,19 +485,17 @@ const minutes = site.callLengthMinutes;
     const calendlyPrefill = () => {
       collectAll();
       const customAnswers: Record<string, string> = {};
-      if (answers.businessName) customAnswers.a1 = answers.businessName; // Q1 · business name
-      if (answers.businessType) customAnswers.a2 = answers.businessType; // Q2 · in kitchen & bath? (yes/no)
-      if (answers.customers)    customAnswers.a3 = answers.customers;    // Q3 · jobs come from
-      if (answers.jobs)         customAnswers.a4 = answers.jobs;         // Q4 · jobs per month
-      if (answers.website)      customAnswers.a5 = answers.website;      // Q5 · website
-      if (answers.interest)     customAnswers.a6 = answers.interest;     // Q6 · interested in (add this question in Calendly to capture it)
+      if (answers.businessName) customAnswers.a1 = answers.businessName; // Q · business name
+      if (answers.businessType) customAnswers.a2 = answers.businessType; // Q · in kitchen & bath? (yes/no)
+      if (answers.website)      customAnswers.a3 = answers.website;      // Q · website
+      if (answers.interest)     customAnswers.a4 = answers.interest;     // Q · interested in
       // name/email are Calendly's built-in invitee fields; phone maps to its
-      // built-in SMS/phone field via `location` only when the event uses it, so
-      // we also pass it as a custom answer (a7) as a safe fallback.
+      // built-in SMS/phone field only when the event uses it, so we also pass it
+      // as a custom answer (a5) as a safe fallback.
       return {
         name: answers.fullName || '',
         email: answers.email || '',
-        ...(answers.phone ? { customAnswers: { ...customAnswers, a7: answers.phone } } : { customAnswers }),
+        ...(answers.phone ? { customAnswers: { ...customAnswers, a5: answers.phone } } : { customAnswers }),
       };
     };
     // Keep the "open in a new tab" fallback prefilled too (URL query-param form).
@@ -661,9 +641,12 @@ const minutes = site.callLengthMinutes;
   .bk-card:hover { border-color: var(--ink-50); }
   .bk-card.is-on { border-color: var(--ink); background: var(--accent-wash, color-mix(in srgb, var(--accent) 16%, #fff)); }
 
-  /* kitchen & bath gate: "No" shows this note and hides the Continue button */
+  /* kitchen & bath gate: "No" is final — lock the buttons so they can't flip to
+     "Yes", show the note, hide the Continue button. Reloading /book starts over. */
   .bk-gate { margin: var(--space-5) auto 0; max-width: 46ch; font-family: var(--font-serif); font-size: var(--fs-body); line-height: 1.5; color: var(--ink-70); }
   .bk-step.is-gated .bk-nav { display: none; }
+  .bk-step.is-gated .bk-cards { pointer-events: none; }
+  .bk-step.is-gated .bk-card:not(.is-on) { opacity: 0.4; }
 
   /* Q1 "which are you more interested in" — two rich cards side by side, each
      listing what that option includes. Reuses the .bk-card select logic. */
