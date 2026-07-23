@@ -63,7 +63,7 @@ const closingStats = [
       <button type="button" class="reel-video__play" aria-label="Play video"><span aria-hidden="true">▶</span></button>
     </div>
     <div class="home-reel__cta">
-      <CTAButton href="/book" label="Claim your free strategy session" event="ReelToBook" size="lg" />
+      <CTAButton href="/book" label="Get me more inquiries" event="ReelToBook" size="lg" />
     </div>
   </div>
 </div>
@@ -89,7 +89,7 @@ const closingStats = [
       <div class="letter__cta">
         <CTAButton
           href="/book"
-          label="Schedule your free strategy session"
+          label="Get me more inquiries"
           derisk={`${minutes} minutes, no pitch-slap. You leave with your plan either way.`}
           event="LetterMidToBook"
           size="lg"
@@ -147,15 +147,10 @@ const closingStats = [
 <!-- 4. THE GUARANTEE → SESSION -->
 <section class="section home-promise">
   <div class="container container--narrow">
-    <h2 class="home-promise__h">If your calls don’t go up in ninety days, we work for free.</h2>
+    <h2 class="home-promise__h">15+ homeowner inquiries in 90 days, without a single ad, or I work free until you get there.</h2>
 
     <div class="home-promise__body">
-      <p class="home-promise__beat">Read that again.</p>
-      <p>Day one, we write down your numbers. How many calls you get, how many homeowners find you. Then I get to work, and you watch it happen every week.</p>
-      <p class="home-promise__beat home-promise__beat--accent">Ninety days in, more homeowners are calling you than the day we started. If they’re not, you stop paying and I keep working until that number moves.</p>
-      <p>Still flat three months later? We shake hands and you keep all of it. The profile, the reviews, the work. Yours.</p>
-      <p>Picture the calendar then. The gaps filled. The phone going off while you’re on a job, because they find you first now, not the guy three streets over.</p>
-      <p>If it doesn’t happen, I haven’t earned a dollar. And I don’t stop until it does.</p>
+      <p class="home-promise__beat home-promise__beat--accent">Day one, we write your numbers down. Ninety days later they’re up, or you stop paying and I keep working for free until you get there.</p>
     </div>
 
     <hr class="home-promise__rule" />
@@ -170,7 +165,7 @@ const closingStats = [
     </div>
 
     <div class="home-promise__cta">
-      <CTAButton href="/book" label={`Book your ${minutes}-minute strategy session`} event="HomePromiseToBook" size="lg" />
+      <CTAButton href="/book" label={`Book my ${minutes} minutes`} event="HomePromiseToBook" size="lg" />
     </div>
   </div>
 </section>
@@ -178,7 +173,7 @@ const closingStats = [
 <!-- 8. FAQ -->
 <section class="section home-faq">
   <div class="container container--narrow">
-    <h2 class="home-faq__h">The questions a burned owner actually asks.</h2>
+    <h2 class="home-faq__h">The answers to your burning questions.</h2>
     <div class="home-faq__list"><FAQ items={homeFaqs} /></div>
   </div>
 </section>
@@ -191,12 +186,12 @@ const closingStats = [
       {minutes} minutes, and you leave knowing precisely what to fix, in what order, to start winning the jobs
       going to the guy down the road. Hire me to run it or run it yourself. Kitchen and bath only.
     </p>
-    <CTAButton href="/book" label={`Book your ${minutes}-minute strategy session`} event="FinalToBook" size="lg" />
+    <CTAButton href="/book" label={`Book my ${minutes} minutes`} event="FinalToBook" size="lg" />
     <div class="home-final__receipts"><ReceiptStrip variant="compact" items={closingStats} dark={true} /></div>
   </div>
 </section>
 
-<StickyMobileCTA href="/book" label="Book a Call" event="HomeStickyToBook" />
+<StickyMobileCTA href="/book" label="Get me more inquiries" event="HomeStickyToBook" />
 
 <script>
   // Lazy-init the hero background video: set the source after first paint so it
@@ -338,7 +333,7 @@ const closingStats = [
   .home-receipts__reads strong { color: var(--accent-deep); font-weight: var(--fw-body-bold); }
 
   .home-promise .eyebrow { text-align: center; }
-  .home-promise__h { margin: var(--space-3) auto 0; max-width: 24ch; text-align: center; }
+  .home-promise__h { margin: var(--space-3) auto 0; max-width: 30ch; text-align: center; }
   .home-promise__body { margin: var(--space-8) auto 0; max-width: 65ch; }
   .home-promise__body p { font-family: var(--font-serif); font-size: var(--fs-bodyL); line-height: 1.7; color: var(--ink); margin-bottom: var(--space-5); }
   .home-promise__body p:last-child { margin-bottom: 0; }

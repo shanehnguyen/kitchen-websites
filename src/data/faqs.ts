@@ -21,9 +21,9 @@ export const homeFaqs: Faq[] = [
     q: 'Aren’t you just another marketer who’ll rip me off?',
     a: [
       'Fair question. You’ve earned it.',
-      'Here’s the difference. They sold you leads; I make the homeowner already looking choose you. They swore they owned Google; I promise the one thing I can actually move, your phone ringing more. They locked you in for a year; I earn next month every month.',
+      'Here’s the difference. They sold you leads; I make the homeowner already looking choose you. They swore they owned Google; I promise the one thing I can actually move, more homeowners reaching out. They locked you in for a year; I earn next month every month.',
       'I show you the plan before you pay me a dollar. You see the work every week. You own everything I build.',
-      'The last guy mailed you charts while your phone stayed quiet. I’d rather you judge me on homeowners calling.',
+      'The last guy mailed you charts while your phone stayed quiet. I’d rather you judge me on homeowner inquiries.',
     ],
   },
   {
@@ -31,7 +31,7 @@ export const homeFaqs: Faq[] = [
     a: [
       'No, and run from anyone who does.',
       '“Leads” is the Angi game, the same homeowner sold to four businesses at once. Rankings nobody controls, not me, not the guy who swore he did.',
-      'What I promise is the work, the deadline, and more homeowners finding you and calling than do today. Beat that number in 90 days, or you stop paying and I keep going.',
+      'What I promise is the work, the deadline, and 15+ homeowner inquiries in 90 days, without you running a single ad. Beat that, or you stop paying and I keep going.',
       'That’s a promise I can actually keep.',
     ],
   },
@@ -49,7 +49,7 @@ export const homeFaqs: Faq[] = [
     a: [
       '$750 a month for the whole plan. Your Google rebuilt and run every month, your site built in, the ninety-day guarantee behind all of it. Month to month, and you own everything.',
       'Want a website on its own instead? That’s $1,500 for the standard build, or $4,500 fully custom, and you see your homepage before you pay a dollar of it.',
-      'One kitchen runs your customer twenty, thirty grand. Win a single homeowner who’d have called someone else, and it’s paid for itself. We’ll talk real numbers on the call.',
+      'One kitchen runs your customer twenty, thirty grand. Win a single homeowner who’d have hired someone else, and it’s paid for itself. We’ll talk real numbers on the call.',
     ],
   },
   {

@@ -14,9 +14,8 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
 const onDfy = isActive('/done-for-you');
 const ctaHref = onDfy ? '/book?from=Nav:Book' : '/done-for-you';
 const ctaEvent = onDfy ? 'Nav:Book' : 'Nav:Dfy';
-const ctaLabels = onDfy
-  ? { full: 'Get me more inquiries', short: 'Get more inquiries', mini: 'More inquiries' }
-  : { full: 'Get more jobs', short: 'Get more jobs', mini: 'More jobs' };
+// One unified nav CTA everywhere (routing still warms cold traffic via DFY first).
+const ctaLabels = { full: 'Get me more inquiries', short: 'Get more inquiries', mini: 'More inquiries' };
 ---
 <header class:list={['nav', { 'nav--overlay': overlay }]} data-nav>
   <div class="nav__inner">
@@ -29,7 +28,6 @@ const ctaLabels = onDfy
         <li><a href="/done-for-you" aria-current={isActive('/done-for-you') ? 'page' : undefined}>Done For You</a></li>
         <li><a href="/websites" aria-current={isActive('/websites') ? 'page' : undefined}>Websites</a></li>
         <li><a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a></li>
-        <li><a href="/scorecard" aria-current={isActive('/scorecard') ? 'page' : undefined}>Your Map</a></li>
       </ul>
     </nav>
     <div class="nav__actions">
