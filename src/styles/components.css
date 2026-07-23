@@ -138,6 +138,20 @@
   .nav__actions { gap: var(--space-2); }
 }
 
+/* Done For You (mobile): keep the header CTA hidden over the hero/video, then
+   reveal it once the visitor scrolls to the "why this works" section (JS adds
+   .nav--cta-on). Desktop is unaffected — the CTA shows normally there. */
+@media (max-width: 55.99em) {
+  .nav--cta-scroll .nav__cta {
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), visibility var(--duration-fast);
+  }
+  .nav--cta-scroll.nav--cta-on .nav__cta {
+    opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+  }
+}
+
 /* hamburger — mobile only, reveals the secondary links (never the CTA) */
 .nav__toggle {
   display: inline-flex; align-items: center; justify-content: center;

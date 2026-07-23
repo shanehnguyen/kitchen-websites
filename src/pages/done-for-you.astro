@@ -64,7 +64,7 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
         <li><strong>Set up for AI search.</strong> When they ask ChatGPT or Google’s AI who to call nearby, you’re one of the names it gives them.</li>
       </ul>
 
-      <h2 class="seo2-h">Why this has worked for kitchen and bath businesses like yours.</h2>
+      <h2 class="seo2-h" data-cta-reveal>Why this has worked for kitchen and bath businesses like yours.</h2>
     </div>
     <div class="seo2-proof__showcase"><ClientShowcase /></div>
     <div class="container container--prose seo2-prose">
@@ -175,6 +175,25 @@ const ninetyLabel = `${ninety.toLocaleDateString('en-US', { month: 'long' })} ${
 
   <StickyMobileCTA href={bookHref} label="Get me more inquiries" event="Dfy:StickyToBook" />
 </BaseLayout>
+
+<script>
+  // Mobile: the header CTA stays hidden over the hero/video and reveals once the
+  // visitor scrolls down to the "why this works" heading. (Desktop shows it
+  // normally — the cloak CSS is mobile-only.)
+  const nav = document.querySelector('[data-nav]');
+  const trigger = document.querySelector('[data-cta-reveal]');
+  if (nav && trigger && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        nav.classList.add('nav--cta-on');
+        io.disconnect();
+      }
+    });
+    io.observe(trigger);
+  } else if (nav) {
+    nav.classList.add('nav--cta-on'); // no IntersectionObserver: just show it
+  }
+</script>
 
 <style>
   /* highlighter device — sits behind the spine lines */

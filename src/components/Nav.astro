@@ -17,7 +17,7 @@ const ctaEvent = onDfy ? 'Nav:Book' : 'Nav:Dfy';
 // One unified nav CTA everywhere (routing still warms cold traffic via DFY first).
 const ctaLabels = { full: 'Get me more inquiries', short: 'Get more inquiries', mini: 'More inquiries' };
 ---
-<header class:list={['nav', { 'nav--overlay': overlay }]} data-nav>
+<header class:list={['nav', { 'nav--overlay': overlay, 'nav--cta-scroll': onDfy }]} data-nav>
   <div class="nav__inner">
     <a class="nav__logo" href="/">
       <span class="nav__logo-name">Kitchen <span>Websites</span></span>
